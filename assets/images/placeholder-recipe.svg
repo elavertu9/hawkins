@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" width="1200" height="800">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="45%" r="75%">
+      <stop offset="0%" stop-color="#2a0606"/>
+      <stop offset="55%" stop-color="#110709"/>
+      <stop offset="100%" stop-color="#060608"/>
+    </radialGradient>
+    <filter id="glow" x="-20%" y="-50%" width="140%" height="200%">
+      <feGaussianBlur stdDeviation="10"/>
+    </filter>
+    <pattern id="lines" width="6" height="6" patternUnits="userSpaceOnUse">
+      <rect width="6" height="1" fill="#ffffff" opacity="0.025"/>
+    </pattern>
+  </defs>
+
+  <rect width="1200" height="800" fill="url(#bg)"/>
+  <rect width="1200" height="800" fill="url(#lines)"/>
+
+  <!-- viewfinder corners -->
+  <g fill="none" stroke="#ff4040" stroke-width="4" stroke-linecap="square" opacity="0.55">
+    <path d="M70 140V70H140"/>
+    <path d="M1060 70H1130V140"/>
+    <path d="M1130 660V730H1060"/>
+    <path d="M140 730H70V660"/>
+  </g>
+
+  <!-- MISSING, in neon outline -->
+  <g font-family="'Libre Baskerville', Georgia, 'Times New Roman', serif" font-weight="700"
+     font-size="150" letter-spacing="14" text-anchor="middle">
+    <text x="600" y="400" fill="none" stroke="#ff2a2a" stroke-width="10" opacity="0.6" filter="url(#glow)">MISSING</text>
+    <text x="600" y="400" fill="none" stroke="#ff4040" stroke-width="3.5">MISSING</text>
+  </g>
+
+  <g font-family="'Courier Prime', 'Courier New', monospace" font-weight="700" text-anchor="middle">
+    <text x="600" y="478" font-size="34" letter-spacing="7" fill="#ede6da" opacity="0.85">HAVE YOU SEEN THIS DISH?</text>
+    <text x="600" y="660" font-size="22" letter-spacing="5" fill="#a8a196" opacity="0.7">PHOTO COMING SOON · HAWKINS, IND.</text>
+  </g>
+</svg>

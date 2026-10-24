@@ -1,0 +1,21 @@
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header">
+  <div class="container site-header__inner">
+    <a class="brand" href="{{ '/' | relative_url }}" {% if page.url == "/" %}aria-current="page"{% endif %}>{{ site.title }}</a>
+    <nav class="site-nav" aria-label="Main">
+      <ul>
+        {%- for section in site.data.sections %}
+          {%- if section.status == "live" %}
+            {%- assign prefix = page.url | slice: 0, section.url.size %}
+            <li>
+              <a href="{{ section.url | relative_url }}"
+                {%- if page.url == section.url %} aria-current="page"{% elsif prefix == section.url %} aria-current="true"{% endif %}>
+                {{- section.title -}}
+              </a>
+            </li>
+          {%- endif %}
+        {%- endfor %}
+      </ul>
+    </nav>
+  </div>
+</header>

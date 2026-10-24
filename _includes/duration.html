@@ -1,0 +1,12 @@
+{%- comment -%}
+  Formats a number of minutes for display, e.g. 90 -> "1 hr 30 min".
+  Usage: {% include duration.html minutes=90 %}
+{%- endcomment -%}
+{%- assign m = include.minutes | plus: 0 -%}
+{%- assign hrs = m | divided_by: 60 -%}
+{%- assign mins = m | modulo: 60 -%}
+{%- if hrs > 0 -%}
+  {{- hrs }} hr{% if mins > 0 %} {{ mins }} min{% endif -%}
+{%- else -%}
+  {{- mins }} min
+{%- endif -%}

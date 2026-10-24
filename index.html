@@ -1,141 +1,54 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Hawkins</title>
-  <link rel="icon" href="favicon.svg" type="image/svg+xml">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@700&family=Courier+Prime&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --red: #e50914;
-      --glow: #ff2a2a;
-      --bg: #050505;
-    }
+---
+layout: default
+body_class: page-home
+---
+{%- assign recipes = site.recipes | sort: "title" -%}
 
-    * { box-sizing: border-box; }
+<section class="home-hero">
+  <div class="container">
+    <h1 class="neon-title">{{ site.title }}</h1>
+    {%- comment -%} Joyce's alphabet wall. Built by lights.js from data-lights. {%- endcomment -%}
+    <div class="lights" data-lights="RIGHT HERE" aria-hidden="true"></div>
+    <p class="home-hero__tagline">{{ site.tagline }}</p>
+  </div>
+</section>
 
-    body {
-      margin: 0;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 3rem;
-      padding: 2rem 1rem;
-      background: radial-gradient(ellipse at center, #1a0202 0%, var(--bg) 70%);
-      color: #ddd;
-      font-family: "Courier Prime", monospace;
-      text-align: center;
-    }
+<section class="container home-section" aria-labelledby="files-title">
+  <div class="section-head">
+    <h2 id="files-title">Case files</h2>
+  </div>
+  <ul class="files">
+    {%- for section in site.data.sections %}
+      {%- assign items = site[section.id] %}
+      {%- if section.status == "live" %}
+      <li class="file">
+        <p class="eyebrow">File {{ section.file }}</p>
+        <h3 class="file__title"><a class="file__link" href="{{ section.url | relative_url }}">{{ section.title }}</a></h3>
+        <p class="file__blurb">{{ section.blurb }}</p>
+        <p class="file__status">{% if items %}{{ items.size }} {{ section.title | downcase }}{% else %}Open file{% endif %} <span aria-hidden="true">→</span></p>
+      </li>
+      {%- else %}
+      <li class="file is-soon">
+        <p class="eyebrow">File {{ section.file }}</p>
+        <h3 class="file__title">{{ section.title }}</h3>
+        <p class="file__blurb">{{ section.blurb }}</p>
+        <p class="file__stamp">Coming soon</p>
+      </li>
+      {%- endif %}
+    {%- endfor %}
+  </ul>
+</section>
 
-    h1 {
-      margin: 0;
-      font-family: "Libre Baskerville", Georgia, serif;
-      font-size: clamp(3rem, 14vw, 9rem);
-      letter-spacing: 0.08em;
-      color: transparent;
-      -webkit-text-stroke: 2px var(--red);
-      text-shadow: 0 0 12px var(--glow), 0 0 40px var(--red);
-      animation: flicker 6s infinite;
-    }
+<section class="container home-section" aria-labelledby="kitchen-title">
+  <div class="section-head">
+    <h2 id="kitchen-title">From the kitchen</h2>
+    <a class="section-head__link" href="{{ '/recipes/' | relative_url }}">All recipes <span aria-hidden="true">→</span></a>
+  </div>
+  <div class="card-grid">
+    {%- for recipe in recipes limit: 4 %}
+      {% include recipe-card.html recipe=recipe %}
+    {%- endfor %}
+  </div>
+</section>
 
-    /* Joyce's Christmas lights */
-    .lights {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 0.6rem 1.1rem;
-      max-width: 40rem;
-    }
-
-    .light {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.4rem;
-      font-size: 1.4rem;
-      color: #bbb;
-    }
-
-    .light::before {
-      content: "";
-      width: 0.9rem;
-      height: 1.3rem;
-      border-radius: 50% 50% 45% 45%;
-      background: var(--c);
-      opacity: 0.2;
-      transition: opacity 0.15s, box-shadow 0.15s;
-    }
-
-    .light.on::before {
-      opacity: 1;
-      box-shadow: 0 0 14px 4px var(--c);
-    }
-
-    .space { width: 1.5rem; }
-
-    p {
-      margin: 0;
-      color: #888;
-      font-size: 0.95rem;
-    }
-
-    @keyframes flicker {
-      0%, 18%, 22%, 25%, 53%, 57%, 100% { opacity: 1; }
-      20%, 24%, 55% { opacity: 0.35; }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      h1 { animation: none; }
-    }
-  </style>
-</head>
-<body>
-  <h1>HAWKINS</h1>
-
-  <div class="lights" id="lights" aria-label="Hello World"></div>
-
-  <p>Recipes, packing lists, and other things from the Upside Down. Coming soon.</p>
-
-  <script>
-    const message = "HELLO WORLD";
-    const colors = ["#ff3b3b", "#ffd23b", "#3bff6b", "#3bb8ff", "#ff7b3b", "#d33bff"];
-    const container = document.getElementById("lights");
-
-    const bulbs = [...message].map((ch, i) => {
-      const el = document.createElement("span");
-      if (ch === " ") {
-        el.className = "space";
-      } else {
-        el.className = "light";
-        el.textContent = ch;
-        el.style.setProperty("--c", colors[i % colors.length]);
-      }
-      container.appendChild(el);
-      return el;
-    }).filter(el => el.classList.contains("light"));
-
-    // Spell the message one bulb at a time, like Will through the wall
-    async function spell() {
-      const wait = ms => new Promise(r => setTimeout(r, ms));
-      while (true) {
-        for (const bulb of bulbs) {
-          bulb.classList.add("on");
-          await wait(450);
-          bulb.classList.remove("on");
-          await wait(150);
-        }
-        bulbs.forEach(b => b.classList.add("on"));
-        await wait(2500);
-        bulbs.forEach(b => b.classList.remove("on"));
-        await wait(1000);
-      }
-    }
-    spell();
-  </script>
-</body>
-</html>
+<script src="{{ '/assets/js/lights.js' | relative_url }}" defer></script>

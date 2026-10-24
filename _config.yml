@@ -1,0 +1,33 @@
+title: Hawkins
+tagline: Recipes, packing lists, and other field notes from Hawkins, Indiana.
+description: >-
+  A personal collection of recipes, packing lists, and other things worth
+  keeping, with a Stranger Things look.
+url: https://starcourt.org
+baseurl: ""
+lang: en
+
+# Each content type (recipes now, packing lists later) is a collection.
+# Its items live in _<name>/ and render at /<name>/<file-name>/.
+collections:
+  recipes:
+    output: true
+    permalink: /recipes/:name/
+
+defaults:
+  - scope:
+      path: ""
+      type: recipes
+    values:
+      layout: recipe
+
+# Every recipe without its own photo uses this image.
+recipe_placeholder: /assets/images/placeholder-recipe.svg
+
+exclude:
+  - README.md
+  - CLAUDE.md
+  - Gemfile
+  - Gemfile.lock
+  - serve.sh
+  - vendor

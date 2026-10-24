@@ -1,0 +1,27 @@
+{%- comment -%}
+  A linked summary card for one recipe.
+  Usage: {% include recipe-card.html recipe=doc %}
+{%- endcomment -%}
+{%- assign r = include.recipe -%}
+{%- assign total = r.time.prep | plus: r.time.cook | plus: r.time.additional -%}
+<article class="card" data-category="{{ r.category | slugify }}">
+  <div class="card__media">
+    {%- if r.image %}
+      <img src="{{ r.image | relative_url }}" alt="{{ r.image_alt | default: r.title | escape }}"
+           width="1200" height="800" loading="lazy" decoding="async">
+    {%- else %}
+      <img src="{{ site.recipe_placeholder | relative_url }}" alt=""
+           width="1200" height="800" loading="lazy" decoding="async">
+    {%- endif %}
+  </div>
+  <div class="card__body">
+    <p class="eyebrow">{{ r.category }}</p>
+    <h3 class="card__title"><a class="card__link" href="{{ r.url | relative_url }}">{{ r.title }}</a></h3>
+    <p class="card__summary">{{ r.summary }}</p>
+    <p class="card__meta">
+      <span>{% include duration.html minutes=total %}</span>
+      <span aria-hidden="true">·</span>
+      <span>Serves {{ r.servings }}</span>
+    </p>
+  </div>
+</article>

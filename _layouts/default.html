@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="{{ site.lang }}">
+<head>
+  {% include head.html %}
+</head>
+<body class="{{ page.body_class }}">
+  {% include header.html %}
+  <main id="main" class="site-main">
+    {{ content }}
+  </main>
+  {% include footer.html %}
+  <script src="{{ '/assets/js/upside-down.js' | relative_url }}" defer></script>
+</body>
+</html>

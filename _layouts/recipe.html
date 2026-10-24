@@ -1,0 +1,188 @@
+---
+layout: default
+---
+{%- assign t = page.time -%}
+{%- assign total = t.prep | plus: t.cook | plus: t.additional -%}
+{%- assign ingredient_count = 0 -%}
+{%- for group in page.ingredients -%}
+  {%- assign ingredient_count = ingredient_count | plus: group.items.size -%}
+{%- endfor -%}
+{%- assign recipes = site.recipes | sort: "title" -%}
+
+<article class="recipe" data-recipe-id="{{ page.slug }}">
+  <div class="container">
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ol>
+        <li><a href="{{ '/recipes/' | relative_url }}">Recipes</a></li>
+        <li aria-current="page">{{ page.title }}</li>
+      </ol>
+    </nav>
+
+    <header class="recipe-hero">
+      <div class="recipe-hero__text">
+        <p class="eyebrow">{{ page.category }}</p>
+        <h1 class="recipe-hero__title">{{ page.title }}</h1>
+        <p class="recipe-hero__summary">{{ page.summary }}</p>
+
+        <dl class="stats">
+          <div class="stat"><dt>Prep</dt><dd>{% include duration.html minutes=t.prep %}</dd></div>
+          <div class="stat"><dt>Cook</dt><dd>{% include duration.html minutes=t.cook %}</dd></div>
+          {%- if t.additional %}
+          <div class="stat"><dt>Rest</dt><dd>{% include duration.html minutes=t.additional %}</dd></div>
+          {%- endif %}
+          <div class="stat stat--total"><dt>Total</dt><dd>{% include duration.html minutes=total %}</dd></div>
+          <div class="stat"><dt>Serves</dt><dd>{{ page.servings }}</dd></div>
+          {%- if page.yield %}
+          <div class="stat stat--wide"><dt>Makes</dt><dd>{{ page.yield }}</dd></div>
+          {%- endif %}
+        </dl>
+      </div>
+
+      <figure class="recipe-hero__media">
+        {%- if page.image %}
+          <img src="{{ page.image | relative_url }}" alt="{{ page.image_alt | default: page.title | escape }}"
+               width="1200" height="800" decoding="async" fetchpriority="high">
+        {%- else %}
+          <img src="{{ site.recipe_placeholder | relative_url }}" alt="Photo coming soon"
+               width="1200" height="800" decoding="async" fetchpriority="high">
+        {%- endif %}
+      </figure>
+    </header>
+
+    <div class="recipe-body">
+      <aside class="ingredients" aria-labelledby="ingredients-title">
+        <div class="panel">
+          <div class="section-head">
+            <h2 id="ingredients-title">Ingredients</h2>
+            <span class="section-head__count">{{ ingredient_count }} items</span>
+          </div>
+          {%- for group in page.ingredients %}
+            {%- assign group_index = forloop.index %}
+            {%- if group.group %}
+            <h3 class="ingredients__group">{{ group.group }}</h3>
+            {%- endif %}
+            <ul class="checklist">
+              {%- for ingredient in group.items %}
+              <li>
+                <label class="check">
+                  <input type="checkbox" data-key="{{ group_index }}-{{ forloop.index }}">
+                  <span class="check__box" aria-hidden="true"></span>
+                  <span class="check__text">
+                    {%- if ingredient.qty != "" %}<span class="qty">{{ ingredient.qty }}</span> {% endif -%}
+                    {{ ingredient.item }}
+                  </span>
+                </label>
+              </li>
+              {%- endfor %}
+            </ul>
+          {%- endfor %}
+        </div>
+      </aside>
+
+      <section class="directions" aria-labelledby="directions-title">
+        <div class="section-head">
+          <h2 id="directions-title">Directions</h2>
+          <span class="section-head__count">{{ page.steps.size }} steps</span>
+          <div class="section-head__actions">
+            <button class="toggle" type="button" data-wake aria-pressed="false" hidden>Keep screen on</button>
+            <button class="toggle" type="button" data-reset hidden>Start over</button>
+          </div>
+        </div>
+        <p class="directions__hint">Tap a step to mark it done.</p>
+
+        <ol class="steps">
+          {%- for step in page.steps %}
+          <li class="step" id="step-{{ forloop.index }}">
+            <button class="step__num" type="button" aria-pressed="false"
+                    aria-label="Step {{ forloop.index }}: mark done">{{ forloop.index }}</button>
+            <div class="step__body">
+              {%- if step.title %}<h3 class="step__title">{{ step.title }}</h3>{% endif %}
+              <div class="step__text">{{ step.text | markdownify }}</div>
+            </div>
+          </li>
+          {%- endfor %}
+        </ol>
+
+        {%- if page.notes %}
+        <aside class="notes" aria-labelledby="notes-title">
+          <h2 id="notes-title" class="notes__title">Cook's notes</h2>
+          <ul>
+            {%- for note in page.notes %}
+            <li>{{ note | markdownify | remove: "<p>" | remove: "</p>" | strip }}</li>
+            {%- endfor %}
+          </ul>
+        </aside>
+        {%- endif %}
+
+        {%- if page.source %}
+        <p class="source">
+          Adapted from
+          <a href="{{ page.source.url }}" rel="noopener">{{ page.title }}</a>{% if page.source.author %}
+          by {{ page.source.author }}{% endif %} on {{ page.source.name }}.
+        </p>
+        {%- endif %}
+      </section>
+    </div>
+
+    {%- comment -%} Previous / next, wrapping around the alphabetical list. {%- endcomment -%}
+    {%- if recipes.size > 1 %}
+      {%- for r in recipes %}
+        {%- if r.url == page.url %}
+          {%- assign i = forloop.index0 %}
+        {%- endif %}
+      {%- endfor %}
+      {%- assign last = recipes.size | minus: 1 %}
+      {%- assign prev_i = i | minus: 1 %}
+      {%- if i == 0 %}{% assign prev_i = last %}{% endif %}
+      {%- assign next_i = i | plus: 1 %}
+      {%- if i == last %}{% assign next_i = 0 %}{% endif %}
+      {%- assign prev = recipes[prev_i] %}
+      {%- assign next = recipes[next_i] %}
+    <nav class="pager" aria-label="More recipes">
+      <a class="pager__link" href="{{ prev.url | relative_url }}" rel="prev">
+        <span class="eyebrow">Previous</span>
+        <span class="pager__title">{{ prev.title }}</span>
+      </a>
+      <a class="pager__link pager__link--next" href="{{ next.url | relative_url }}" rel="next">
+        <span class="eyebrow">Next</span>
+        <span class="pager__title">{{ next.title }}</span>
+      </a>
+    </nav>
+    {%- endif %}
+  </div>
+</article>
+
+{%- comment -%} Structured data so search engines recognize this as a recipe. {%- endcomment -%}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Recipe",
+  "name": {{ page.title | jsonify }},
+  "description": {{ page.summary | strip | jsonify }},
+  "image": {{ page.image | default: site.recipe_placeholder | absolute_url | jsonify }},
+  "recipeCategory": {{ page.category | jsonify }},
+  "prepTime": "PT{{ t.prep | plus: 0 }}M",
+  "cookTime": "PT{{ t.cook | plus: 0 }}M",
+  "totalTime": "PT{{ total }}M",
+  "recipeYield": {{ page.servings | append: " servings" | jsonify }},
+  "recipeIngredient": [
+    {%- for group in page.ingredients %}{% assign outer_last = forloop.last %}
+      {%- for ingredient in group.items %}
+    {{ ingredient.qty | append: " " | append: ingredient.item | strip | jsonify }}{% unless outer_last and forloop.last %},{% endunless %}
+      {%- endfor %}
+    {%- endfor %}
+  ],
+  "recipeInstructions": [
+    {%- for step in page.steps %}
+    {
+      "@type": "HowToStep",
+      "name": {{ step.title | jsonify }},
+      "text": {{ step.text | markdownify | strip_html | strip | jsonify }},
+      "url": {{ page.url | absolute_url | append: "#step-" | append: forloop.index | jsonify }}
+    }{% unless forloop.last %},{% endunless %}
+    {%- endfor %}
+  ]{% if page.source.url %},
+  "isBasedOn": {{ page.source.url | jsonify }}{% endif %}
+}
+</script>
+<script src="{{ '/assets/js/recipe.js' | relative_url }}" defer></script>

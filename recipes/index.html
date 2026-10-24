@@ -1,0 +1,50 @@
+---
+layout: default
+title: Recipes
+description: Dinners, desserts, and family favorites, written out step by step.
+---
+{%- assign recipes = site.recipes | sort: "title" -%}
+{%- assign categories = recipes | map: "category" | uniq | sort -%}
+
+<div class="container">
+  <header class="page-head">
+    <p class="eyebrow">File 001</p>
+    <h1 class="page-title">Recipes</h1>
+    <p class="page-head__lede">{{ page.description }}</p>
+  </header>
+
+  {%- if categories.size > 1 %}
+  <div class="chips" role="group" aria-label="Filter by category" data-filter hidden>
+    <button class="chip" type="button" data-category="" aria-pressed="true">All</button>
+    {%- for category in categories %}
+    <button class="chip" type="button" data-category="{{ category | slugify }}" aria-pressed="false">{{ category }}</button>
+    {%- endfor %}
+  </div>
+  {%- endif %}
+
+  <div class="card-grid" data-filter-target>
+    {%- for recipe in recipes %}
+      {% include recipe-card.html recipe=recipe %}
+    {%- endfor %}
+  </div>
+</div>
+
+<script>
+  // Category filter. Without JavaScript the chips stay hidden and every recipe shows.
+  (() => {
+    const bar = document.querySelector("[data-filter]");
+    if (!bar) return;
+    const cards = document.querySelectorAll("[data-filter-target] .card");
+    const chips = bar.querySelectorAll(".chip");
+    bar.hidden = false;
+    bar.addEventListener("click", (event) => {
+      const chip = event.target.closest(".chip");
+      if (!chip) return;
+      const wanted = chip.dataset.category;
+      chips.forEach((c) => c.setAttribute("aria-pressed", String(c === chip)));
+      cards.forEach((card) => {
+        card.hidden = wanted !== "" && card.dataset.category !== wanted;
+      });
+    });
+  })();
+</script>
