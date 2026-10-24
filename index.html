@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hawkins</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@700&family=Courier+Prime&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --red: #e50914;
+      --glow: #ff2a2a;
+      --bg: #050505;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3rem;
+      padding: 2rem 1rem;
+      background: radial-gradient(ellipse at center, #1a0202 0%, var(--bg) 70%);
+      color: #ddd;
+      font-family: "Courier Prime", monospace;
+      text-align: center;
+    }
+
+    h1 {
+      margin: 0;
+      font-family: "Libre Baskerville", Georgia, serif;
+      font-size: clamp(3rem, 14vw, 9rem);
+      letter-spacing: 0.08em;
+      color: transparent;
+      -webkit-text-stroke: 2px var(--red);
+      text-shadow: 0 0 12px var(--glow), 0 0 40px var(--red);
+      animation: flicker 6s infinite;
+    }
+
+    /* Joyce's Christmas lights */
+    .lights {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.6rem 1.1rem;
+      max-width: 40rem;
+    }
+
+    .light {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 1.4rem;
+      color: #bbb;
+    }
+
+    .light::before {
+      content: "";
+      width: 0.9rem;
+      height: 1.3rem;
+      border-radius: 50% 50% 45% 45%;
+      background: var(--c);
+      opacity: 0.2;
+      transition: opacity 0.15s, box-shadow 0.15s;
+    }
+
+    .light.on::before {
+      opacity: 1;
+      box-shadow: 0 0 14px 4px var(--c);
+    }
+
+    .space { width: 1.5rem; }
+
+    p {
+      margin: 0;
+      color: #888;
+      font-size: 0.95rem;
+    }
+
+    @keyframes flicker {
+      0%, 18%, 22%, 25%, 53%, 57%, 100% { opacity: 1; }
+      20%, 24%, 55% { opacity: 0.35; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      h1 { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <h1>HAWKINS</h1>
+
+  <div class="lights" id="lights" aria-label="Hello World"></div>
+
+  <p>Recipes, packing lists, and other things from the Upside Down. Coming soon.</p>
+
+  <script>
+    const message = "HELLO WORLD";
+    const colors = ["#ff3b3b", "#ffd23b", "#3bff6b", "#3bb8ff", "#ff7b3b", "#d33bff"];
+    const container = document.getElementById("lights");
+
+    const bulbs = [...message].map((ch, i) => {
+      const el = document.createElement("span");
+      if (ch === " ") {
+        el.className = "space";
+      } else {
+        el.className = "light";
+        el.textContent = ch;
+        el.style.setProperty("--c", colors[i % colors.length]);
+      }
+      container.appendChild(el);
+      return el;
+    }).filter(el => el.classList.contains("light"));
+
+    // Spell the message one bulb at a time, like Will through the wall
+    async function spell() {
+      const wait = ms => new Promise(r => setTimeout(r, ms));
+      while (true) {
+        for (const bulb of bulbs) {
+          bulb.classList.add("on");
+          await wait(450);
+          bulb.classList.remove("on");
+          await wait(150);
+        }
+        bulbs.forEach(b => b.classList.add("on"));
+        await wait(2500);
+        bulbs.forEach(b => b.classList.remove("on"));
+        await wait(1000);
+      }
+    }
+    spell();
+  </script>
+</body>
+</html>
