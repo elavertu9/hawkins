@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2.5"/>
+    </filter>
+    <!-- serif "H" in the same outlined neon style as the page title -->
+    <path id="h" d="M12 14H28V17H24V29H40V17H36V14H52V17H48V47H52V50H36V47H40V35H24V47H28V50H12V47H16V17H12Z" fill="none" stroke-linejoin="miter"/>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="#050505"/>
+  <use href="#h" stroke="#ff2a2a" stroke-width="4" filter="url(#glow)" opacity="0.9"/>
+  <use href="#h" stroke="#e50914" stroke-width="2.4"/>
+  <use href="#h" stroke="#ff9a9a" stroke-width="0.8"/>
+</svg>
