@@ -4,7 +4,11 @@
 {%- endcomment -%}
 {%- assign r = include.recipe -%}
 {%- assign total = r.time.prep | plus: r.time.cook | plus: r.time.additional -%}
-<article class="card" data-category="{{ r.category | slugify }}">
+{%- capture search -%}
+  {{ r.title }} {{ r.summary }} {{ r.category }}
+  {%- for group in r.ingredients %}{% for ingredient in group.items %} {{ ingredient.item }}{% endfor %}{% endfor %}
+{%- endcapture -%}
+<article class="card" data-category="{{ r.category | slugify }}" data-search="{{ search | strip_newlines | normalize_whitespace | downcase | escape }}">
   <div class="card__media">
     {%- if r.image %}
       <img src="{{ r.image | relative_url }}" alt="{{ r.image_alt | default: r.title | escape }}"

@@ -70,6 +70,7 @@
 
   document.addEventListener("keydown", (e) => {
     if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (e.target.closest("input, textarea, select, [contenteditable]")) return;
     typed = (typed + e.key).slice(-CODE.length);
     if (typed === CODE) {
       typed = "";

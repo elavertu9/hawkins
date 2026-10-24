@@ -13,38 +13,109 @@ description: Dinners, desserts, and family favorites, written out step by step.
     <p class="page-head__lede">{{ page.description }}</p>
   </header>
 
-  {%- if categories.size > 1 %}
-  <div class="chips" role="group" aria-label="Filter by category" data-filter hidden>
-    <button class="chip" type="button" data-category="" aria-pressed="true">All</button>
-    {%- for category in categories %}
-    <button class="chip" type="button" data-category="{{ category | slugify }}" aria-pressed="false">{{ category }}</button>
-    {%- endfor %}
+  <div class="finder" data-finder hidden>
+    <div class="finder__row">
+      <div class="search">
+        <label class="visually-hidden" for="recipe-search">Search recipes</label>
+        <span class="search__prompt" aria-hidden="true">&gt;</span>
+        <input class="search__input" id="recipe-search" type="search" placeholder="Search the files" autocomplete="off" spellcheck="false" data-search-input>
+      </div>
+      <p class="finder__status" role="status" data-status></p>
+    </div>
+    {%- if categories.size > 1 %}
+    <div class="chips" role="group" aria-label="Filter by category">
+      <button class="chip" type="button" data-category="" aria-pressed="true">All <span class="chip__count" data-count>{{ recipes.size }}</span></button>
+      {%- for category in categories %}
+      {%- assign in_category = recipes | where: "category", category %}
+      <button class="chip" type="button" data-category="{{ category | slugify }}" aria-pressed="false">{{ category }} <span class="chip__count" data-count>{{ in_category.size }}</span></button>
+      {%- endfor %}
+    </div>
+    {%- endif %}
   </div>
-  {%- endif %}
 
   <div class="card-grid" data-filter-target>
     {%- for recipe in recipes %}
       {% include recipe-card.html recipe=recipe %}
     {%- endfor %}
   </div>
+
+  <div class="empty" data-empty hidden>
+    <p class="empty__title">Nothing here but the Upside Down.</p>
+    <p>No recipes match that search.</p>
+    <button class="button" type="button" data-clear>Clear search</button>
+  </div>
 </div>
 
 <script>
-  // Category filter. Without JavaScript the chips stay hidden and every recipe shows.
+  // Search and category filter. Without JavaScript the tools stay hidden and
+  // every recipe shows. The search and filter are kept in the URL
+  // (?q=...&category=...) so the back button returns to the same results.
   (() => {
-    const bar = document.querySelector("[data-filter]");
-    if (!bar) return;
-    const cards = document.querySelectorAll("[data-filter-target] .card");
-    const chips = bar.querySelectorAll(".chip");
-    bar.hidden = false;
-    bar.addEventListener("click", (event) => {
+    const finder = document.querySelector("[data-finder]");
+    if (!finder) return;
+    const input = finder.querySelector("[data-search-input]");
+    const chips = [...finder.querySelectorAll(".chip")];
+    const status = finder.querySelector("[data-status]");
+    const empty = document.querySelector("[data-empty]");
+    const cards = [...document.querySelectorAll("[data-filter-target] .card")];
+
+    // Lowercase and drop accents, so "jalapeno" finds "jalapeño".
+    const fold = (text) => text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    cards.forEach((card) => { card.searchText = fold(card.dataset.search || ""); });
+
+    const params = new URLSearchParams(location.search);
+    input.value = params.get("q") || "";
+    let category = params.get("category") || "";
+    if (!chips.some((c) => c.dataset.category === category)) category = "";
+
+    const update = () => {
+      const words = fold(input.value).split(/\s+/).filter(Boolean);
+      const matchesSearch = (card) => words.every((w) => card.searchText.includes(w));
+      const found = cards.filter(matchesSearch);
+
+      // Counts reflect the search, so you can see where the matches are.
+      chips.forEach((chip) => {
+        const slug = chip.dataset.category;
+        chip.setAttribute("aria-pressed", String(slug === category));
+        chip.querySelector("[data-count]").textContent =
+          slug ? found.filter((c) => c.dataset.category === slug).length : found.length;
+      });
+
+      let shown = 0;
+      cards.forEach((card) => {
+        card.hidden = !(found.includes(card) && (!category || card.dataset.category === category));
+        if (!card.hidden) shown++;
+      });
+
+      const filtered = words.length || category;
+      status.textContent = filtered ? `Showing ${shown} of ${cards.length} recipes` : `${cards.length} recipes`;
+      empty.hidden = shown > 0;
+
+      const next = new URLSearchParams();
+      if (input.value.trim()) next.set("q", input.value.trim());
+      if (category) next.set("category", category);
+      const query = next.toString();
+      history.replaceState(null, "", query ? `?${query}` : location.pathname);
+    };
+
+    finder.addEventListener("click", (event) => {
       const chip = event.target.closest(".chip");
       if (!chip) return;
-      const wanted = chip.dataset.category;
-      chips.forEach((c) => c.setAttribute("aria-pressed", String(c === chip)));
-      cards.forEach((card) => {
-        card.hidden = wanted !== "" && card.dataset.category !== wanted;
-      });
+      category = chip.dataset.category;
+      update();
     });
+    input.addEventListener("input", update);
+    input.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && input.value) { input.value = ""; update(); }
+    });
+    empty.querySelector("[data-clear]").addEventListener("click", () => {
+      input.value = "";
+      category = "";
+      update();
+      input.focus();
+    });
+
+    finder.hidden = false;
+    update();
   })();
 </script>

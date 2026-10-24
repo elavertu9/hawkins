@@ -185,4 +185,4 @@ layout: default
   "isBasedOn": {{ page.source.url | jsonify }}{% endif %}
 }
 </script>
-<script src="{{ '/assets/js/recipe.js' | relative_url }}" defer></script>
+<script src="{{ '/assets/js/recipe.js' | relative_url }}?v={{ site.time | date: '%s' }}" defer></script>

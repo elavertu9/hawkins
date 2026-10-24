@@ -42,6 +42,15 @@
 
 [hidden] { display: none !important; }
 
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 html {
   -webkit-text-size-adjust: 100%;
   touch-action: manipulation; /* no double-tap zoom, so triple-tap reaches upside-down.js */
@@ -304,12 +313,118 @@ p { margin: 0; }
   color: var(--text-muted);
 }
 
+/* Search, category chips, and result count above the recipe grid.
+   The search reads like a typewriter prompt on a case file. */
+.finder {
+  display: grid;
+  gap: 1.25rem;
+  margin-bottom: 1.75rem;
+}
+.finder__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.75rem 1.5rem;
+}
+.search {
+  position: relative;
+  flex: 1 1 18rem;
+  max-width: 28rem;
+}
+.search__prompt {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 1.125rem;
+  color: var(--red-bright);
+  text-shadow: 0 0 10px var(--red-glow);
+  pointer-events: none;
+}
+.search__input {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  padding: 0.55rem 0.25rem 0.55rem 1.5rem;
+  font-family: var(--font-mono);
+  font-size: 1rem; /* 16px keeps iOS from zooming in on focus */
+  letter-spacing: 0.04em;
+  color: var(--text);
+  caret-color: var(--red-bright);
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--line-strong);
+  border-radius: 0;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.search__input::placeholder {
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.875rem;
+}
+.search__input:focus {
+  outline: none;
+  border-bottom-color: var(--red-bright);
+  box-shadow: 0 1px 0 var(--red-bright), 0 10px 18px -14px var(--red-glow);
+}
+.search__input::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  width: 0.875rem;
+  height: 0.875rem;
+  cursor: pointer;
+  background: linear-gradient(45deg, transparent 43%, var(--red-bright) 43% 57%, transparent 57%),
+              linear-gradient(-45deg, transparent 43%, var(--red-bright) 43% 57%, transparent 57%);
+}
+
 .chips {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
-  margin-bottom: 1.5rem;
 }
+.chip__count {
+  min-width: 1.5em;
+  padding: 0.05rem 0.4rem;
+  border-radius: 999px;
+  background: var(--line);
+  font-size: 0.75rem;
+  text-align: center;
+}
+.chip[aria-pressed="true"] .chip__count { background: rgba(0, 0, 0, 0.25); }
+
+.finder__status {
+  margin: 0;
+  padding-bottom: 0.6rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  color: var(--text-faint);
+}
+/* On phones the count drops below the chips instead of sitting between. */
+@media (max-width: 40rem) {
+  .finder { gap: 1rem; }
+  .finder__row { display: contents; }
+  .finder__status { order: 1; padding-bottom: 0; }
+}
+
+.empty {
+  padding: clamp(2rem, 6vw, 3.5rem) 1.5rem;
+  text-align: center;
+  color: var(--text-muted);
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius);
+}
+.empty__title {
+  margin-bottom: 0.25rem;
+  font-family: var(--font-display);
+  font-size: 1.375rem;
+  color: var(--text);
+}
+.empty .button { margin-top: 1.25rem; }
 
 /* ---------- Recipe cards ---------- */
 .card-grid {
