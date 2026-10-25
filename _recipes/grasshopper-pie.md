@@ -11,6 +11,7 @@ time:
   cook: 30
   additional: 180
 servings: 8
+calories: 355
 yield: 1 (10-inch) pie
 source:
   name: Simply Recipes

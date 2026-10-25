@@ -10,6 +10,7 @@ time:
   prep: 10
   cook: 30
 servings: 8
+calories: 438
 yield: 2 cups
 source:
   name: Allrecipes

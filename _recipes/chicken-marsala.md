@@ -10,6 +10,7 @@ time:
   prep: 10
   cook: 20
 servings: 4
+calories: 448
 source:
   name: Allrecipes
   author: Allrecipes Member

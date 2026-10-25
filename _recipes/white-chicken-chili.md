@@ -10,6 +10,7 @@ time:
   prep: 15
   cook: 35
 servings: 6
+calories: 383
 yield: About 8 cups
 source:
   name: Cooking Classy

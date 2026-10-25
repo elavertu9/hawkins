@@ -10,6 +10,8 @@ time:
   prep: 10
   cook: 40
 servings: 8
+calories: 300
+calories_estimated: true
 source:
   name: Recipe Roundup
   author: Recipe Wrangler (a Pampered Chef recipe)

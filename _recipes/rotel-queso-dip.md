@@ -10,6 +10,7 @@ time:
   prep: 5
   cook: 5
 servings: 20
+calories: 68
 source:
   name: RO*TEL
   author: RO*TEL Kitchens

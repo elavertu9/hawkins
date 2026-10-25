@@ -683,6 +683,16 @@ p { margin: 0; }
 .stat--wide { grid-column: span 2; }
 .stat--total { border-color: rgba(255, 64, 64, 0.45); }
 .stat--total dd { color: var(--amber); }
+/* Calories we estimated ourselves, because the source didn't list them */
+.stat--estimated { border-style: dashed; border-color: rgba(255, 200, 87, 0.45); }
+.stat__flag {
+  margin-left: 0.25rem;
+  padding: 0 0.3rem;
+  border: 1px solid currentColor;
+  border-radius: 3px;
+  font-size: 0.625rem;
+  color: var(--amber);
+}
 
 .recipe-body { display: grid; gap: clamp(2rem, 5vw, 3rem); align-items: start; }
 

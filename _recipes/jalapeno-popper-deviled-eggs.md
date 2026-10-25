@@ -10,6 +10,8 @@ time:
   prep: 20
   cook: 10
 servings: 20
+calories: 80
+calories_estimated: true
 yield: 20 deviled eggs
 source:
   name: Spicy Southern Kitchen

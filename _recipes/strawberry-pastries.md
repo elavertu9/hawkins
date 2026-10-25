@@ -11,6 +11,7 @@ time:
   cook: 18
   additional: 30
 servings: 12
+calories: 60
 yield: 12 pastries
 source:
   name: Pampered Chef

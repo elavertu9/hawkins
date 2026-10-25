@@ -10,6 +10,7 @@ time:
   prep: 20
   cook: 20
 servings: 4
+calories: 350
 yield: 16 tacos
 source:
   name: The Girl on Bloor

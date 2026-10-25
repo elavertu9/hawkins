@@ -34,6 +34,8 @@ automatically on every push to `main`. There is no build step to run yourself.
      cook: 120
      additional: 0             # optional, shown as "Rest"
    servings: 6
+   calories: 420               # per serving, from the source
+   calories_estimated: true    # only if you estimated it; shows "~420 EST."
    yield: 1 large pot          # optional
    source:                     # optional
      name: Allrecipes

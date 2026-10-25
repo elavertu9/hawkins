@@ -11,6 +11,7 @@ time:
   cook: 20
   additional: 60
 servings: 36
+calories: 110
 yield: 3 dozen cookies
 source:
   name: Land O'Lakes

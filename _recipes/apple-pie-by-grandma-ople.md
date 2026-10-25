@@ -10,6 +10,7 @@ time:
   prep: 30
   cook: 60
 servings: 8
+calories: 373
 yield: 1 (9-inch) pie
 source:
   name: Allrecipes

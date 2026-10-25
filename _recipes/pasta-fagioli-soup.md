@@ -10,6 +10,7 @@ time:
   prep: 15
   cook: 35
 servings: 6
+calories: 540
 source:
   name: Cooking Classy
   author: Jaclyn

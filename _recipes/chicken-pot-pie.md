@@ -11,6 +11,7 @@ time:
   cook: 50
   additional: 10
 servings: 8
+calories: 412
 yield: 1 (9-inch) pie
 source:
   name: Allrecipes

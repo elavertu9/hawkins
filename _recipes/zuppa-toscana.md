@@ -10,6 +10,8 @@ time:
   prep: 15
   cook: 45
 servings: 4–6
+calories: 500
+calories_estimated: true
 source:
   name: Food.com
   author: Cycle Michael
@@ -79,4 +81,5 @@ notes:
   - To temper the cream, whisk a ladle of hot broth into it before adding it to the pot, so it doesn't curdle.
   - If your broth tastes weak, add a chicken bouillon envelope.
   - The source lists 1 hour total. The prep and cook split is an estimate.
+  - The calorie estimate assumes 6 servings.
 ---

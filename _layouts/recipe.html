@@ -26,12 +26,27 @@ layout: default
 
         <dl class="stats">
           <div class="stat"><dt>Prep</dt><dd>{% include duration.html minutes=t.prep %}</dd></div>
+          {%- if t.cook > 0 %}
           <div class="stat"><dt>Cook</dt><dd>{% include duration.html minutes=t.cook %}</dd></div>
+          {%- endif %}
           {%- if t.additional %}
           <div class="stat"><dt>Rest</dt><dd>{% include duration.html minutes=t.additional %}</dd></div>
           {%- endif %}
           <div class="stat stat--total"><dt>Total</dt><dd>{% include duration.html minutes=total %}</dd></div>
           <div class="stat"><dt>Serves</dt><dd>{{ page.servings }}</dd></div>
+          {%- if page.calories %}
+          {%- if page.calories_estimated %}
+          <div class="stat stat--estimated" title="Estimated from the ingredients. The original recipe doesn't list calories.">
+            <dt>Calories <span class="stat__flag">Est.</span></dt>
+            <dd>~{{ page.calories }}<span class="visually-hidden"> per serving, estimated</span></dd>
+          </div>
+          {%- else %}
+          <div class="stat" title="Per serving, from the source">
+            <dt>Calories</dt>
+            <dd>{{ page.calories }}<span class="visually-hidden"> per serving</span></dd>
+          </div>
+          {%- endif %}
+          {%- endif %}
           {%- if page.yield %}
           <div class="stat stat--wide"><dt>Makes</dt><dd>{{ page.yield }}</dd></div>
           {%- endif %}
@@ -103,10 +118,13 @@ layout: default
           {%- endfor %}
         </ol>
 
-        {%- if page.notes %}
+        {%- if page.notes or page.calories_estimated %}
         <aside class="notes" aria-labelledby="notes-title">
           <h2 id="notes-title" class="notes__title">Cook's notes</h2>
           <ul>
+            {%- if page.calories_estimated %}
+            <li>Calories (about {{ page.calories }} per serving) are estimated from the ingredients. The original recipe doesn't list them.</li>
+            {%- endif %}
             {%- for note in page.notes %}
             <li>{{ note | markdownify | remove: "<p>" | remove: "</p>" | strip }}</li>
             {%- endfor %}
@@ -165,6 +183,9 @@ layout: default
   "cookTime": "PT{{ t.cook | plus: 0 }}M",
   "totalTime": "PT{{ total }}M",
   "recipeYield": {{ page.servings | append: " servings" | jsonify }},
+  {%- if page.calories and page.calories_estimated != true %}
+  "nutrition": { "@type": "NutritionInformation", "calories": {{ page.calories | append: " calories" | jsonify }} },
+  {%- endif %}
   "recipeIngredient": [
     {%- for group in page.ingredients %}{% assign outer_last = forloop.last %}
       {%- for ingredient in group.items %}

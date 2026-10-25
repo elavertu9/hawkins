@@ -10,6 +10,7 @@ time:
   prep: 30
   cook: 60
 servings: 12
+calories: 489
 source:
   name: Allrecipes
   author: SETHALLEN

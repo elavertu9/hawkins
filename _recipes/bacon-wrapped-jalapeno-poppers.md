@@ -10,6 +10,7 @@ time:
   prep: 25
   cook: 25
 servings: 12
+calories: 198
 yield: 24 poppers
 source:
   name: Dinner at the Zoo

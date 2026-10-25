@@ -10,6 +10,7 @@ time:
   prep: 5
   cook: 15
 servings: 4
+calories: 234
 source:
   name: The Seasoned Mom
   author: Blair Lonergan

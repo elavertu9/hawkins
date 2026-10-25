@@ -10,6 +10,8 @@ time:
   prep: 15
   cook: 35
 servings: 48
+calories: 80
+calories_estimated: true
 yield: About 4 dozen cookies
 source:
   name: Pampered Chef
