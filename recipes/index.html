@@ -21,6 +21,7 @@ description: Dinners, desserts, and family favorites, written out step by step.
         <input class="search__input" id="recipe-search" type="search" placeholder="Search the files" autocomplete="off" spellcheck="false" data-search-input>
       </div>
       <p class="finder__status" role="status" data-status></p>
+      <button class="button button--gate" type="button" data-random>Open the gate</button>
     </div>
     {%- if categories.size > 1 %}
     <div class="chips" role="group" aria-label="Filter by category">
@@ -113,6 +114,28 @@ description: Dinners, desserts, and family favorites, written out step by step.
       category = "";
       update();
       input.focus();
+    });
+
+    // "Open the gate" goes to a random recipe from the ones showing, so it
+    // respects the search and filter. It skips the last one it picked.
+    const gate = finder.querySelector("[data-random]");
+    gate.addEventListener("click", () => {
+      const showing = cards.filter((card) => !card.hidden);
+      const pool = showing.length ? showing : cards;
+      let last = null;
+      try { last = sessionStorage.getItem("hawkins:last-random"); } catch (e) {}
+      const choices = pool.length > 1 ? pool.filter((c) => c.querySelector(".card__link").href !== last) : pool;
+      const href = choices[Math.floor(Math.random() * choices.length)].querySelector(".card__link").href;
+      try { sessionStorage.setItem("hawkins:last-random", href); } catch (e) {}
+      const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+      gate.classList.add("is-opening");
+      gate.textContent = "Opening…";
+      setTimeout(() => { location.href = href; }, still ? 0 : 450);
+    });
+    // Reset the button if the page comes back from the back/forward cache.
+    addEventListener("pageshow", () => {
+      gate.classList.remove("is-opening");
+      gate.textContent = "Open the gate";
     });
 
     finder.hidden = false;
