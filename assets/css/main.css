@@ -583,7 +583,7 @@ p { margin: 0; }
 /* Section "case files" */
 .files {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 26rem), 1fr));
   gap: clamp(1rem, 2.5vw, 1.5rem);
   margin: 0;
   padding: 0;
@@ -907,6 +907,239 @@ p { margin: 0; }
   .step__num { width: 3rem; height: 3rem; }
 }
 
+/* ---------- Cook mode (see recipe.js) ---------- */
+.toggle--cook { border-color: var(--red-bright); }
+
+.is-cooking { overflow: hidden; }
+.cook {
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  color: var(--text);
+  background:
+    radial-gradient(ellipse 90% 60% at 50% 0%, rgba(255, 30, 30, 0.14), transparent 70%),
+    var(--bg);
+  border: 0;
+}
+.cook[open] {
+  display: grid;
+  grid-template-rows: auto auto 1fr auto;
+  grid-template-columns: minmax(0, 1fr);
+}
+.cook::backdrop { background: var(--bg); }
+
+.cook__bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: calc(env(safe-area-inset-top, 0px) + 0.75rem) var(--gutter) 0.75rem;
+  border-bottom: 1px solid var(--line);
+}
+.cook__heading { flex: 1; min-width: 0; }
+.cook__recipe {
+  margin: 0;
+  overflow: hidden;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.cook__count {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--red-bright);
+}
+.cook__close {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  font-size: 1.75rem;
+  line-height: 1;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid var(--line-strong);
+  border-radius: 50%;
+  cursor: pointer;
+}
+.cook__close:hover { border-color: var(--red-bright); box-shadow: 0 0 16px var(--red-glow); }
+
+.cook__progress { height: 3px; background: var(--line); }
+.cook__progress span {
+  display: block;
+  height: 100%;
+  background: var(--red-bright);
+  box-shadow: 0 0 10px var(--red-glow);
+  transition: width 0.3s ease;
+}
+
+.cook__stage {
+  grid-row: 3;
+  grid-column: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  display: grid;
+  align-items: center;
+  padding: clamp(1.5rem, 5vh, 3rem) var(--gutter);
+}
+.cook__step {
+  width: 100%;
+  max-width: 44rem;
+  margin: 0 auto;
+}
+.cook__num {
+  margin: 0 0 0.5rem;
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 12vw, 5rem);
+  line-height: 1;
+  color: transparent;
+  -webkit-text-stroke: 1.5px var(--red-bright);
+  text-shadow: 0 0 24px var(--red-glow);
+}
+.cook__title {
+  margin: 0 0 0.75rem;
+  font-size: clamp(1.375rem, 4vw, 2rem);
+}
+.cook__text {
+  font-size: clamp(1.25rem, 3.4vw, 1.625rem);
+  line-height: 1.55;
+}
+.cook__text p { margin: 0; }
+.cook__text p + p { margin-top: 1rem; }
+.cook__text strong { font-weight: 600; color: var(--amber); }
+.cook__text a { color: var(--text); }
+
+.cook__step.is-enter-next { animation: cook-in-next 0.28s ease; }
+.cook__step.is-enter-prev { animation: cook-in-prev 0.28s ease; }
+@keyframes cook-in-next { from { opacity: 0; transform: translateX(2rem); } }
+@keyframes cook-in-prev { from { opacity: 0; transform: translateX(-2rem); } }
+
+/* A bold time in cook mode: tap to start a timer. */
+.timer-start {
+  display: inline;
+  padding: 0 0.35em;
+  font: inherit;
+  font-weight: 600;
+  color: var(--amber);
+  background: rgba(255, 200, 87, 0.1);
+  border: 1px dashed rgba(255, 200, 87, 0.6);
+  border-radius: 6px;
+  cursor: pointer;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+.timer-start::before { content: "⏱\FE0E "; font-size: 0.85em; }
+.timer-start:hover { background: rgba(255, 200, 87, 0.2); }
+.timer-start.is-running { border-style: solid; background: rgba(255, 200, 87, 0.2); }
+
+.cook__ingredients {
+  grid-row: 3;
+  grid-column: 1;
+  z-index: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 1.25rem var(--gutter) 2rem;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+}
+.cook__ingredients > * { max-width: 44rem; margin-left: auto; margin-right: auto; }
+.cook__panel-title {
+  margin-bottom: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.cook__ingredients .check { font-size: 1.125rem; }
+
+.cook__nav {
+  display: grid;
+  grid-row: 4;
+  grid-template-columns: 1fr 2fr;
+  gap: 0.75rem;
+  padding: 0.75rem var(--gutter) calc(env(safe-area-inset-bottom, 0px) + 0.75rem);
+  border-top: 1px solid var(--line);
+}
+.cook__nav .button { justify-content: center; padding: 1rem; font-size: 1rem; }
+.cook__next { background: var(--red); border-color: var(--red); color: #fff; }
+.cook__next:hover { background: var(--red-bright); }
+.cook__prev:disabled { opacity: 0.35; cursor: default; box-shadow: none; color: var(--text); border-color: var(--line-strong); }
+
+/* Running timers. They float at the bottom of the page, and sit just above
+   the Back / Next buttons while cook mode is open. */
+.timers {
+  position: fixed;
+  right: var(--gutter);
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 1rem);
+  z-index: 60;
+  display: grid;
+  gap: 0.5rem;
+  width: min(20rem, calc(100% - 2 * var(--gutter)));
+}
+.cook .timers { bottom: calc(env(safe-area-inset-bottom, 0px) + 5.5rem); }
+.cook:has(.timers:not([hidden])) .cook__stage { padding-bottom: 6rem; }
+.timer {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.5rem 0.5rem 1rem;
+  background: var(--surface-2);
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+.timer__label {
+  overflow: hidden;
+  font-size: 0.875rem;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--text-muted);
+}
+.timer__time {
+  font-family: var(--font-mono);
+  font-size: 1.125rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--amber);
+}
+.timer__cancel {
+  min-width: 2.25rem;
+  height: 2.25rem;
+  padding: 0 0.5rem;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 1.125rem;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  cursor: pointer;
+}
+.timer.is-done {
+  border-color: var(--red-bright);
+  box-shadow: 0 0 24px var(--red-glow);
+  animation: timer-alarm 1s steps(2) infinite;
+}
+.timer.is-done .timer__time { color: var(--red-bright); }
+.timer.is-done .timer__cancel { background: var(--red); border-color: var(--red); font-size: 0.875rem; }
+@keyframes timer-alarm { 50% { background: rgba(255, 42, 42, 0.25); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .cook__step.is-enter-next,
+  .cook__step.is-enter-prev,
+  .timer.is-done { animation: none; }
+}
+
 /* ---------- Upside Down (easter egg, see upside-down.js) ---------- */
 /* Flipping each part and reversing their order looks the same as flipping the
    whole page, but leaves body untransformed so fixed overlays still work. */
@@ -1008,6 +1241,8 @@ p { margin: 0; }
   .recipe-hero__media,
   .section-head__actions,
   .directions__hint,
+  .cook,
+  .timers,
   .pager { display: none !important; }
   .recipe-hero__title,
   .page-title { color: #000; text-shadow: none; }

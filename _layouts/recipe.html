@@ -99,11 +99,12 @@ layout: default
           <h2 id="directions-title">Directions</h2>
           <span class="section-head__count">{{ page.steps.size }} steps</span>
           <div class="section-head__actions">
+            <button class="toggle toggle--cook" type="button" data-cook hidden>Cook mode</button>
             <button class="toggle" type="button" data-wake aria-pressed="false" hidden>Keep screen on</button>
             <button class="toggle" type="button" data-reset hidden>Start over</button>
           </div>
         </div>
-        <p class="directions__hint">Tap a step to mark it done.</p>
+        <p class="directions__hint">Tap a step to mark it done. Cook mode shows one step at a time, with timers.</p>
 
         <ol class="steps">
           {%- for step in page.steps %}
@@ -141,6 +142,59 @@ layout: default
         {%- endif %}
       </section>
     </div>
+
+    {%- comment -%}
+      Cook mode: one step at a time, full screen. recipe.js fills in the step
+      and turns bold times like "10 minutes" into timer buttons.
+    {%- endcomment -%}
+    <dialog class="cook" data-cook-dialog aria-labelledby="cook-count">
+      <div class="cook__bar">
+        <div class="cook__heading">
+          <p class="cook__recipe">{{ page.title }}</p>
+          <p class="cook__count" id="cook-count" data-cook-count></p>
+        </div>
+        <button class="toggle" type="button" data-cook-ingredients aria-expanded="false" aria-controls="cook-ingredients">Ingredients</button>
+        <button class="cook__close" type="button" data-cook-close aria-label="Close cook mode">&times;</button>
+      </div>
+      <div class="cook__progress" aria-hidden="true"><span data-cook-progress></span></div>
+
+      <div class="cook__stage" data-cook-stage>
+        <div class="cook__step" data-cook-step aria-live="polite">
+          <p class="cook__num" data-cook-num></p>
+          <h2 class="cook__title" data-cook-title></h2>
+          <div class="cook__text" data-cook-text></div>
+        </div>
+      </div>
+
+      <div class="cook__ingredients" id="cook-ingredients" data-cook-panel hidden>
+        <h2 class="cook__panel-title">Ingredients</h2>
+        {%- for group in page.ingredients %}
+          {%- assign group_index = forloop.index %}
+          {%- if group.group %}
+          <h3 class="ingredients__group">{{ group.group }}</h3>
+          {%- endif %}
+          <ul class="checklist">
+            {%- for ingredient in group.items %}
+            <li>
+              <label class="check">
+                <input type="checkbox" data-mirror="{{ group_index }}-{{ forloop.index }}">
+                <span class="check__box" aria-hidden="true"></span>
+                <span class="check__text">
+                  {%- if ingredient.qty != "" %}<span class="qty">{{ ingredient.qty }}</span> {% endif -%}
+                  {{ ingredient.item }}
+                </span>
+              </label>
+            </li>
+            {%- endfor %}
+          </ul>
+        {%- endfor %}
+      </div>
+
+      <div class="cook__nav">
+        <button class="button cook__prev" type="button" data-cook-prev>Back</button>
+        <button class="button cook__next" type="button" data-cook-next>Next</button>
+      </div>
+    </dialog>
 
     {%- comment -%} Previous / next, wrapping around the alphabetical list. {%- endcomment -%}
     {%- if recipes.size > 1 %}

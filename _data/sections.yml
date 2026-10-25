@@ -14,3 +14,17 @@
   url: /packing/
   blurb: What to bring, so nothing gets left behind in the Upside Down.
   status: soon
+
+- id: watchlist
+  title: Watchlist
+  file: "003"
+  url: /watchlist/
+  blurb: TV shows and movies worth watching, rated from the couch in the basement.
+  status: soon
+
+- id: drinks
+  title: Cocktails & Drinks
+  file: "004"
+  url: /drinks/
+  blurb: Cocktails and drinks to mix up, from Starcourt slushies to grown-up nightcaps.
+  status: soon
