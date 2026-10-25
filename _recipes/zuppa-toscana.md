@@ -24,6 +24,7 @@ ingredients:
         item: Italian sausage (mild works well)
       - qty: "1 large"
         item: Vidalia onion, chopped
+        shop: sweet onion
       - qty: "2 cloves"
         item: garlic, minced (or 1 tablespoon jarred minced garlic)
       - qty: "½ teaspoon"
@@ -48,6 +49,7 @@ ingredients:
         item: kale or Swiss chard, chopped (packed)
       - qty: "4 slices"
         item: cooked bacon, chopped
+        shop: bacon
       - qty: "1 cup"
         item: heavy whipping cream, tempered
 

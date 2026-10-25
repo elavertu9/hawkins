@@ -36,6 +36,7 @@ ingredients:
         item: cocoa
       - qty: "1 cup"
         item: sour milk
+        shop: milk
       - qty: "1 teaspoon"
         item: vanilla
       - qty: "1 cup"
@@ -56,6 +57,7 @@ ingredients:
         item: vanilla
       - qty: "½ cup"
         item: margarine or butter
+        shop: butter
       - qty: "½ cup"
         item: shortening
 

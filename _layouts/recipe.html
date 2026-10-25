@@ -51,6 +51,10 @@ layout: default
           <div class="stat stat--wide"><dt>Makes</dt><dd>{{ page.yield }}</dd></div>
           {%- endif %}
         </dl>
+
+        <div class="recipe-hero__actions">
+          <button class="button button--plan" type="button" data-plan-add="{{ page.slug }}" data-plan-title="{{ page.title | escape }}" aria-pressed="false" hidden></button>
+        </div>
       </div>
 
       <figure class="recipe-hero__media">

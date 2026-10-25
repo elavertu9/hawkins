@@ -35,6 +35,7 @@ ingredients:
     items:
       - qty: "1 tub (8 ounces)"
         item: whipped topping (or 2 cups whipped cream)
+        shop: frozen whipped topping
 
 steps:
   - title: Bake the cake

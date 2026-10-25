@@ -24,6 +24,7 @@ ingredients:
         item: boneless chuck roast
       - qty: ""
         item: kosher salt and freshly ground black pepper, to taste
+        shop: [kosher salt, black pepper]
       - qty: "¼–½ cup"
         item: all-purpose flour, as needed (optional)
       - qty: "3 tablespoons"
@@ -34,6 +35,7 @@ ingredients:
         item: beef broth
       - qty: "1 packet"
         item: Hidden Valley Original Ranch seasoning mix (or 3 tablespoons from the shaker)
+        shop: ranch seasoning mix
       - qty: "1 stick (4 ounces)"
         item: unsalted butter
       - qty: "8 whole"

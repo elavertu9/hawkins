@@ -22,6 +22,7 @@ ingredients:
     items:
       - qty: "2"
         item: chicken breasts, finely diced
+        shop: boneless skinless chicken breasts
       - qty: "2 tablespoons"
         item: hoisin sauce
       - qty: "1 tablespoon"

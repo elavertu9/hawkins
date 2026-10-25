@@ -28,6 +28,7 @@ ingredients:
     items:
       - qty: ""
         item: croutons, dried bread, or toast
+        shop: croutons
       - qty: ""
         item: shredded Parmesan cheese
 

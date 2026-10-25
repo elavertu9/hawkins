@@ -15,6 +15,11 @@
             </li>
           {%- endif %}
         {%- endfor %}
+        <li>
+          <a class="plan-link" href="{{ '/plan/' | relative_url }}" {% if page.url == "/plan/" %}aria-current="page"{% endif %}>
+            <span class="plan-link__label">Plan</span><span class="plan-link__count" data-plan-count hidden></span>
+          </a>
+        </li>
       </ul>
     </nav>
   </div>

@@ -32,6 +32,7 @@ ingredients:
         item: mayonnaise
       - qty: "1 packet"
         item: ranch dressing mix
+        shop: ranch seasoning mix
   - group: Topping
     items:
       - qty: "1 small bag"

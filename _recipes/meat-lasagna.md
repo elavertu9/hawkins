@@ -24,6 +24,7 @@ ingredients:
         item: lean ground beef
       - qty: ""
         item: salt, pepper, garlic powder, onion powder, and dried basil, to taste
+        shop: [salt, black pepper, garlic powder, onion powder, dried basil]
       - qty: "1–1½ jars"
         item: tomato basil pasta sauce (such as Classico), depending on how saucy you like it
       - qty: "1 can (about 28 ounces)"
@@ -46,6 +47,7 @@ ingredients:
         item: no-boil lasagna noodles (such as Barilla)
       - qty: ""
         item: shredded mozzarella or 5-cheese Italian blend, for the top
+        shop: shredded 5-cheese Italian blend
 
 steps:
   - title: Brown the meat

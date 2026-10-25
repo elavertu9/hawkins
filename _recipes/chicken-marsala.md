@@ -31,6 +31,7 @@ ingredients:
     items:
       - qty: "4 medium"
         item: skinless, boneless chicken breast halves, pounded ¼ inch thick
+        shop: boneless skinless chicken breasts
       - qty: "4 tablespoons"
         item: butter
       - qty: "4 tablespoons"

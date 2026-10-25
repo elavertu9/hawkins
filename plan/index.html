@@ -1,0 +1,124 @@
+---
+layout: default
+title: Meal Plan
+description: Pick a few recipes and get one shopping list, sorted by aisle.
+---
+{%- assign recipes = site.recipes | sort: "title" -%}
+{%- assign categories = recipes | map: "category" | uniq | sort -%}
+
+<div class="container plan-page" data-plan-page>
+  <header class="page-head">
+    <p class="eyebrow">File 001 · Supply run</p>
+    <h1 class="page-title">Meal Plan</h1>
+    <p class="page-head__lede">{{ page.description }}</p>
+  </header>
+
+  <noscript>
+    <p class="empty">The meal plan needs JavaScript turned on.</p>
+  </noscript>
+
+  <div class="plan-shared" data-plan-shared hidden>
+    <p><strong>Someone shared a meal plan with you</strong> <span data-plan-shared-summary></span></p>
+    <div class="plan-shared__actions">
+      <button class="button" type="button" data-plan-shared-use>Use shared plan</button>
+      <button class="toggle" type="button" data-plan-shared-keep>Keep mine</button>
+    </div>
+  </div>
+
+  <div class="plan-layout" data-plan-ui hidden>
+    <section class="plan-recipes" aria-labelledby="plan-recipes-title">
+      <div class="panel">
+        <div class="section-head">
+          <h2 id="plan-recipes-title">Recipes</h2>
+          <span class="section-head__count" data-plan-recipe-count></span>
+        </div>
+
+        <ul class="plan-list" data-plan-list></ul>
+
+        <div class="plan-empty" data-plan-empty hidden>
+          <p class="empty__title">Nothing planned yet.</p>
+          <p>Add recipes here, or tap <strong>+ Plan</strong> on any recipe.</p>
+        </div>
+
+        <label class="plan-add">
+          <span class="visually-hidden">Add a recipe</span>
+          <select data-plan-select>
+            <option value="">+ Add a recipe…</option>
+            {%- for category in categories %}
+            <optgroup label="{{ category }}">
+              {%- for r in recipes %}{% if r.category == category %}
+              <option value="{{ r.slug }}">{{ r.title }}</option>
+              {%- endif %}{% endfor %}
+            </optgroup>
+            {%- endfor %}
+          </select>
+        </label>
+
+        <div class="plan-actions" data-plan-actions>
+          <button class="toggle" type="button" data-plan-share>Share plan</button>
+          <button class="toggle" type="button" data-plan-clear>Clear plan</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="shopping" aria-labelledby="shopping-title">
+      <div class="section-head">
+        <h2 id="shopping-title">Shopping list</h2>
+        <span class="section-head__count" data-plan-item-count></span>
+        <div class="section-head__actions" data-plan-list-tools>
+          <button class="toggle" type="button" data-plan-copy>Copy list</button>
+          <button class="toggle" type="button" data-plan-print>Print</button>
+          <button class="toggle" type="button" data-plan-hide-checked aria-pressed="false">Hide checked</button>
+          <button class="toggle" type="button" data-plan-uncheck hidden>Uncheck all</button>
+        </div>
+      </div>
+      <p class="directions__hint">Check off what's in the cart. Tap <strong>Pantry</strong> on anything you always have, and it moves to Probably have for every plan.</p>
+
+      <p class="pantry-summary" data-plan-pantry-summary hidden>
+        <span data-plan-pantry-summary-text></span>
+        <button class="pantry-summary__review" type="button" data-plan-pantry-review>Review</button>
+      </p>
+
+      <form class="plan-extra" data-plan-extra-form>
+        <label class="visually-hidden" for="plan-extra">Add your own item</label>
+        <span class="search__prompt" aria-hidden="true">+</span>
+        <input class="search__input" id="plan-extra" type="text" placeholder="Add an item (paper towels…)" autocomplete="off" enterkeyhint="done" data-plan-extra-input>
+        <button class="toggle" type="submit">Add</button>
+      </form>
+
+      <div class="shopping__aisles" data-plan-aisles></div>
+
+      <details class="pantry" data-plan-pantry hidden>
+        <summary>Probably have <span class="chip__count" data-plan-pantry-count></span></summary>
+        <p class="pantry__hint">Staples you said you always have. They stay off the list and out of Copy list. Tap <strong>Need it</strong> to put one back.</p>
+        <ul class="checklist" data-plan-pantry-list></ul>
+      </details>
+    </section>
+  </div>
+
+  <div class="plan-toast" role="status" data-plan-toast>
+    <span data-plan-toast-text></span>
+    <button class="plan-toast__undo" type="button" data-plan-toast-action hidden>Undo</button>
+  </div>
+</div>
+
+{%- comment -%} Every recipe's ingredients, for building the shopping list. {%- endcomment -%}
+<script type="application/json" id="plan-data">
+[
+{%- for r in recipes %}
+  {
+    "slug": {{ r.slug | jsonify }},
+    "title": {{ r.title | jsonify }},
+    "url": {{ r.url | relative_url | jsonify }},
+    "servings": {{ r.servings | default: 0 | jsonify }},
+    "ingredients": [
+      {%- for group in r.ingredients %}{% assign outer_last = forloop.last %}
+        {%- for ingredient in group.items %}
+      [{{ ingredient.qty | default: "" | jsonify }}, {{ ingredient.item | strip | jsonify }}, {{ ingredient.shop | jsonify }}, {{ ingredient.shop_aisle | jsonify }}]{% unless outer_last and forloop.last %},{% endunless %}
+        {%- endfor %}
+      {%- endfor %}
+    ]
+  }{% unless forloop.last %},{% endunless %}
+{%- endfor %}
+]
+</script>

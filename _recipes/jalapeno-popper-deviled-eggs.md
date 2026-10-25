@@ -25,10 +25,12 @@ ingredients:
         item: bacon, chopped
       - qty: "1"
         item: jalapeño, seeded and chopped
+        shop: jalapeño peppers
       - qty: "1 clove"
         item: garlic, minced
       - qty: "10"
         item: hard-boiled eggs
+        shop: eggs
       - qty: "3 ounces"
         item: cream cheese, softened
       - qty: "3 tablespoons"
@@ -45,6 +47,7 @@ ingredients:
     items:
       - qty: "1"
         item: jalapeño, thinly sliced
+        shop: jalapeño peppers
 
 steps:
   - title: Crisp the bacon

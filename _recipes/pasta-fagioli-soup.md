@@ -51,6 +51,7 @@ ingredients:
         item: dried marjoram
       - qty: ""
         item: salt and freshly ground black pepper
+        shop: [salt, black pepper]
   - group: Pasta and beans
     items:
       - qty: "1 cup"
@@ -65,6 +66,7 @@ ingredients:
         item: minced fresh parsley
       - qty: ""
         item: finely shredded Romano or Parmesan cheese, for serving
+        shop: Parmesan cheese
 
 steps:
   - title: Brown the beef

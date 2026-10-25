@@ -33,6 +33,7 @@ ingredients:
         item: parsley
       - qty: "3 tablespoons"
         item: minced onion (or 1½ teaspoons onion powder)
+        shop: dried minced onion
       - qty: "2 cloves"
         item: garlic, minced
       - qty: "1"

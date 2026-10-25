@@ -37,6 +37,7 @@ ingredients:
         item: hot water
       - qty: "6 tablespoons"
         item: low-sodium soy sauce (or gluten-free tamari)
+        shop: low-sodium soy sauce
       - qty: "3 tablespoons"
         item: packed light brown sugar
       - qty: "1½ tablespoons"

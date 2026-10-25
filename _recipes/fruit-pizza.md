@@ -39,6 +39,7 @@ ingredients:
         item: halved or quartered fresh strawberries (6 to 8 medium)
       - qty: "1 cup"
         item: fresh or frozen blueberries
+        shop: blueberries
       - qty: "½ cup"
         item: apple jelly
 

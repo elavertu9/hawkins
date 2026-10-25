@@ -24,6 +24,7 @@ ingredients:
         item: crushed tomatoes
       - qty: ""
         item: salt, pepper, garlic powder, onion powder, and dried basil, to taste
+        shop: [salt, black pepper, garlic powder, onion powder, dried basil]
   - group: Vegetables
     items:
       - qty: "2"
@@ -34,6 +35,7 @@ ingredients:
         item: sliced mushrooms
       - qty: ""
         item: olive oil, plus salt, pepper, garlic powder, onion powder, and dried basil
+        shop: [olive oil, salt, black pepper, garlic powder, onion powder, dried basil]
   - group: Ricotta filling
     items:
       - qty: "1 container (30 ounces)"
@@ -50,6 +52,7 @@ ingredients:
         item: no-boil lasagna noodles (such as Barilla)
       - qty: ""
         item: shredded mozzarella or 5-cheese Italian blend, for the top
+        shop: shredded 5-cheese Italian blend
 
 steps:
   - title: Simmer the sauce

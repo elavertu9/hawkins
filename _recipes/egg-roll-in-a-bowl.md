@@ -29,6 +29,7 @@ ingredients:
         item: rice vinegar
       - qty: "¼ cup"
         item: less-sodium soy sauce
+        shop: low-sodium soy sauce
       - qty: "2 tablespoons"
         item: hoisin sauce (add about 1 tablespoon more for a sweeter, richer sauce)
       - qty: "2 teaspoons"
@@ -43,12 +44,14 @@ ingredients:
         item: green onions, thinly sliced
       - qty: ""
         item: kosher salt and ground black pepper, to taste
+        shop: [kosher salt, black pepper]
   - group: Optional garnish
     items:
       - qty: ""
         item: >-
           sliced green onions, chives, cilantro, toasted sesame seeds, chopped
           peanuts, crunchy chow mein noodles, or a squeeze of lime
+        shop: green onions
 
 steps:
   - title: Brown the meat

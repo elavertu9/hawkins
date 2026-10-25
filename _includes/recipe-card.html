@@ -9,6 +9,7 @@
   {%- for group in r.ingredients %}{% for ingredient in group.items %} {{ ingredient.item }}{% endfor %}{% endfor %}
 {%- endcapture -%}
 <article class="card" data-category="{{ r.category | slugify }}" data-search="{{ search | strip_newlines | normalize_whitespace | downcase | escape }}">
+  <button class="card__plan" type="button" data-plan-add="{{ r.slug }}" data-plan-title="{{ r.title | escape }}" aria-pressed="false" hidden></button>
   <div class="card__media">
     {%- if r.image %}
       <img src="{{ r.image | relative_url }}" alt="{{ r.image_alt | default: r.title | escape }}"

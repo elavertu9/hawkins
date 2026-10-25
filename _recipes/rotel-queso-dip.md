@@ -22,10 +22,12 @@ ingredients:
         item: RO*TEL Original Diced Tomatoes & Green Chilies, undrained
       - qty: "1 package (16 ounces)"
         item: Velveeta Original, cut into ½-inch cubes
+        shop: Velveeta
   - group: For serving
     items:
       - qty: ""
         item: tortilla chips, crackers, or cut-up fresh vegetables
+        shop: tortilla chips
 
 steps:
   - title: Combine

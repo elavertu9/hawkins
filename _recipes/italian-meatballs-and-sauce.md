@@ -55,6 +55,7 @@ ingredients:
         item: garlic, minced
       - qty: "½ cup"
         item: minced onion
+        shop: onion
       - qty: "1 teaspoon"
         item: oregano, divided
       - qty: "1 tablespoon"

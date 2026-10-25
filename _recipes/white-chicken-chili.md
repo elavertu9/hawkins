@@ -44,6 +44,7 @@ ingredients:
         item: cayenne pepper
       - qty: ""
         item: salt and freshly ground black pepper, to taste
+        shop: [salt, black pepper]
   - group: Chili
     items:
       - qty: "1 package (8 ounces)"
@@ -54,6 +55,7 @@ ingredients:
         item: cannellini beans
       - qty: "2½ cups"
         item: shredded cooked chicken (rotisserie or leftover)
+        shop: rotisserie chicken
       - qty: "1 tablespoon"
         item: fresh lime juice
       - qty: "2 tablespoons"
@@ -62,6 +64,7 @@ ingredients:
     items:
       - qty: ""
         item: tortilla chips or strips, Monterey Jack, sliced avocado
+        shop: [tortilla chips, Monterey Jack cheese, avocado]
 
 steps:
   - title: Sauté the aromatics

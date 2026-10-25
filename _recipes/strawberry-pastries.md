@@ -31,6 +31,7 @@ ingredients:
     items:
       - qty: "1½ cups (375 mL)"
         item: frozen whipped topping, thawed
+        shop: frozen whipped topping
       - qty: "12 large"
         item: strawberries, sliced
 

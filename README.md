@@ -14,7 +14,8 @@ automatically on every push to `main`. There is no build step to run yourself.
 | `_data/sections.yml` | Top-level sections (Recipes, Packing Lists, ...) for the nav and home page. |
 | `_includes/` | Shared pieces: head, header, footer, recipe card, duration formatter. |
 | `assets/css/main.css` | All styles, including colors and fonts as variables at the top. |
-| `assets/js/` | `recipe.js` for checklists and keeping the screen on, `lights.js` for the home page lights. |
+| `plan/index.html` | The meal plan page: pick recipes, get one shopping list sorted by aisle. |
+| `assets/js/` | `recipe.js` for checklists, cook mode, and timers; `plan.js` for the meal plan and shopping list; `lights.js` for the home page lights; `upside-down.js` for the easter egg. |
 | `assets/images/recipes/` | Recipe photos. |
 
 ## Add a recipe
@@ -46,6 +47,9 @@ automatically on every push to `main`. There is no build step to run yourself.
        items:
          - qty: "2 pounds"
            item: beef chuck, cubed
+         - qty: ""
+           item: salt and freshly ground black pepper, to taste
+           shop: [salt, black pepper]   # optional, see below
    steps:
      - title: Brown the beef
        text: Use **bold** for temperatures and times so they stand out.
@@ -56,6 +60,18 @@ automatically on every push to `main`. There is no build step to run yourself.
 3. Commit and push. The site updates in a minute or two.
 
 Total time is calculated from `prep + cook + additional`.
+
+**Shopping names (optional).** The meal plan works out what to buy from each
+ingredient's text ("garlic, minced" becomes "garlic"). When it gets one wrong,
+add `shop:` with the name to buy, or a list for a line with several things
+(the amount goes with the first name). `shop_aisle:` overrides the store aisle,
+using one of the aisle names in `assets/js/plan.js`, such as `Produce`.
+
+```yaml
+- qty: "1 cup"
+  item: sour milk or buttermilk
+  shop: milk                 # merges with the other milk on the list
+```
 
 ## Photos
 

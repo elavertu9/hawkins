@@ -31,6 +31,7 @@ ingredients:
         item: onion powder
       - qty: "16 ounces"
         item: Velveeta, cut into cubes no larger than 1 inch
+        shop: Velveeta
       - qty: "1 cup"
         item: sharp cheddar cheese, grated
   - group: Topping
