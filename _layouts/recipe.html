@@ -18,6 +18,15 @@ layout: default
       </ol>
     </nav>
 
+    {%- comment -%}
+      Classified recipes are encrypted (see classified.sh). The page ships only the
+      scrambled recipe; classified.js unlocks it with the clearance code. Everything
+      between the markers below is what gets encrypted.
+    {%- endcomment -%}
+    {%- if page.classified %}
+    {% include classified.html %}
+    {%- else %}
+    <!--classified:start-->
     <header class="recipe-hero">
       <div class="recipe-hero__text">
         <p class="eyebrow">
@@ -202,6 +211,8 @@ layout: default
         <button class="button cook__next" type="button" data-cook-next>Next</button>
       </div>
     </dialog>
+    <!--classified:end-->
+    {%- endif %}
 
     {%- comment -%} Previous / next, wrapping around the alphabetical list. {%- endcomment -%}
     {%- if recipes.size > 1 %}
@@ -231,6 +242,9 @@ layout: default
   </div>
 </article>
 
+{%- if page.classified %}
+<script src="{{ '/assets/js/classified.js' | relative_url }}?v={{ site.time | date: '%s' }}" defer></script>
+{%- else %}
 {%- comment -%} Structured data so search engines recognize this as a recipe. {%- endcomment -%}
 <script type="application/ld+json">
 {
@@ -271,3 +285,4 @@ layout: default
 }
 </script>
 <script src="{{ '/assets/js/recipe.js' | relative_url }}?v={{ site.time | date: '%s' }}" defer></script>
+{%- endif %}

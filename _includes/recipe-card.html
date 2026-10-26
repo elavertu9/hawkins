@@ -9,8 +9,10 @@
   {%- for group in r.ingredients %}{% for ingredient in group.items %} {{ ingredient.item }}{% endfor %}{% endfor %}
 {%- endcapture -%}
 {%- capture tag_slugs -%}{% for tag in r.tags %}{{ tag | slugify }} {% endfor %}{%- endcapture -%}
-<article class="card" data-category="{{ r.category | slugify }}" data-tags="{{ tag_slugs | strip }}" data-search="{{ search | strip_newlines | normalize_whitespace | downcase | escape }}">
+<article class="card{% if r.classified %} card--classified{% endif %}" data-category="{{ r.category | slugify }}" data-tags="{{ tag_slugs | strip }}" data-search="{{ search | strip_newlines | normalize_whitespace | downcase | escape }}">
+  {%- unless r.classified %}
   <button class="card__plan" type="button" data-plan-add="{{ r.slug }}" data-plan-title="{{ r.title | escape }}" aria-pressed="false" hidden></button>
+  {%- endunless %}
   <div class="card__media">
     {%- if r.image %}
       <img src="{{ r.image | relative_url }}" alt="{{ r.image_alt | default: r.title | escape }}"
@@ -19,15 +21,20 @@
       <img src="{{ site.recipe_placeholder | relative_url }}" alt=""
            width="1200" height="800" loading="lazy" decoding="async">
     {%- endif %}
+    {%- if r.classified %}
+    <span class="card__stamp" aria-hidden="true">Classified</span>
+    {%- endif %}
   </div>
   <div class="card__body">
-    <p class="eyebrow">{{ r.category }}{% for tag in r.tags %} <span class="tag">{{ tag }}</span>{% endfor %}</p>
+    <p class="eyebrow">{{ r.category }}{% if r.classified %} <span class="tag tag--classified">Classified</span>{% endif %}{% for tag in r.tags %} <span class="tag">{{ tag }}</span>{% endfor %}</p>
     <h3 class="card__title"><a class="card__link" href="{{ r.url | relative_url }}">{{ r.title }}</a></h3>
     <p class="card__summary">{{ r.summary }}</p>
+    {%- unless r.classified %}
     <p class="card__meta">
       <span>{% include duration.html minutes=total %}</span>
       <span aria-hidden="true">·</span>
       <span>Serves {{ r.servings }}</span>
     </p>
+    {%- endunless %}
   </div>
 </article>

@@ -10,6 +10,7 @@ automatically on every push to `main`. There is no build step to run yourself.
 | Path | What it is |
 | --- | --- |
 | `_recipes/` | One Markdown file per recipe. The data lives in the front matter. |
+| `_classified/` | Classified recipes, readable and gitignored. `./classified.sh` encrypts them into `_recipes/`. |
 | `_layouts/recipe.html` | The template every recipe page uses, so they all look the same. |
 | `_data/sections.yml` | Top-level sections (Recipes, Packing Lists, ...) for the nav and home page. |
 | `_includes/` | Shared pieces: head, header, footer, recipe card, duration formatter. |
@@ -73,6 +74,25 @@ using one of the aisle names in `assets/js/plan.js`, such as `Produce`.
   item: sour milk or buttermilk
   shop: milk                 # merges with the other milk on the list
 ```
+
+## Classified recipes
+
+Some recipes are only for people with the code. They're encrypted, so neither
+the site nor this (public) repo shows them without it.
+
+- The readable recipe lives in `_classified/` (same format as `_recipes/`). That
+  folder is gitignored, so it never reaches GitHub. **Keep a backup of it.**
+- The code lives in `.classified-code` (one line, also gitignored). Case and extra
+  spaces don't matter. Use a phrase, not a short number.
+- After adding or editing one, run `./classified.sh`. It writes a locked page with
+  the same name to `_recipes/`, which is safe to commit.
+- To change the code, edit `.classified-code` and run `./classified.sh`. Anyone who
+  saved the old code is asked for the new one.
+- Classified recipes show on the recipes page with a "Classified" stamp over
+  the image (an `image:` in the readable copy carries over) and stay out of
+  the meal plan.
+- Unlocking needs `https://` (or `localhost`); it won't work over a plain
+  `http://` LAN address.
 
 ## Photos
 

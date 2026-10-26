@@ -1,0 +1,26 @@
+{%- comment -%}
+  The lock screen for a classified recipe. classified.js swaps it for the
+  recipe once the clearance code decrypts it.
+{%- endcomment -%}
+<section class="classified" data-classified aria-labelledby="classified-title">
+  <p class="eyebrow">Hawkins National Laboratory · Level 4</p>
+  <h1 class="recipe-hero__title" id="classified-title">{{ page.title }}</h1>
+  <p class="classified__stamp" aria-hidden="true">Classified</p>
+  <p class="classified__text">This file is restricted to personnel with clearance. Enter your clearance code to open it.</p>
+
+  <form class="classified__form" data-classified-form hidden>
+    <label class="visually-hidden" for="classified-code">Clearance code</label>
+    <div class="search">
+      <span class="search__prompt" aria-hidden="true">&gt;</span>
+      <input class="search__input" id="classified-code" type="password" placeholder="Clearance code"
+             autocomplete="off" autocapitalize="none" spellcheck="false" required data-classified-input>
+    </div>
+    <button class="button" type="submit" data-classified-submit>Open file</button>
+  </form>
+  <p class="classified__error" role="alert" data-classified-error></p>
+  <noscript><p class="classified__error">Opening classified files needs JavaScript turned on.</p></noscript>
+
+  <script type="application/json" data-classified-cipher>
+    {{ page.cipher | jsonify }}
+  </script>
+</section>

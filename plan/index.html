@@ -3,7 +3,8 @@ layout: default
 title: Meal Plan
 description: Pick a few recipes and get one shopping list, sorted by aisle.
 ---
-{%- assign recipes = site.recipes | sort: "title" -%}
+{%- comment -%} Classified recipes stay out: their ingredients would show in this page. {%- endcomment -%}
+{%- assign recipes = site.recipes | where_exp: "r", "r.classified != true" | sort: "title" -%}
 {%- assign categories = recipes | map: "category" | uniq | sort -%}
 
 <div class="container plan-page" data-plan-page>

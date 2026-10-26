@@ -1477,6 +1477,126 @@ a.tag:hover { border-color: var(--amber); }
   .site-nav a { padding: 0.5rem 0.5rem; letter-spacing: 0.04em; }
 }
 
+/* ---------- Classified recipes (see classified.js) ---------- */
+.classified {
+  display: grid;
+  justify-items: start;
+  gap: 1rem;
+  max-width: 40rem;
+  margin: clamp(1rem, 4vw, 2.5rem) 0 clamp(2rem, 6vw, 4rem);
+  padding: clamp(1.5rem, 5vw, 2.5rem);
+  background:
+    repeating-linear-gradient(-45deg, transparent 0 14px, rgba(255, 42, 42, 0.035) 14px 28px),
+    var(--surface);
+  border: 1px solid rgba(255, 64, 64, 0.35);
+  border-radius: var(--radius);
+  box-shadow: 0 0 40px rgba(255, 30, 30, 0.08);
+}
+.classified__stamp {
+  margin: 0;
+  padding: 0.35rem 1rem;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: clamp(1.25rem, 5vw, 1.75rem);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--red-bright);
+  border: 3px solid currentColor;
+  border-radius: 4px;
+  transform: rotate(-4deg);
+  text-shadow: 0 0 12px var(--red-glow);
+  box-shadow: 0 0 14px rgba(255, 42, 42, 0.25), inset 0 0 10px rgba(255, 42, 42, 0.15);
+}
+.classified__text { margin: 0; color: var(--text-muted); }
+.classified__form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem 1rem;
+  width: 100%;
+}
+.classified__form .search { flex: 1 1 14rem; }
+.classified__form .search__input::placeholder { text-transform: uppercase; }
+.classified__form.is-denied { animation: denied 0.4s ease; }
+@keyframes denied {
+  20%, 60% { transform: translateX(-8px); }
+  40%, 80% { transform: translateX(8px); }
+}
+.classified__error {
+  min-height: 1.5em;
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--red-bright);
+}
+.classified__bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  margin: 0 0 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--red-bright);
+}
+.classified__bar button {
+  padding: 0.15rem 0.7rem;
+  font: inherit;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  cursor: pointer;
+}
+.classified__bar button:hover { color: var(--text); border-color: var(--red-bright); }
+.tag--classified { color: var(--red-bright); border-color: rgba(255, 64, 64, 0.5); }
+.card--classified .card__media {
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+.card--classified .card__media img {
+  grid-area: 1 / 1;
+  filter: grayscale(0.6) brightness(0.55);
+}
+.card--classified .card__media::after {
+  content: "";
+  grid-area: 1 / 1;
+  align-self: stretch;
+  justify-self: stretch;
+  background: repeating-linear-gradient(-45deg, transparent 0 14px, rgba(255, 42, 42, 0.08) 14px 28px);
+}
+.card__stamp {
+  grid-area: 1 / 1;
+  z-index: 1;
+  max-width: 85%;
+  padding: 0.25rem 0.75rem;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: clamp(0.95rem, 4vw, 1.25rem);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--red-bright);
+  background: rgba(10, 6, 6, 0.6);
+  border: 3px solid currentColor;
+  border-radius: 4px;
+  transform: rotate(-8deg);
+  text-shadow: 0 0 12px var(--red-glow);
+  box-shadow: 0 0 14px rgba(255, 42, 42, 0.25), inset 0 0 10px rgba(255, 42, 42, 0.15);
+}
+[data-clearance="granted"] .card__stamp,
+[data-clearance="granted"] .card--classified .card__media::after { display: none; }
+[data-clearance="granted"] .card--classified .card__media img { filter: none; }
+.card--classified .card__summary { font-family: var(--font-mono); font-size: 0.875rem; letter-spacing: 0.02em; }
+@media (prefers-reduced-motion: reduce) {
+  .classified__form.is-denied { animation: none; }
+}
+
 /* ---------- Upside Down (easter egg, see upside-down.js) ---------- */
 /* Flipping each part and reversing their order looks the same as flipping the
    whole page, but leaves body untransformed so fixed overlays still work. */
@@ -1588,6 +1708,7 @@ a.tag:hover { border-color: var(--amber); }
   .plan-add,
   .plan-actions,
   .plan-extra,
+  .classified__bar,
   .pantry-summary__review,
   .shopping__action,
   .pantry,

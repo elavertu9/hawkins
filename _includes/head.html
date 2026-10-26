@@ -11,6 +11,8 @@
 <link rel="canonical" href="{{ page.url | absolute_url }}">
 <meta name="theme-color" content="#060608">
 <meta name="color-scheme" content="dark">
+{%- comment -%} Classified cards drop their stamp once this device has the clearance code (see classified.js). Inline so the stamp doesn't flash. {%- endcomment %}
+<script>try { if (localStorage.getItem("hawkins:clearance-code")) document.documentElement.dataset.clearance = "granted"; } catch (_) {}</script>
 
 <meta property="og:site_name" content="{{ site.title }}">
 <meta property="og:title" content="{{ page.title | default: site.title | escape }}">
