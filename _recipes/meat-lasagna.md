@@ -4,6 +4,8 @@ summary: >-
   A hearty 9x13 lasagna layered with spicy sausage and beef sauce, creamy
   ricotta and five-cheese filling, and no-boil noodles under a browned cheese top.
 category: Dinner
+tags: [Make Ahead, Crowd]
+added: 2026-10-24
 # image: /assets/images/recipes/meat-lasagna.jpg
 # image_alt: Square of layered meat lasagna with browned cheese
 time:

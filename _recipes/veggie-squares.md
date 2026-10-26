@@ -4,6 +4,8 @@ summary: >-
   A crowd-sized party tray: crescent roll crust, ranch cream cheese spread, and
   finely chopped fresh vegetables pressed under shredded cheese.
 category: Appetizer
+tags: [Make Ahead, Crowd, Vegetarian]
+added: 2026-10-24
 # image: /assets/images/recipes/veggie-squares.jpg
 # image_alt: Squares of crescent crust topped with cream cheese and chopped vegetables
 time:

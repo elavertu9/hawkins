@@ -4,6 +4,8 @@ summary: >-
   A sugar cookie crust spread with sweet vanilla cream cheese, topped with
   kiwi, strawberries, and blueberries, and glazed with apple jelly.
 category: Dessert
+tags: [Crowd]
+added: 2026-10-24
 # image: /assets/images/recipes/fruit-pizza.jpg
 # image_alt: Round fruit pizza topped with kiwi, strawberries, and blueberries
 time:

@@ -4,6 +4,8 @@ summary: >-
   A slow cooker chuck roast with ranch seasoning, butter, and pepperoncini that
   cooks all day into tender, tangy, shreddable beef.
 category: Dinner
+tags: [Slow Cooker]
+added: 2026-10-24
 # image: /assets/images/recipes/mississippi-roast.jpg
 # image_alt: Shredded beef with pepperoncini in a slow cooker
 time:

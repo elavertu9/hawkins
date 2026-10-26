@@ -4,6 +4,8 @@ summary: >-
   A big, crowd-sized baked ziti layered with a beef and sausage meat sauce,
   provolone, mozzarella, and a creamy sour cream and cottage cheese middle.
 category: Dinner
+tags: [Make Ahead, Crowd]
+added: 2026-10-24
 # image: /assets/images/recipes/baked-ziti.jpg
 # image_alt: Baked ziti with melted cheese in a baking dish
 time:

@@ -4,6 +4,7 @@ summary: >-
   An Applebee's copycat: honey-garlic chicken and a tangy sesame slaw piled into
   crispy baked wonton shells.
 category: Appetizer
+added: 2026-10-24
 # image: /assets/images/recipes/chicken-wonton-tacos.jpg
 # image_alt: Crispy wonton taco shells filled with chicken and slaw
 time:

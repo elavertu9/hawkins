@@ -12,3 +12,6 @@ IDEAS.md
 _classified/
 .classified-code
 backup-classified.sh
+
+# Screenshots from tests/run.sh
+tests/.shots/

@@ -4,6 +4,8 @@ summary: >-
   Cool, creamy Greek yogurt sauce with grated cucumber, garlic, olive oil, and
   fresh dill. Even better after a night in the fridge.
 category: Sauce
+tags: [Quick, Vegetarian]
+added: 2026-10-24
 # image: /assets/images/recipes/tzatziki-sauce.jpg
 # image_alt: Bowl of tzatziki topped with dill and olive oil
 time:

@@ -4,6 +4,8 @@ summary: >-
   Deviled eggs with a kick: a creamy cream cheese filling with jalapeño,
   garlic, and crispy bacon.
 category: Appetizer
+tags: [Quick, Crowd, Spicy]
+added: 2026-10-24
 # image: /assets/images/recipes/jalapeno-popper-deviled-eggs.jpg
 # image_alt: Deviled eggs topped with bacon and jalapeño slices
 time:

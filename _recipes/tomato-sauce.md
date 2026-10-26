@@ -4,6 +4,8 @@ summary: >-
   A slow-simmered, chunky tomato sauce with garlic, red pepper, oregano, basil,
   and mint, finished with Parmesan and butter.
 category: Sauce
+tags: [Make Ahead, Vegetarian]
+added: 2026-10-24
 # image: /assets/images/recipes/tomato-sauce.jpg
 # image_alt: Pot of chunky red tomato sauce
 time:

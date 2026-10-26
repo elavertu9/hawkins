@@ -80,33 +80,34 @@ Dir.mktmpdir("hawkins-classified") do |tmp|
     data = front_matter(path)
     stub_path = File.join(ROOT, "_recipes", "#{slug}.md")
 
-    # Leave the stub alone if it already holds this exact recipe, so re-running
-    # doesn't change files for nothing.
-    if File.exist?(stub_path)
-      old = front_matter(stub_path)
-      if old && old["classified"] && old["cipher"] && decrypt(old["cipher"], code) == html
-        puts "unchanged  #{slug}"
-        next
-      end
-    end
+    # Keep the existing encryption if it already holds this exact recipe, so
+    # re-running doesn't change files for nothing.
+    old = File.exist?(stub_path) ? front_matter(stub_path) : nil
+    same = old && old["classified"] && old["cipher"] && decrypt(old["cipher"], code) == html
 
     stub = {
       "title" => data.fetch("title"),
       "category" => data.fetch("category"),
+      "added" => data["added"],
       "classified" => true,
       "summary" => "Contents redacted. Level 4 clearance required to open this file.",
       "image" => data["image"],
       "image_alt" => data["image_alt"],
-      "cipher" => encrypt(html, code),
+      "cipher" => same ? old["cipher"] : encrypt(html, code),
     }.compact
-    File.write(stub_path, [
+    text = [
       "---",
       "# Classified recipe, encrypted by ./classified.sh from _classified/#{slug}.md.",
       "# Edit that file (not this one), then run ./classified.sh again.",
       YAML.dump(stub).sub(/\A---\n/, "").chomp,
       "---",
       "",
-    ].join("\n"))
-    puts "encrypted  #{slug}"
+    ].join("\n")
+    if File.exist?(stub_path) && File.read(stub_path) == text
+      puts "unchanged  #{slug}"
+      next
+    end
+    File.write(stub_path, text)
+    puts "#{same ? "updated   " : "encrypted "} #{slug}"
   end
 end

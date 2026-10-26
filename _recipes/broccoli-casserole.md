@@ -4,6 +4,8 @@ summary: >-
   Tender broccoli in melted Velveeta, topped with sharp cheddar and a crunchy
   buttered Ritz cracker crust. Even picky eaters ask for seconds.
 category: Side
+tags: [Make Ahead, Vegetarian]
+added: 2026-10-24
 # image: /assets/images/recipes/broccoli-casserole.jpg
 # image_alt: Cheesy broccoli casserole with a cracker crumb topping
 time:

@@ -4,6 +4,8 @@ summary: >-
   A cinnamon-spiced bundt cake from a boxed mix and vanilla pudding, soaked
   while hot with a buttery white-wine sugar glaze. Dangerously addictive.
 category: Dessert
+tags: [Crowd]
+added: 2026-10-24
 # image: /assets/images/recipes/crack-cake.jpg
 # image_alt: Glazed golden bundt cake on a plate
 time:

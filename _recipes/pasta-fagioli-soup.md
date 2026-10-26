@@ -4,6 +4,7 @@ summary: >-
   An Olive Garden copycat loaded with ground beef, vegetables, two kinds of
   beans, and little ditalini pasta in an herby tomato broth.
 category: Soup
+added: 2026-10-24
 # image: /assets/images/recipes/pasta-fagioli-soup.jpg
 # image_alt: Bowl of pasta e fagioli with Parmesan
 time:

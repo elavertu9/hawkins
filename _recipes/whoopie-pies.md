@@ -4,6 +4,8 @@ summary: >-
   Soft little chocolate cakes sandwiched around a fluffy, old-fashioned
   cooked-flour vanilla filling.
 category: Dessert
+tags: [Crowd]
+added: 2026-10-25
 # image: /assets/images/recipes/whoopie-pies.jpg
 # image_alt: Chocolate whoopie pies with white cream filling
 time:

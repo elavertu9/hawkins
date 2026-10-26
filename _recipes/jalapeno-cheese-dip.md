@@ -4,6 +4,8 @@ summary: >-
   A creamy, cheesy jalapeño and green chili dip baked in a sourdough bread bowl.
   Always the first thing gone at a cookout.
 category: Appetizer
+tags: [Vegetarian, Spicy]
+added: 2026-10-24
 # image: /assets/images/recipes/jalapeno-cheese-dip.jpg
 # image_alt: Cheese dip baked in a sourdough bread bowl
 time:

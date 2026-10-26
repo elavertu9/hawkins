@@ -4,6 +4,8 @@ summary: >-
   All the filling of a cannoli, none of the work: sweet whipped ricotta and
   cream cheese with mini chocolate chips, served with broken waffle cones.
 category: Dessert
+tags: [Quick]
+added: 2026-10-24
 # image: /assets/images/recipes/cannoli-dip.jpg
 # image_alt: Bowl of cannoli dip with chocolate chips and waffle cone pieces
 time:

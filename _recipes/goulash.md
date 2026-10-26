@@ -4,6 +4,7 @@ summary: >-
   Classic American goulash: ground beef, macaroni, and tomatoes simmered in one
   pot with Italian seasoning, then finished with melted cheddar.
 category: Dinner
+added: 2026-10-24
 # image: /assets/images/recipes/goulash.jpg
 # image_alt: Pot of beef and macaroni goulash with melted cheddar
 time:

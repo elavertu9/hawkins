@@ -4,6 +4,8 @@ summary: >-
   Ground beef, two kinds of beans, and tomatoes, mostly straight from the
   pantry. One pot and about 50 minutes.
 category: Dinner
+tags: [Make Ahead]
+added: 2026-10-24
 # image: /assets/images/recipes/hearty-six-can-chili.jpg
 # image_alt: Bowl of beef and bean chili
 time:

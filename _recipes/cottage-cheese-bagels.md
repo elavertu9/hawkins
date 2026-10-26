@@ -4,7 +4,8 @@ summary: >-
   Four-ingredient, high-protein bagels made from blended cottage cheese and
   flour, brushed with egg and topped with everything bagel seasoning.
 category: Breakfast
-tags: [Low Calorie]
+tags: [Low Calorie, Vegetarian]
+added: 2026-10-26
 # image: /assets/images/recipes/cottage-cheese-bagels.jpg
 # image_alt: Golden cottage cheese bagels topped with everything seasoning
 time:

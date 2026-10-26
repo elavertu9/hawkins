@@ -4,6 +4,8 @@ summary: >-
   Thin, tender crêpes from ingredients you already have, ready in minutes. Fill
   them sweet or savory.
 category: Breakfast
+tags: [Quick, Vegetarian]
+added: 2026-10-24
 # image: /assets/images/recipes/basic-crepes.jpg
 # image_alt: Folded crêpes with berries and cream
 time:

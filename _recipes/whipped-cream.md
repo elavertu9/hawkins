@@ -4,6 +4,8 @@ summary: >-
   Two ingredients and five minutes to real whipped cream, for pies, shortcakes,
   and anything else that needs a dollop.
 category: Dessert
+tags: [Quick]
+added: 2026-10-24
 # image: /assets/images/recipes/whipped-cream.jpg
 # image_alt: Bowl of softly peaked whipped cream
 time:

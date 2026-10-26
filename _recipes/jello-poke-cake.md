@@ -4,6 +4,8 @@ summary: >-
   A boxed white cake poked full of holes, soaked with strawberry Jell-O, chilled,
   and topped with whipped topping. Cool, creamy, and bright pink inside.
 category: Dessert
+tags: [Make Ahead, Crowd]
+added: 2026-10-24
 # image: /assets/images/recipes/jello-poke-cake.jpg
 # image_alt: Slice of white cake streaked with red Jell-O and topped with whipped cream
 time:

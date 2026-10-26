@@ -31,3 +31,9 @@ exclude:
   - Gemfile.lock
   - serve.sh
   - vendor
+  # Tools for working on the site, not pages to publish.
+  - classified.sh
+  - backup-classified.sh
+  - scripts
+  - tests
+  - IDEAS.md

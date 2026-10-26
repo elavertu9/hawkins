@@ -4,6 +4,8 @@ summary: >-
   Greek-style beef and lamb meatballs with feta, lemon zest, oregano, cumin, and
   coriander, baked and served with tzatziki.
 category: Dinner
+tags: [Quick]
+added: 2026-10-24
 # image: /assets/images/recipes/lamb-and-feta-meatballs.jpg
 # image_alt: Lamb meatballs on a platter with tzatziki and pita
 time:

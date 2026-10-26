@@ -4,6 +4,8 @@ summary: >-
   Soft, spiced molasses cookies rolled in sugar, the kind that taste like
   grandma's gingerbread.
 category: Dessert
+tags: [Crowd]
+added: 2026-10-24
 # image: /assets/images/recipes/old-fashioned-molasses-cookies.jpg
 # image_alt: Sugar-crusted molasses cookies on a cooling rack
 time:

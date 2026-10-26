@@ -18,6 +18,7 @@ automatically on every push to `main`. There is no build step to run yourself.
 | `plan/index.html` | The meal plan page: pick recipes, get one shopping list sorted by aisle. |
 | `assets/js/` | `recipe.js` for checklists, cook mode, and timers; `plan.js` for the meal plan and shopping list; `lights.js` for the home page lights; `upside-down.js` for the easter egg. |
 | `assets/images/recipes/` | Recipe photos. |
+| `tests/` | Browser tests for the site's features. `tests/run.sh` runs them. |
 
 ## Add a recipe
 
@@ -30,6 +31,7 @@ automatically on every push to `main`. There is no build step to run yourself.
    summary: One or two sentences shown on cards and at the top of the page.
    category: Dinner            # used for the filter on /recipes/
    tags: [Low Calorie]         # optional, any number; each gets its own filter chip
+   added: 2026-10-26           # the day you add it; drives "Newest" and the home page
    image: /assets/images/recipes/beef-stew.jpg   # optional
    image_alt: Bowl of beef stew                  # optional
    time:
@@ -122,3 +124,21 @@ file. Press Ctrl+C to stop. Pass a port to use a different one: `./serve.sh 4001
 
 Opening `index.html` directly in a browser won't work. The pages are Jekyll templates
 and have to be built first.
+
+## Run the tests
+
+```sh
+tests/run.sh
+```
+
+This builds the site, serves it, and checks every feature in headless Chrome: search,
+filters, sorting, cook mode, the meal plan, classified recipes, and the layout on desktop
+and phone. It needs Docker, Node 22 or newer, and Google Chrome.
+
+- `tests/run.sh plan cook` runs only those tests (the names match `tests/*.test.mjs`).
+- `tests/run.sh --no-build` skips the build and tests the current `_site/`.
+- Screenshots of each run land in `tests/.shots/` (gitignored).
+- The classified test reads the code from `.classified-code` and the readable copies from
+  `_classified/`, and skips itself on a machine that doesn't have them.
+
+Run it before pushing a change to how the site looks or works.

@@ -4,6 +4,8 @@ summary: >-
   All the flavor of an egg roll without the wrapper: ground pork, cabbage, and
   carrots in a sesame-hoisin sauce, in one skillet and 20 minutes.
 category: Dinner
+tags: [Quick]
+added: 2026-10-24
 # image: /assets/images/recipes/egg-roll-in-a-bowl.jpg
 # image_alt: Skillet of ground pork and cabbage stir-fry
 time:

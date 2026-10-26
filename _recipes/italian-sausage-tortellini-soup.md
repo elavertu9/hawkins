@@ -4,6 +4,7 @@ summary: >-
   A hearty soup of sweet Italian sausage, tomatoes, red wine, and vegetables,
   with tender cheese tortellini added at the end.
 category: Soup
+added: 2026-10-24
 # image: /assets/images/recipes/italian-sausage-tortellini-soup.jpg
 # image_alt: Bowl of sausage and tortellini soup with zucchini and carrots
 time:

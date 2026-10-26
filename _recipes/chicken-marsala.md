@@ -4,6 +4,8 @@ summary: >-
   Thin, pan-fried chicken breasts in a sweet Marsala wine and mushroom sauce.
   Quick enough for a weeknight, nice enough for company.
 category: Dinner
+tags: [Quick]
+added: 2026-10-24
 # image: /assets/images/recipes/chicken-marsala.jpg
 # image_alt: Chicken Marsala with mushrooms in a skillet
 time:

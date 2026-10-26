@@ -4,6 +4,8 @@ summary: >-
   Jalapeño halves stuffed with a creamy cheddar filling, wrapped in bacon, and
   baked until crisp. The perfect party appetizer.
 category: Appetizer
+tags: [Crowd, Spicy]
+added: 2026-10-24
 # image: /assets/images/recipes/bacon-wrapped-jalapeno-poppers.jpg
 # image_alt: Bacon-wrapped jalapeño poppers on a sheet pan
 time:

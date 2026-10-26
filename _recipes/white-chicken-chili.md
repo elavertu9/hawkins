@@ -4,6 +4,8 @@ summary: >-
   A creamy, warming chili with rotisserie chicken, cannellini beans, green
   chilies, and corn. A lighter change from beef chili.
 category: Soup
+tags: [Make Ahead, Spicy]
+added: 2026-10-24
 # image: /assets/images/recipes/white-chicken-chili.jpg
 # image_alt: Bowl of white chicken chili topped with avocado and cilantro
 time:

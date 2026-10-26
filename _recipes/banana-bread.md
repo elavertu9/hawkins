@@ -4,6 +4,8 @@ summary: >-
   A moist, brown sugar banana bread made with overripe bananas, with optional
   mini chocolate chips.
 category: Breakfast
+tags: [Vegetarian]
+added: 2026-10-24
 # image: /assets/images/recipes/banana-bread.jpg
 # image_alt: Sliced loaf of banana bread
 time:

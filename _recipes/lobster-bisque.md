@@ -3,6 +3,7 @@
 # Edit that file (not this one), then run ./classified.sh again.
 title: Lobster Bisque
 category: Soup
+added: 2026-10-25
 classified: true
 summary: Contents redacted. Level 4 clearance required to open this file.
 cipher:

@@ -4,6 +4,8 @@ summary: >-
   The easy holiday corn casserole: corn muffin mix, two kinds of canned corn,
   butter, and sour cream baked until set, golden, and spoonable.
 category: Side
+tags: [Vegetarian]
+added: 2026-10-24
 # image: /assets/images/recipes/corn-souffle.jpg
 # image_alt: Golden corn casserole in a baking dish
 time:

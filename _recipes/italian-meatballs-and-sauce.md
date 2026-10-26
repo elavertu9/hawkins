@@ -4,6 +4,8 @@ summary: >-
   Tender beef and pork meatballs, browned and baked, then simmered in a slow,
   chunky tomato sauce rich with garlic, herbs, Parmesan, and butter.
 category: Dinner
+tags: [Make Ahead]
+added: 2026-10-24
 # image: /assets/images/recipes/italian-meatballs-and-sauce.jpg
 # image_alt: Meatballs in chunky tomato sauce with Parmesan
 time:

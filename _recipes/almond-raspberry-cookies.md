@@ -4,6 +4,8 @@ summary: >-
   Thumbprint cookies from store-bought sugar cookie dough, with chopped almonds,
   a dab of raspberry jam, and a dusting of powdered sugar.
 category: Dessert
+tags: [Crowd]
+added: 2026-10-24
 # image: /assets/images/recipes/almond-raspberry-cookies.jpg
 # image_alt: Almond thumbprint cookies filled with raspberry jam
 time:

@@ -4,6 +4,7 @@ summary: >-
   An easy one-pan, 30-minute stir fry of tender flank steak and crisp broccoli
   in a glossy ginger-garlic soy sauce. Best over steamy white rice.
 category: Dinner
+added: 2026-10-25
 # image: /assets/images/recipes/beef-and-broccoli.jpg
 # image_alt: Beef and broccoli stir fry with sesame seeds over rice
 time:

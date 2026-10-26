@@ -15,7 +15,7 @@
 
   --text: #ede6da;
   --text-muted: #a8a196;
-  --text-faint: #77716a;
+  --text-faint: #8a847c; /* 4.5:1 or better on every surface */
 
   --red: #e3242b;
   --red-bright: #ff4040;
@@ -174,6 +174,8 @@ p { margin: 0; }
 .button { padding: 0.75rem 1.5rem; font-size: 0.9375rem; border-color: var(--red-bright); }
 .toggle,
 .chip { padding: 0.4rem 0.9rem; font-size: 0.8125rem; }
+/* Filter chips come in long rows, so they're a little tighter than buttons. */
+.chip { gap: 0.4rem; padding-inline: 0.8rem; letter-spacing: 0.03em; }
 .button:hover,
 .toggle:hover,
 .chip:hover {
@@ -363,7 +365,7 @@ p { margin: 0; }
 .search__input::placeholder {
   color: var(--text-faint);
   text-transform: uppercase;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.1em;
   font-size: 0.875rem;
 }
 .search__input:focus {
@@ -387,6 +389,10 @@ p { margin: 0; }
 }
 .chip__count {
   min-width: 1.5em;
+  font-family: var(--font-body);
+  font-weight: 600;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
   padding: 0.05rem 0.4rem;
   border-radius: 999px;
   background: var(--line);
@@ -395,8 +401,23 @@ p { margin: 0; }
 }
 .chip[aria-pressed="true"] .chip__count { background: rgba(0, 0, 0, 0.25); }
 
+/* Each filter row has a small label: Course (pick one) and Good for (tags). */
+.filter {
+  display: grid;
+  grid-template-columns: 5.5rem minmax(0, 1fr);
+  align-items: baseline;
+  gap: 0.5rem 1rem;
+}
+.filter__label {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
 /* Tags (like Low Calorie) sit on top of the category: amber instead of red. */
-.chips--tags { margin-top: -0.5rem; }
 .chip--tag { border-style: dashed; border-color: rgba(255, 200, 87, 0.45); color: var(--amber); }
 .chip--tag:hover { border-color: var(--amber); box-shadow: 0 0 16px rgba(255, 200, 87, 0.3); color: var(--amber); }
 .chip--tag[aria-pressed="true"] { background: var(--amber); border-color: var(--amber); border-style: solid; color: #1a1408; }
@@ -413,17 +434,59 @@ p { margin: 0; }
   border: 1px solid rgba(255, 200, 87, 0.45);
   border-radius: 999px;
 }
+/* A category with several tags wraps into neat rows instead of indenting. */
+.eyebrow:has(> .tag) {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.5rem;
+}
+.eyebrow:has(> .tag) > .tag { margin-left: 0; }
 a.tag:hover { border-color: var(--amber); }
 
-.finder__status {
-  margin: 0;
-  padding-bottom: 0.6rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+/* The count and sort sit right above the cards they describe. */
+.results {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+}
+.results__count { margin: 0; font-size: 0.9375rem; color: var(--text-muted); }
+.results__sort {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
   font-family: var(--font-mono);
-  font-size: 0.875rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
   color: var(--text-faint);
 }
+.select {
+  padding: 0.45rem 2rem 0.45rem 0.75rem;
+  font: inherit;
+  font-family: var(--font-body);
+  font-size: 1rem; /* 16px keeps iOS from zooming in */
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--text);
+  /* A small chevron drawn with two gradients */
+  background:
+    linear-gradient(45deg, transparent 50%, var(--red-bright) 50%) right 1rem center / 0.3rem 0.3rem no-repeat,
+    linear-gradient(-45deg, transparent 50%, var(--red-bright) 50%) right 0.7rem center / 0.3rem 0.3rem no-repeat,
+    var(--surface-2);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  -webkit-appearance: none;
+  appearance: none;
+  cursor: pointer;
+}
+.select:hover { border-color: var(--red-bright); }
+.select:focus-visible { outline: 2px solid var(--red-bright); outline-offset: 2px; }
+.select option { background: var(--surface); color: var(--text); }
 .button--gate {
   padding: 0.5rem 1.1rem;
   font-size: 0.8125rem;
@@ -445,9 +508,23 @@ a.tag:hover { border-color: var(--amber); }
 /* On phones the count drops below the chips instead of sitting between. */
 @media (max-width: 40rem) {
   .finder { gap: 1rem; }
-  .finder__row { display: contents; }
-  .finder__status { order: 1; padding-bottom: 0; }
-  .button--gate { order: 2; justify-self: start; margin-left: 0; }
+  /* Each filter row becomes one line you swipe sideways, edge to edge. */
+  .filter { grid-template-columns: minmax(0, 1fr); gap: 0.4rem; }
+  .filter .chips {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    margin-inline: calc(var(--gutter) * -1);
+    padding: 0.15rem var(--gutter);
+    scroll-padding-inline: var(--gutter);
+  }
+  .filter .chips::-webkit-scrollbar { display: none; }
+  .filter .chip { flex: none; }
+  /* Search and Open the gate share one row. */
+  .finder__row { flex-wrap: nowrap; gap: 0.75rem; }
+  .search { flex: 1 1 auto; min-width: 0; }
+  .button--gate { flex: none; padding-inline: 0.9rem; }
 }
 
 .empty {
@@ -535,10 +612,22 @@ a.tag:hover { border-color: var(--amber); }
   gap: 0.5rem;
   margin-top: auto;
   padding-top: 0.5rem;
-  font-family: var(--font-mono);
   font-size: 0.875rem;
   color: var(--text-faint);
 }
+/* Tags sit at the bottom of the card, just above the time and servings. */
+.card__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: auto 0 0;
+  padding-top: 0.25rem;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.card__tags .tag { margin-left: 0; }
+.card__tags + .card__meta { margin-top: 0; padding-top: 0.25rem; }
 
 /* ---------- Home ---------- */
 .home-hero {
@@ -633,26 +722,31 @@ a.tag:hover { border-color: var(--amber); }
 .file__link { text-decoration: none; }
 .file__link::after { content: ""; position: absolute; inset: 0; }
 .file__blurb { color: var(--text-muted); }
+/* Course shortcuts sit above the card's own link so they stay clickable. */
+.file__chips { margin: 0.25rem 0 0.5rem; }
+.file__chips .chip { position: relative; z-index: 1; padding: 0.3rem 0.7rem; font-size: 0.75rem; }
 .file__status {
   margin-top: auto;
   padding-top: 0.5rem;
   font-family: var(--font-mono);
   color: var(--red-bright);
 }
-.file.is-soon { opacity: 0.75; }
-.file__stamp {
-  align-self: flex-start;
-  margin-top: auto;
-  padding: 0.25rem 0.75rem;
+.file.is-soon { opacity: 0.85; }
+.soon-list {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0.25rem 0 0;
+  padding: 0;
+  list-style: none;
+  color: var(--text-muted);
+}
+.soon-list__item { display: flex; align-items: baseline; gap: 0.75rem; }
+.soon-list__file {
   font-family: var(--font-mono);
+  font-size: 0.75rem;
   font-weight: 700;
-  font-size: 0.875rem;
   letter-spacing: 0.12em;
-  text-transform: uppercase;
   color: var(--red-bright);
-  border: 2px solid currentColor;
-  border-radius: 4px;
-  transform: rotate(-3deg);
 }
 
 /* ---------- Recipe page ---------- */
@@ -1208,6 +1302,52 @@ a.tag:hover { border-color: var(--amber); }
 }
 .card__plan:hover { border-color: var(--red-bright); box-shadow: 0 0 14px var(--red-glow); }
 .card__plan[aria-pressed="true"] { background: var(--red); border-color: var(--red); color: #fff; }
+/* With a mouse, "+ Plan" waits for hover or focus. Planned cards keep it, so you can see what's in. */
+@media (hover: hover) and (pointer: fine) {
+  .card__plan { opacity: 0; transition: opacity 0.15s; }
+  .card:hover .card__plan,
+  .card:focus-within .card__plan,
+  .card__plan[aria-pressed="true"] { opacity: 1; }
+}
+
+/* On phones the cards become a list: thumbnail on the left, details on the
+   right, so several recipes fit on a screen. */
+@media (max-width: 40rem) {
+  .card-grid { gap: 0.75rem; }
+  .card { flex-direction: row; }
+  .card:hover, .card:focus-within { transform: none; }
+  /* A 3:2 thumbnail pinned to the top left, with + Plan underneath it. */
+  .card__media {
+    flex: none;
+    align-self: flex-start;
+    width: 6.75rem;
+    margin: 0.75rem 0 0.75rem 0.75rem;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+  }
+  .card:has(> .card__plan:not([hidden])) { min-height: 8.25rem; }
+  .card__body { gap: 0.35rem; padding: 0.85rem 1rem 0.85rem 0.9rem; }
+  .card__title { font-size: 1.0625rem; }
+  .card__summary { display: none; }
+  .card__tags { margin-top: 0.15rem; padding-top: 0; }
+  .card__meta { margin-top: auto; padding-top: 0.15rem; }
+  .card__plan {
+    top: 5.75rem;
+    left: 0.75rem;
+    right: auto;
+    width: 6.75rem;
+    padding: 0.25rem 0;
+    font-size: 0.6875rem;
+    text-align: center;
+  }
+  .card .card__stamp {
+    padding: 0.15rem 0.35rem;
+    font-size: 0.625rem;
+    letter-spacing: 0.1em;
+    border-width: 2px;
+  }
+}
 
 .recipe-hero__actions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 0.5rem; }
 .button--plan { padding: 0.6rem 1.2rem; font-size: 0.875rem; }

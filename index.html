@@ -3,6 +3,9 @@ layout: default
 body_class: page-home
 ---
 {%- assign recipes = site.recipes | sort: "title" -%}
+{%- comment -%} Newest first, by day. recipes is already A–Z, and group_by keeps that order within a day. {%- endcomment -%}
+{%- assign by_day = recipes | where_exp: "r", "r.added" | group_by: "added" | sort: "name" | reverse -%}
+{%- assign soon = site.data.sections | where: "status", "soon" -%}
 
 <section class="home-hero">
   <div class="container">
@@ -25,28 +28,47 @@ body_class: page-home
         <p class="eyebrow">File {{ section.file }}</p>
         <h3 class="file__title"><a class="file__link" href="{{ section.url | relative_url }}">{{ section.title }}</a></h3>
         <p class="file__blurb">{{ section.blurb }}</p>
+        {%- if section.id == "recipes" %}
+        {%- assign courses = items | group_by: "category" | sort: "name" %}
+        <div class="chips file__chips">
+          {%- for course in courses %}
+          <a class="chip" href="{{ '/recipes/' | relative_url }}?category={{ course.name | slugify }}">{{ course.name }} <span class="chip__count">{{ course.size }}</span></a>
+          {%- endfor %}
+        </div>
+        {%- endif %}
         <p class="file__status">{% if items %}{{ items.size }} {{ section.title | downcase }}{% else %}Open file{% endif %} <span aria-hidden="true">→</span></p>
-      </li>
-      {%- else %}
-      <li class="file is-soon">
-        <p class="eyebrow">File {{ section.file }}</p>
-        <h3 class="file__title">{{ section.title }}</h3>
-        <p class="file__blurb">{{ section.blurb }}</p>
-        <p class="file__stamp">Coming soon</p>
       </li>
       {%- endif %}
     {%- endfor %}
+    {%- if soon.size > 0 %}
+      {%- comment -%} Sections still on the way share one card, so the page doesn't read as unfinished. {%- endcomment %}
+      <li class="file is-soon">
+        <p class="eyebrow">In the works</p>
+        <h3 class="file__title">Coming soon</h3>
+        <ul class="soon-list">
+          {%- for section in soon %}
+          <li class="soon-list__item" title="{{ section.blurb | escape }}"><span class="soon-list__file">{{ section.file }}</span> {{ section.title }}</li>
+          {%- endfor %}
+        </ul>
+      </li>
+    {%- endif %}
   </ul>
 </section>
 
 <section class="container home-section" aria-labelledby="kitchen-title">
   <div class="section-head">
-    <h2 id="kitchen-title">From the kitchen</h2>
-    <a class="section-head__link" href="{{ '/recipes/' | relative_url }}">All recipes <span aria-hidden="true">→</span></a>
+    <h2 id="kitchen-title">Fresh from the kitchen</h2>
+    <a class="section-head__link" href="{{ '/recipes/' | relative_url }}?sort=newest">All recipes <span aria-hidden="true">→</span></a>
   </div>
   <div class="card-grid">
-    {%- for recipe in recipes limit: 4 %}
+    {%- assign shown = 0 %}
+    {%- for day in by_day %}
+      {%- for recipe in day.items %}
+        {%- if shown < 4 %}
       {% include recipe-card.html recipe=recipe %}
+          {%- assign shown = shown | plus: 1 %}
+        {%- endif %}
+      {%- endfor %}
     {%- endfor %}
   </div>
 </section>

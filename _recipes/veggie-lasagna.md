@@ -4,6 +4,8 @@ summary: >-
   A meatless 9x13 lasagna with lightly sautéed zucchini, summer squash, and
   mushrooms layered between seasoned tomato sauce and a creamy ricotta filling.
 category: Dinner
+tags: [Make Ahead, Crowd, Vegetarian]
+added: 2026-10-24
 # image: /assets/images/recipes/veggie-lasagna.jpg
 # image_alt: Slice of vegetable lasagna with zucchini and squash
 time:

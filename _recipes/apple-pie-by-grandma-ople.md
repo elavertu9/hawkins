@@ -4,6 +4,7 @@ summary: >-
   Tart Granny Smith apples under a lattice crust, with a buttery brown sugar
   sauce poured over the top that bakes into a glossy, caramelized finish.
 category: Dessert
+added: 2026-10-24
 # image: /assets/images/recipes/apple-pie-by-grandma-ople.jpg
 # image_alt: Lattice-topped apple pie
 time:

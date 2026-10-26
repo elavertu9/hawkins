@@ -4,6 +4,8 @@ summary: >-
   A big summer bowl of pineapple, watermelon, berries, grapes, and mandarin
   oranges, cut bite-size and tossed in a splash of mandarin juice.
 category: Side
+tags: [Quick, Crowd, Vegetarian]
+added: 2026-10-24
 # image: /assets/images/recipes/fruit-salad.jpg
 # image_alt: Large bowl of mixed fresh fruit
 time:

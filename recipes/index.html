@@ -23,26 +23,42 @@ description: Dinners, desserts, and family favorites, written out step by step.
         <span class="search__prompt" aria-hidden="true">&gt;</span>
         <input class="search__input" id="recipe-search" type="search" placeholder="Search the files" autocomplete="off" spellcheck="false" data-search-input>
       </div>
-      <p class="finder__status" role="status" data-status></p>
       <button class="button button--gate" type="button" data-random>Open the gate</button>
     </div>
     {%- if categories.size > 1 %}
-    <div class="chips" role="group" aria-label="Filter by category">
+    <div class="filter">
+    <p class="filter__label" id="filter-course">Course</p>
+    <div class="chips" role="group" aria-labelledby="filter-course">
       <button class="chip" type="button" data-category="" aria-pressed="true">All <span class="chip__count" data-count>{{ recipes.size }}</span></button>
       {%- for category in categories %}
       {%- assign in_category = recipes | where: "category", category %}
       <button class="chip" type="button" data-category="{{ category | slugify }}" aria-pressed="false">{{ category }} <span class="chip__count" data-count>{{ in_category.size }}</span></button>
       {%- endfor %}
     </div>
+    </div>
     {%- endif %}
     {%- if all_tags.size > 0 %}
-    <div class="chips chips--tags" role="group" aria-label="Filter by tag">
+    <div class="filter">
+    <p class="filter__label" id="filter-tags">Good for</p>
+    <div class="chips chips--tags" role="group" aria-labelledby="filter-tags">
       {%- for tag in all_tags %}
       {%- assign tagged = recipes | where_exp: "r", "r.tags contains tag" %}
       <button class="chip chip--tag" type="button" data-tag="{{ tag | slugify }}" aria-pressed="false">{{ tag }} <span class="chip__count" data-count>{{ tagged.size }}</span></button>
       {%- endfor %}
     </div>
+    </div>
     {%- endif %}
+    <div class="results">
+      <p class="results__count" role="status" data-status></p>
+      <label class="results__sort">
+        <span>Sort</span>
+        <select class="select" data-sort>
+          <option value="">A–Z</option>
+          <option value="newest">Newest</option>
+          <option value="quickest">Quickest</option>
+        </select>
+      </label>
+    </div>
   </div>
 
   <div class="card-grid" data-filter-target>
@@ -62,7 +78,8 @@ description: Dinners, desserts, and family favorites, written out step by step.
   // Search, category, and tag filters. Without JavaScript the tools stay hidden
   // and every recipe shows. They're kept in the URL (?q=...&category=...&tag=...)
   // so the back button returns to the same results. A category and a tag work
-  // together: Breakfast + Low Calorie shows low-calorie breakfasts.
+  // together: Breakfast + Low Calorie shows low-calorie breakfasts. Sorting
+  // (?sort=newest or quickest) reorders the cards; A–Z is the page's own order.
   (() => {
     const finder = document.querySelector("[data-finder]");
     if (!finder) return;
@@ -71,7 +88,9 @@ description: Dinners, desserts, and family favorites, written out step by step.
     const tagChips = [...finder.querySelectorAll(".chip[data-tag]")];
     const status = finder.querySelector("[data-status]");
     const empty = document.querySelector("[data-empty]");
-    const cards = [...document.querySelectorAll("[data-filter-target] .card")];
+    const grid = document.querySelector("[data-filter-target]");
+    const cards = [...grid.querySelectorAll(".card")];
+    const sortSelect = finder.querySelector("[data-sort]");
 
     // Lowercase and drop accents, so "jalapeno" finds "jalapeño".
     const fold = (text) => text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
@@ -84,6 +103,19 @@ description: Dinners, desserts, and family favorites, written out step by step.
     let tag = params.get("tag") || "";
     if (!tagChips.some((c) => c.dataset.tag === tag)) tag = "";
     const hasTag = (card, slug) => (card.dataset.tags || "").split(" ").includes(slug);
+    let sort = params.get("sort") || "";
+    if (![...sortSelect.options].some((o) => o.value === sort)) sort = "";
+    sortSelect.value = sort;
+
+    // Ties keep A–Z order. Classified recipes have no time, so they go last on Quickest.
+    const sorters = {
+      newest: (a, b) => (b.dataset.added || "").localeCompare(a.dataset.added || ""),
+      quickest: (a, b) => (a.dataset.total ? +a.dataset.total : Infinity) - (b.dataset.total ? +b.dataset.total : Infinity),
+    };
+    const reorder = () => {
+      const ordered = sorters[sort] ? [...cards].sort((a, b) => sorters[sort](a, b) || cards.indexOf(a) - cards.indexOf(b)) : cards;
+      grid.append(...ordered);
+    };
 
     const update = () => {
       const words = fold(input.value).split(/\s+/).filter(Boolean);
@@ -121,6 +153,7 @@ description: Dinners, desserts, and family favorites, written out step by step.
       if (input.value.trim()) next.set("q", input.value.trim());
       if (category) next.set("category", category);
       if (tag) next.set("tag", tag);
+      if (sort) next.set("sort", sort);
       const query = next.toString();
       history.replaceState(null, "", query ? `?${query}` : location.pathname);
     };
@@ -134,6 +167,7 @@ description: Dinners, desserts, and family favorites, written out step by step.
       update();
     });
     input.addEventListener("input", update);
+    sortSelect.addEventListener("change", () => { sort = sortSelect.value; reorder(); update(); });
     input.addEventListener("keydown", (event) => {
       if (event.key === "Escape" && input.value) { input.value = ""; update(); }
     });
@@ -168,6 +202,13 @@ description: Dinners, desserts, and family favorites, written out step by step.
     });
 
     finder.hidden = false;
+    reorder();
     update();
+
+    // On phones each row scrolls sideways; bring a chip picked from the URL into view.
+    finder.querySelectorAll('.chips [aria-pressed="true"]').forEach((chip) => {
+      const row = chip.parentElement;
+      if (row.scrollWidth > row.clientWidth) row.scrollLeft = chip.offsetLeft - row.offsetLeft - 16;
+    });
   })();
 </script>

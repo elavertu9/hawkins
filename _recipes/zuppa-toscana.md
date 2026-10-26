@@ -4,6 +4,7 @@ summary: >-
   An Olive Garden copycat: Italian sausage, potatoes, kale, and bacon in a
   creamy, peppery broth.
 category: Soup
+added: 2026-10-24
 # image: /assets/images/recipes/zuppa-toscana.jpg
 # image_alt: Bowl of creamy sausage, potato, and kale soup
 time:

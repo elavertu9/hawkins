@@ -4,6 +4,8 @@ summary: >-
   The classic three-ingredient party meatballs: frozen meatballs slow-cooked in
   a sweet and tangy grape jelly and chili sauce glaze.
 category: Appetizer
+tags: [Crowd, Slow Cooker]
+added: 2026-10-24
 # image: /assets/images/recipes/grape-jelly-meatballs.jpg
 # image_alt: Glazed meatballs in a slow cooker
 time:

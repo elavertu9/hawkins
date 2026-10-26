@@ -4,6 +4,8 @@ summary: >-
   Grandma's classic frozen mint pie: a fluffy, minty-green marshmallow filling
   in a chocolate Oreo crust.
 category: Dessert
+tags: [Make Ahead]
+added: 2026-10-24
 # image: /assets/images/recipes/grasshopper-pie.jpg
 # image_alt: Slice of green grasshopper pie with chocolate shavings
 time:

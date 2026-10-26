@@ -4,6 +4,8 @@ summary: >-
   A from-scratch chicken pot pie with carrots, peas, and celery in a creamy,
   lightly seasoned sauce, baked between two flaky crusts.
 category: Dinner
+tags: [Make Ahead]
+added: 2026-10-24
 # image: /assets/images/recipes/chicken-pot-pie.jpg
 # image_alt: Golden chicken pot pie with a slice cut out
 time:

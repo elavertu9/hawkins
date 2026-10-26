@@ -4,6 +4,8 @@ summary: >-
   The classic two-ingredient party dip: melted Velveeta and RO*TEL tomatoes
   with green chilies. Creamy, cheesy, a little spicy, and done in 10 minutes.
 category: Appetizer
+tags: [Quick, Crowd, Vegetarian, Spicy]
+added: 2026-10-24
 # image: /assets/images/recipes/rotel-queso-dip.jpg
 # image_alt: Bowl of queso dip with tortilla chips
 time:
