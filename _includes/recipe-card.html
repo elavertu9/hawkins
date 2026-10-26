@@ -5,10 +5,11 @@
 {%- assign r = include.recipe -%}
 {%- assign total = r.time.prep | plus: r.time.cook | plus: r.time.additional -%}
 {%- capture search -%}
-  {{ r.title }} {{ r.summary }} {{ r.category }}
+  {{ r.title }} {{ r.summary }} {{ r.category }} {{ r.tags | join: " " }}
   {%- for group in r.ingredients %}{% for ingredient in group.items %} {{ ingredient.item }}{% endfor %}{% endfor %}
 {%- endcapture -%}
-<article class="card" data-category="{{ r.category | slugify }}" data-search="{{ search | strip_newlines | normalize_whitespace | downcase | escape }}">
+{%- capture tag_slugs -%}{% for tag in r.tags %}{{ tag | slugify }} {% endfor %}{%- endcapture -%}
+<article class="card" data-category="{{ r.category | slugify }}" data-tags="{{ tag_slugs | strip }}" data-search="{{ search | strip_newlines | normalize_whitespace | downcase | escape }}">
   <button class="card__plan" type="button" data-plan-add="{{ r.slug }}" data-plan-title="{{ r.title | escape }}" aria-pressed="false" hidden></button>
   <div class="card__media">
     {%- if r.image %}
@@ -20,7 +21,7 @@
     {%- endif %}
   </div>
   <div class="card__body">
-    <p class="eyebrow">{{ r.category }}</p>
+    <p class="eyebrow">{{ r.category }}{% for tag in r.tags %} <span class="tag">{{ tag }}</span>{% endfor %}</p>
     <h3 class="card__title"><a class="card__link" href="{{ r.url | relative_url }}">{{ r.title }}</a></h3>
     <p class="card__summary">{{ r.summary }}</p>
     <p class="card__meta">

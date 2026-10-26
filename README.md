@@ -28,6 +28,7 @@ automatically on every push to `main`. There is no build step to run yourself.
    title: Beef Stew
    summary: One or two sentences shown on cards and at the top of the page.
    category: Dinner            # used for the filter on /recipes/
+   tags: [Low Calorie]         # optional, any number; each gets its own filter chip
    image: /assets/images/recipes/beef-stew.jpg   # optional
    image_alt: Bowl of beef stew                  # optional
    time:

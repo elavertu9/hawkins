@@ -5,6 +5,9 @@ description: Dinners, desserts, and family favorites, written out step by step.
 ---
 {%- assign recipes = site.recipes | sort: "title" -%}
 {%- assign categories = recipes | map: "category" | uniq | sort -%}
+{%- assign all_tags = "" | split: "" -%}
+{%- for r in recipes %}{% if r.tags %}{% assign all_tags = all_tags | concat: r.tags %}{% endif %}{% endfor -%}
+{%- assign all_tags = all_tags | uniq | sort -%}
 
 <div class="container">
   <header class="page-head">
@@ -32,6 +35,14 @@ description: Dinners, desserts, and family favorites, written out step by step.
       {%- endfor %}
     </div>
     {%- endif %}
+    {%- if all_tags.size > 0 %}
+    <div class="chips chips--tags" role="group" aria-label="Filter by tag">
+      {%- for tag in all_tags %}
+      {%- assign tagged = recipes | where_exp: "r", "r.tags contains tag" %}
+      <button class="chip chip--tag" type="button" data-tag="{{ tag | slugify }}" aria-pressed="false">{{ tag }} <span class="chip__count" data-count>{{ tagged.size }}</span></button>
+      {%- endfor %}
+    </div>
+    {%- endif %}
   </div>
 
   <div class="card-grid" data-filter-target>
@@ -48,14 +59,16 @@ description: Dinners, desserts, and family favorites, written out step by step.
 </div>
 
 <script>
-  // Search and category filter. Without JavaScript the tools stay hidden and
-  // every recipe shows. The search and filter are kept in the URL
-  // (?q=...&category=...) so the back button returns to the same results.
+  // Search, category, and tag filters. Without JavaScript the tools stay hidden
+  // and every recipe shows. They're kept in the URL (?q=...&category=...&tag=...)
+  // so the back button returns to the same results. A category and a tag work
+  // together: Breakfast + Low Calorie shows low-calorie breakfasts.
   (() => {
     const finder = document.querySelector("[data-finder]");
     if (!finder) return;
     const input = finder.querySelector("[data-search-input]");
-    const chips = [...finder.querySelectorAll(".chip")];
+    const chips = [...finder.querySelectorAll(".chip[data-category]")];
+    const tagChips = [...finder.querySelectorAll(".chip[data-tag]")];
     const status = finder.querySelector("[data-status]");
     const empty = document.querySelector("[data-empty]");
     const cards = [...document.querySelectorAll("[data-filter-target] .card")];
@@ -68,33 +81,46 @@ description: Dinners, desserts, and family favorites, written out step by step.
     input.value = params.get("q") || "";
     let category = params.get("category") || "";
     if (!chips.some((c) => c.dataset.category === category)) category = "";
+    let tag = params.get("tag") || "";
+    if (!tagChips.some((c) => c.dataset.tag === tag)) tag = "";
+    const hasTag = (card, slug) => (card.dataset.tags || "").split(" ").includes(slug);
 
     const update = () => {
       const words = fold(input.value).split(/\s+/).filter(Boolean);
       const matchesSearch = (card) => words.every((w) => card.searchText.includes(w));
       const found = cards.filter(matchesSearch);
 
-      // Counts reflect the search, so you can see where the matches are.
+      // Counts reflect the search and the other filter, so you can see where
+      // the matches are.
+      const inCategory = (card) => !category || card.dataset.category === category;
+      const inTag = (card) => !tag || hasTag(card, tag);
       chips.forEach((chip) => {
         const slug = chip.dataset.category;
         chip.setAttribute("aria-pressed", String(slug === category));
+        const pool = found.filter(inTag);
         chip.querySelector("[data-count]").textContent =
-          slug ? found.filter((c) => c.dataset.category === slug).length : found.length;
+          slug ? pool.filter((c) => c.dataset.category === slug).length : pool.length;
+      });
+      tagChips.forEach((chip) => {
+        chip.setAttribute("aria-pressed", String(chip.dataset.tag === tag));
+        chip.querySelector("[data-count]").textContent =
+          found.filter(inCategory).filter((c) => hasTag(c, chip.dataset.tag)).length;
       });
 
       let shown = 0;
       cards.forEach((card) => {
-        card.hidden = !(found.includes(card) && (!category || card.dataset.category === category));
+        card.hidden = !(found.includes(card) && inCategory(card) && inTag(card));
         if (!card.hidden) shown++;
       });
 
-      const filtered = words.length || category;
+      const filtered = words.length || category || tag;
       status.textContent = filtered ? `Showing ${shown} of ${cards.length} recipes` : `${cards.length} recipes`;
       empty.hidden = shown > 0;
 
       const next = new URLSearchParams();
       if (input.value.trim()) next.set("q", input.value.trim());
       if (category) next.set("category", category);
+      if (tag) next.set("tag", tag);
       const query = next.toString();
       history.replaceState(null, "", query ? `?${query}` : location.pathname);
     };
@@ -102,7 +128,9 @@ description: Dinners, desserts, and family favorites, written out step by step.
     finder.addEventListener("click", (event) => {
       const chip = event.target.closest(".chip");
       if (!chip) return;
-      category = chip.dataset.category;
+      // Tags toggle on and off; categories pick one, with All to reset.
+      if (chip.dataset.tag !== undefined) tag = tag === chip.dataset.tag ? "" : chip.dataset.tag;
+      else category = chip.dataset.category;
       update();
     });
     input.addEventListener("input", update);
@@ -112,6 +140,7 @@ description: Dinners, desserts, and family favorites, written out step by step.
     empty.querySelector("[data-clear]").addEventListener("click", () => {
       input.value = "";
       category = "";
+      tag = "";
       update();
       input.focus();
     });

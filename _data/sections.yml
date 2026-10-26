@@ -28,3 +28,17 @@
   url: /drinks/
   blurb: Cocktails and drinks to mix up, from Starcourt slushies to grown-up nightcaps.
   status: soon
+
+- id: fast-food
+  title: Healthy Fast Food
+  file: "005"
+  url: /fast-food/
+  blurb: Low-calorie drive-thru orders, for the nights nobody's cooking.
+  status: soon
+
+- id: caffeine
+  title: Caffeine
+  file: "006"
+  url: /caffeine/
+  blurb: The best-flavored energy drinks and coffee orders worth the stop.
+  status: soon

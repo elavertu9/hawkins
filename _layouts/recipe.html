@@ -20,7 +20,10 @@ layout: default
 
     <header class="recipe-hero">
       <div class="recipe-hero__text">
-        <p class="eyebrow">{{ page.category }}</p>
+        <p class="eyebrow">
+          {{- page.category -}}
+          {%- for tag in page.tags %} <a class="tag" href="{{ '/recipes/' | relative_url }}?tag={{ tag | slugify }}">{{ tag }}</a>{% endfor -%}
+        </p>
         <h1 class="recipe-hero__title">{{ page.title }}</h1>
         <p class="recipe-hero__summary">{{ page.summary }}</p>
 
@@ -237,6 +240,9 @@ layout: default
   "description": {{ page.summary | strip | jsonify }},
   "image": {{ page.image | default: site.recipe_placeholder | absolute_url | jsonify }},
   "recipeCategory": {{ page.category | jsonify }},
+  {%- if page.tags %}
+  "keywords": {{ page.tags | join: ", " | jsonify }},
+  {%- endif %}
   "prepTime": "PT{{ t.prep | plus: 0 }}M",
   "cookTime": "PT{{ t.cook | plus: 0 }}M",
   "totalTime": "PT{{ total }}M",

@@ -395,6 +395,26 @@ p { margin: 0; }
 }
 .chip[aria-pressed="true"] .chip__count { background: rgba(0, 0, 0, 0.25); }
 
+/* Tags (like Low Calorie) sit on top of the category: amber instead of red. */
+.chips--tags { margin-top: -0.5rem; }
+.chip--tag { border-style: dashed; border-color: rgba(255, 200, 87, 0.45); color: var(--amber); }
+.chip--tag:hover { border-color: var(--amber); box-shadow: 0 0 16px rgba(255, 200, 87, 0.3); color: var(--amber); }
+.chip--tag[aria-pressed="true"] { background: var(--amber); border-color: var(--amber); border-style: solid; color: #1a1408; }
+.tag {
+  display: inline-block;
+  margin-left: 0.5rem;
+  padding: 0 0.45rem;
+  font-size: 0.6875rem;
+  line-height: 1.6;
+  letter-spacing: 0.08em;
+  color: var(--amber);
+  text-decoration: none;
+  vertical-align: 0.1em;
+  border: 1px solid rgba(255, 200, 87, 0.45);
+  border-radius: 999px;
+}
+a.tag:hover { border-color: var(--amber); }
+
 .finder__status {
   margin: 0;
   padding-bottom: 0.6rem;
@@ -589,6 +609,8 @@ p { margin: 0; }
   padding: 0;
   list-style: none;
 }
+/* An odd card out spans the row, so it isn't left sitting alone. */
+.file:last-child:nth-child(odd) { grid-column: 1 / -1; }
 .file {
   position: relative;
   display: flex;
@@ -1583,6 +1605,7 @@ p { margin: 0; }
   .panel,
   .notes { background: none; border-color: #ccc; }
   .stat--total dd,
+  .tag,
   .qty,
   .step__text strong,
   .eyebrow,
