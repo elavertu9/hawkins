@@ -8,6 +8,7 @@ Gemfile.lock
 .DS_Store
 IDEAS.md
 
-# Classified recipes (readable) and the clearance code. See classified.sh.
+# Classified recipes (readable), the clearance code, and their backup script. See classified.sh.
 _classified/
 .classified-code
+backup-classified.sh
