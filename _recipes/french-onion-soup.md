@@ -1,12 +1,12 @@
 ---
-title: Onion Soup
+title: French Onion Soup
 summary: >-
   Buttery, slow-simmered onion soup made easy with canned consommé, ladled over
   croutons and broiled under a blanket of melted Parmesan.
 category: Soup
 added: 2026-10-24
-# image: /assets/images/recipes/onion-soup.jpg
-# image_alt: Bowl of onion soup with broiled Parmesan on top
+# image: /assets/images/recipes/french-onion-soup.jpg
+# image_alt: Bowl of French onion soup with broiled Parmesan on top
 time:
   prep: 10
   cook: 80

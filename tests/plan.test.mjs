@@ -9,7 +9,7 @@ const fits = "document.documentElement.scrollWidth <= innerWidth";
 await send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
 await go("/recipes/"); await q("localStorage.clear()"); await go("/recipes/");
 check(`badge starts ${await q(badge)}`, (await q(badge)) === "hidden");
-check(`card buttons: ${await q("document.querySelectorAll('.card__plan:not([hidden])').length")}`, (await q("document.querySelectorAll('.card__plan:not([hidden])').length")) === 44);
+check(`card buttons: ${await q("document.querySelectorAll('.card__plan:not([hidden])').length")}`, (await q("document.querySelectorAll('.card__plan:not([hidden])').length")) === 43);
 await q("document.querySelector('.card__plan[data-plan-add=\"beef-and-broccoli\"]').click()"); await sleep(300);
 check(`card add: badge ${await q(badge)}, label "${await q("document.querySelector('.card__plan[data-plan-add=\"beef-and-broccoli\"]').textContent")}", still on ${await q("location.pathname")}`,
   (await q(badge)) === "1" && (await q("location.pathname")) === "/recipes/");

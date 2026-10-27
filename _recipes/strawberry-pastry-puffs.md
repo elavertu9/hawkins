@@ -1,12 +1,12 @@
 ---
-title: Strawberry Pastries
+title: Strawberry Pastry Puffs
 summary: >-
   Crisp puff pastry squares with an almond-sugar top, split and filled with
   fresh strawberries and whipped topping.
 category: Dessert
 tags: [Crowd]
 added: 2026-10-24
-# image: /assets/images/recipes/strawberry-pastries.jpg
+# image: /assets/images/recipes/strawberry-pastry-puffs.jpg
 # image_alt: Puff pastry filled with strawberries and cream
 time:
   prep: 15
