@@ -38,3 +38,4 @@ jobs:
         with:
           name: screenshots
           path: tests/.shots/
+          include-hidden-files: true # .shots starts with a dot

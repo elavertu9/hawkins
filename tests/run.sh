@@ -74,6 +74,11 @@ for test in "${tests[@]}"; do
     passed=$((passed + 1))
   else
     failed+=("$name")
+    # On GitHub, also list the failed checks on the run's summary page.
+    if [ -n "${GITHUB_ACTIONS:-}" ]; then
+      fails="$(grep '^FAIL' "$logs/$name.log" 2>/dev/null | head -20 | sed 's/%/%25/g' | awk '{printf "%s%%0A", $0}')"
+      echo "::error title=$name test failed::${fails:-no FAIL lines; see the log above}"
+    fi
   fi
 done
 

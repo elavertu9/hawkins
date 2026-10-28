@@ -13,6 +13,10 @@ export const SHOTS = process.env.SHOTS_DIR || join(ROOT, "tests", ".shots");
 const CHROME = process.env.CHROME || "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 // GitHub's Ubuntu runners don't allow Chrome's sandbox.
 const SANDBOX = process.env.CI ? ["--no-sandbox"] : [];
+// Act like a computer with a mouse everywhere. Headless Chrome on a Mac reports
+// one, but on Linux (GitHub's machines) it reports none, which changes how the
+// site behaves (+ Plan buttons show without hovering).
+const MOUSE = "--blink-settings=primaryPointerType=4,availablePointerTypes=4,primaryHoverType=2,availableHoverTypes=2";
 
 // The clearance code, for the classified tests. It lives in the gitignored
 // .classified-code, never in a test.
@@ -26,9 +30,15 @@ export async function open() {
   const profile = mkdtempSync(join(tmpdir(), "hawkins-test-"));
   // Port 0 lets Chrome pick a free port and write it to DevToolsActivePort.
   const chrome = spawn(CHROME, [
-    "--headless=new", "--disable-gpu", "--hide-scrollbars", "--remote-debugging-port=0", ...SANDBOX,
+    // Muted, so timers the tests start never beep through your speakers.
+    "--headless=new", "--disable-gpu", "--hide-scrollbars", "--mute-audio", MOUSE, "--remote-debugging-port=0", ...SANDBOX,
     `--user-data-dir=${profile}`, "about:blank",
   ], { stdio: "ignore" });
+  // Never leave Chrome running behind us: not when a test throws, and not when
+  // the run is stopped (Ctrl+C, a timeout).
+  process.on("exit", () => chrome.kill());
+  for (const signal of ["SIGINT", "SIGTERM", "SIGHUP"]) process.on(signal, () => process.exit(130));
+  process.on("unhandledRejection", (error) => { console.error(error); process.exit(1); });
 
   let wsUrl;
   for (let i = 0; i < 100 && !wsUrl; i++) {
