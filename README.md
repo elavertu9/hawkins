@@ -16,7 +16,7 @@ automatically on every push to `main`. There is no build step to run yourself.
 | `_includes/` | Shared pieces: head, header, footer, recipe card, duration formatter. |
 | `assets/css/main.css` | All styles, including colors and fonts as variables at the top. |
 | `plan/index.html` | The meal plan page: pick recipes, get one shopping list sorted by aisle. |
-| `assets/js/` | `recipe.js` for checklists, cook mode, and timers; `plan.js` for the meal plan and shopping list; `lights.js` for the home page lights; `upside-down.js` for the easter egg. |
+| `assets/js/` | `recipe.js` for checklists and cook mode; `timers.js` for kitchen timers, which follow you to every page; `plan.js` for the meal plan and shopping list; `lights.js` for the home page lights; `upside-down.js` for the easter egg; `page.js` and `lib/turbo.js` for in-place page changes (see below). |
 | `assets/images/recipes/` | Recipe photos. |
 | `tests/` | Browser tests for the site's features. `tests/run.sh` runs them. |
 
@@ -111,6 +111,23 @@ placeholder.
    `recipes` is set up, create `_packing/` with items and a `packing/index.html`
    listing page, and add a layout for packing items.
 3. Change its status to `live`. It then appears in the header nav and links from the home page.
+
+## Scripts and page changes (Turbo)
+
+Links swap pages in place with [Turbo Drive](https://turbo.hotwired.dev/handbook/drive)
+(`assets/js/lib/turbo.js`, version 8.0.12), so the browser tab stays loaded as you
+move around. That's what keeps timers beeping and the screen awake from page to page.
+
+- Scripts in `<head>` (`_includes/head.html`) run once per visit to the site. Scripts in
+  a page's body run again every time that page is shown, with the same `window` and
+  `document` as before.
+- So in a body script, add `window` or `document` listeners with
+  `HawkinsPage.on(target, type, fn)`, and register other cleanup with
+  `HawkinsPage.onLeave(fn)`. Both are undone before the next page renders (`page.js`).
+- Don't call `history.replaceState(null, ...)`: pass `history.state` instead, or Back
+  breaks. Use `HawkinsPage.visit(url)` to go somewhere from code.
+- To make a link do a normal full page load, add `data-turbo="false"` to it.
+- `tests/turbo.test.mjs` checks moving around the site this way.
 
 ## Preview locally
 

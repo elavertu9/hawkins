@@ -6,8 +6,8 @@ summary: >-
 category: Breakfast
 tags: [Low Calorie, Vegetarian]
 added: 2026-10-26
-# image: /assets/images/recipes/cottage-cheese-bagels.jpg
-# image_alt: Golden cottage cheese bagels topped with everything seasoning
+image: /assets/images/recipes/cottage-cheese-bagels.jpg
+image_alt: Golden cottage cheese bagels topped with everything seasoning
 time:
   prep: 15
   cook: 20

@@ -1,7 +1,8 @@
 // Easter egg: flips the site into the Upside Down.
 // Keyboard: type 011 (Eleven's tattoo). Touch: triple-tap a blank spot.
 // Do it again to get back. It lasts for the browser session, so the whole
-// site stays flipped as you click around.
+// site stays flipped as you click around. Runs once per visit to the site
+// (from <head>; see page.js).
 (() => {
   const root = document.documentElement;
   const STORAGE_KEY = "hawkins:upside-down";
@@ -29,8 +30,8 @@
       toast = document.createElement("p");
       toast.className = "upside-toast";
       toast.setAttribute("role", "status");
-      document.body.appendChild(toast);
     }
+    if (!toast.isConnected) document.body.appendChild(toast); // a new page swapped in
     toast.textContent = text;
     toast.classList.remove("is-shown");
     void toast.offsetWidth; // restart the animation
@@ -67,6 +68,14 @@
     startAtHeader();
     window.addEventListener("load", startAtHeader, { once: true });
   }
+  // The same after Turbo swaps in a new page from a link (Back and Forward
+  // restore where you were instead).
+  let lastAction = null;
+  document.addEventListener("turbo:visit", (e) => { lastAction = e.detail.action; });
+  document.addEventListener("turbo:load", () => {
+    if (lastAction !== "advance" || location.hash || !root.classList.contains("upside-down")) return;
+    window.scrollTo({ top: maxScroll(), behavior: "instant" });
+  });
 
   document.addEventListener("keydown", (e) => {
     if (e.metaKey || e.ctrlKey || e.altKey) return;

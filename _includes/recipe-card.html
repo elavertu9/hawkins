@@ -13,7 +13,7 @@
   {%- unless r.classified %}
   <button class="card__plan" type="button" data-plan-add="{{ r.slug }}" data-plan-title="{{ r.title | escape }}" aria-pressed="false" hidden></button>
   {%- endunless %}
-  <div class="card__media">
+  <div class="card__media{% if r.image %} is-photo{% endif %}">
     {%- if r.image %}
       <img src="{{ r.image | relative_url }}" alt="{{ r.image_alt | default: r.title | escape }}"
            width="1200" height="800" loading="lazy" decoding="async">

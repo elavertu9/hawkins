@@ -155,7 +155,7 @@ description: Dinners, desserts, and family favorites, written out step by step.
       if (tag) next.set("tag", tag);
       if (sort) next.set("sort", sort);
       const query = next.toString();
-      history.replaceState(null, "", query ? `?${query}` : location.pathname);
+      history.replaceState(history.state, "", query ? `?${query}` : location.pathname); // keeps Turbo's entry data
     };
 
     finder.addEventListener("click", (event) => {
@@ -193,13 +193,15 @@ description: Dinners, desserts, and family favorites, written out step by step.
       const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
       gate.classList.add("is-opening");
       gate.textContent = "Opening…";
-      setTimeout(() => { location.href = href; }, still ? 0 : 450);
+      setTimeout(() => { window.HawkinsPage ? HawkinsPage.visit(href) : (location.href = href); }, still ? 0 : 450);
     });
     // Reset the button if the page comes back from the back/forward cache.
-    addEventListener("pageshow", () => {
+    const resetGate = () => {
       gate.classList.remove("is-opening");
       gate.textContent = "Open the gate";
-    });
+    };
+    if (window.HawkinsPage) HawkinsPage.on(window, "pageshow", resetGate);
+    else addEventListener("pageshow", resetGate);
 
     finder.hidden = false;
     reorder();

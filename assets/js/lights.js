@@ -31,7 +31,8 @@
 
   (async function spell() {
     await wait(600);
-    for (;;) {
+    // Stops once Turbo swaps in another page and the wall is gone.
+    while (wall.isConnected) {
       for (const bulb of bulbs) {
         bulb.classList.add("is-on");
         await wait(480);

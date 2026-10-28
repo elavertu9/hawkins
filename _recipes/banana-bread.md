@@ -6,8 +6,8 @@ summary: >-
 category: Breakfast
 tags: [Vegetarian]
 added: 2026-10-24
-# image: /assets/images/recipes/banana-bread.jpg
-# image_alt: Sliced loaf of banana bread
+image: /assets/images/recipes/banana-bread.jpg
+image_alt: Golden-brown loaf of banana bread in a stoneware pan
 time:
   prep: 15
   cook: 55

@@ -95,11 +95,14 @@
     });
   });
 
-  // Another tab changed the plan.
-  addEventListener("storage", (event) => {
+  // Another tab changed the plan. Through HawkinsPage, so it's removed when
+  // Turbo swaps in the next page (see page.js).
+  const onStorage = (event) => {
     if (event.key === STORAGE_KEY) { plan = load(); refresh(); }
     if (event.key === PANTRY_KEY) { pantry = loadPantry(); refresh(); }
-  });
+  };
+  if (window.HawkinsPage) HawkinsPage.on(window, "storage", onStorage);
+  else addEventListener("storage", onStorage);
 
   // ---------- Plan page ----------
   const page = document.querySelector("[data-plan-page]");
@@ -694,7 +697,7 @@
     .map((text, i) => ({ id: `s${i}${Date.now().toString(36)}`, text }));
 
   const params = new URLSearchParams(location.search);
-  const dropParam = () => history.replaceState(null, "", location.pathname);
+  const dropParam = () => history.replaceState(history.state, "", location.pathname); // keeps Turbo's entry data
   if (params.has("r") || params.has("x")) {
     const shared = parseShared(params.get("r"));
     const extras = parseExtras(params.get("x"));

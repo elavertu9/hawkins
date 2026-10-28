@@ -69,7 +69,7 @@ layout: default
         </div>
       </div>
 
-      <figure class="recipe-hero__media">
+      <figure class="recipe-hero__media{% if page.image %} is-photo{% endif %}">
         {%- if page.image %}
           <img src="{{ page.image | relative_url }}" alt="{{ page.image_alt | default: page.title | escape }}"
                width="1200" height="800" decoding="async" fetchpriority="high">
@@ -167,12 +167,19 @@ layout: default
       <div class="cook__bar">
         <div class="cook__heading">
           <p class="cook__recipe">{{ page.title }}</p>
-          <p class="cook__count" id="cook-count" data-cook-count></p>
+          <button class="cook__count" type="button" id="cook-count" data-cook-steps-toggle aria-haspopup="dialog" aria-expanded="false" aria-controls="cook-steps">
+            <span data-cook-count></span>
+            <svg viewBox="0 0 12 12" width="10" height="10" aria-hidden="true"><path d="M2 4l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
         </div>
-        <button class="toggle" type="button" data-cook-ingredients aria-expanded="false" aria-controls="cook-ingredients">Ingredients</button>
+        <button class="toggle cook__ingredients-toggle" type="button" data-cook-ingredients aria-expanded="false" aria-controls="cook-ingredients">
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1" fill="currentColor"/><circle cx="4.5" cy="12" r="1" fill="currentColor"/><circle cx="4.5" cy="18" r="1" fill="currentColor"/></svg>
+          Ingredients
+        </button>
         <button class="cook__close" type="button" data-cook-close aria-label="Close cook mode">&times;</button>
       </div>
-      <div class="cook__progress" aria-hidden="true"><span data-cook-progress></span></div>
+      {%- comment %} One segment per step: tap to jump there. Filled in by recipe.js. {% endcomment %}
+      <div class="cook__segments" role="group" aria-label="Go to step" data-cook-segments></div>
 
       <div class="cook__stage" data-cook-stage>
         <div class="cook__step" data-cook-step aria-live="polite">
@@ -182,8 +189,26 @@ layout: default
         </div>
       </div>
 
-      <div class="cook__ingredients" id="cook-ingredients" data-cook-panel hidden>
-        <h2 class="cook__panel-title">Ingredients</h2>
+      <div class="cook__sheet cook__steps" id="cook-steps" data-cook-steps-panel role="dialog" aria-modal="true" aria-labelledby="cook-steps-title" hidden>
+        <div class="cook__panel-bar">
+          <h2 class="cook__panel-title" id="cook-steps-title">Steps</h2>
+          <button class="cook__close" type="button" data-cook-sheet-close aria-label="Close steps">&times;</button>
+        </div>
+        <div class="cook__panel-list">
+          <ol class="cook__step-list" data-cook-step-list></ol>
+          <button class="cook__restart" type="button" data-cook-restart data-cook-restart-link>Start over from step 1</button>
+        </div>
+        <div class="cook__panel-nav">
+          <button class="button cook__next" type="button" data-cook-sheet-close data-cook-sheet-back>Back to step</button>
+        </div>
+      </div>
+
+      <div class="cook__sheet cook__ingredients" id="cook-ingredients" data-cook-panel role="dialog" aria-modal="true" aria-labelledby="cook-panel-title" hidden>
+        <div class="cook__panel-bar">
+          <h2 class="cook__panel-title" id="cook-panel-title">Ingredients</h2>
+          <button class="cook__close" type="button" data-cook-sheet-close aria-label="Close ingredients">&times;</button>
+        </div>
+        <div class="cook__panel-list">
         {%- for group in page.ingredients %}
           {%- assign group_index = forloop.index %}
           {%- if group.group %}
@@ -204,6 +229,35 @@ layout: default
             {%- endfor %}
           </ul>
         {%- endfor %}
+        </div>
+        <div class="cook__panel-nav">
+          <button class="button cook__next" type="button" data-cook-sheet-close data-cook-sheet-back data-cook-panel-back>Back to step</button>
+        </div>
+      </div>
+
+      <div class="cook__sheet cook__notice" data-cook-resume role="dialog" aria-modal="true" aria-labelledby="cook-resume-title" hidden>
+        <div class="cook__notice-card">
+          <p class="cook__notice-kicker">Welcome back</p>
+          <h2 class="cook__notice-title" id="cook-resume-title" data-cook-resume-title></h2>
+          <p class="cook__notice-text" data-cook-resume-text></p>
+          <div class="cook__notice-actions">
+            <button class="button cook__next" type="button" data-cook-sheet-close data-cook-resume-continue></button>
+            <button class="button cook__prev" type="button" data-cook-restart>Start from step 1</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="cook__sheet cook__notice" data-cook-finished role="dialog" aria-modal="true" aria-labelledby="cook-finished-title" hidden>
+        <div class="cook__notice-card">
+          <p class="cook__notice-kicker">Recipe complete</p>
+          <h2 class="cook__notice-title" id="cook-finished-title">All done!</h2>
+          <p class="cook__notice-text">Enjoy your {{ page.title }}.</p>
+          <div class="cook__notice-actions">
+            <button class="button cook__next" type="button" data-cook-finish-close>Back to recipe</button>
+            <button class="button cook__prev" type="button" data-cook-restart>Cook it again</button>
+          </div>
+          <button class="cook__restart cook__notice-back" type="button" data-cook-finish-back>‹ Back to the last step</button>
+        </div>
       </div>
 
       <div class="cook__nav">

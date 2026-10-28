@@ -6,7 +6,14 @@
   const recipe = document.querySelector("[data-recipe-id]");
   if (!recipe) return;
 
+  // Window and document listeners go through HawkinsPage so they're removed
+  // when Turbo swaps in the next page (see page.js).
+  const page = window.HawkinsPage || { on: (t, type, fn, o) => t.addEventListener(type, fn, o), onLeave() {} };
+
   const STORAGE_KEY = `hawkins:recipe:${recipe.dataset.recipeId}`;
+  // Set once someone starts their first timer; until then cook mode explains them.
+  const TIMER_HINT_KEY = "hawkins:timer-hint-seen";
+  const timerHintSeen = () => { try { return localStorage.getItem(TIMER_HINT_KEY) === "1"; } catch (_) { return false; } };
   const MAX_AGE_MS = 12 * 60 * 60 * 1000;
 
   const load = () => {
@@ -89,11 +96,12 @@
   resetButton.hidden = state.ingredients.length === 0 && state.steps.length === 0;
 
   // Keep the screen awake while cooking (Screen Wake Lock API, where supported).
-  // Either the button or cook mode can ask for it; it's released when neither does.
+  // Either the button or cook mode can ask for it; it's released when neither
+  // does. Running timers keep the screen on by themselves (timers.js).
   const wakeButton = recipe.querySelector("[data-wake]");
   const wake = { button: false, cook: false, lock: null };
 
-  const renderWake = () => wakeButton.setAttribute("aria-pressed", String(wake.button && wake.lock !== null));
+  const renderWake = () => wakeButton && wakeButton.setAttribute("aria-pressed", String(wake.button && wake.lock !== null));
 
   const syncWake = async () => {
     if (!("wakeLock" in navigator)) return;
@@ -118,12 +126,19 @@
       wake.button = !wake.button;
       syncWake();
     });
-
-    // The browser drops the lock when the tab is hidden; take it back on return.
-    document.addEventListener("visibilitychange", () => {
-      if (document.visibilityState === "visible") syncWake();
-    });
   }
+
+  // The browser drops the lock when the tab is hidden; take it back on return.
+  page.on(document, "visibilitychange", () => {
+    if (document.visibilityState === "visible") syncWake();
+  });
+  // Leaving the page: let the screen sleep again (running timers keep their
+  // own wake lock in timers.js).
+  page.onLeave(() => {
+    wake.button = false;
+    wake.cook = false;
+    if (wake.lock) wake.lock.release();
+  });
 
   // ---------- Timers ----------
   // Bold times in a step ("**10 minutes**", "**7–8 minutes**") become buttons
@@ -142,104 +157,21 @@
     return Math.round(value * per);
   };
 
-  const formatClock = (seconds) => {
-    const s = Math.max(0, Math.ceil(seconds));
-    const h = Math.floor(s / 3600);
-    const m = Math.floor((s % 3600) / 60);
-    const sec = String(s % 60).padStart(2, "0");
-    return h ? `${h}:${String(m).padStart(2, "0")}:${sec}` : `${m}:${sec}`;
+  // The timers themselves live in timers.js, on every page of the site.
+  const Timers = window.HawkinsTimers;
+  const recipeTitle = (recipe.querySelector("h1") || document.querySelector("h1") || {}).textContent || "";
+  const recipeKey = recipe.dataset.recipeId;
+
+  const startTimer = (seconds, info) => {
+    if (!Timers) return;
+    Timers.start({ ...info, seconds, recipe: recipeTitle.trim(), url: location.pathname });
+    try { localStorage.setItem(TIMER_HINT_KEY, "1"); } catch (_) { /* ignore */ }
+    document.querySelectorAll(".cook__hint").forEach((h) => h.remove());
+    document.querySelectorAll(".timer-start.is-new").forEach((b) => b.classList.remove("is-new"));
   };
-
-  const tray = document.createElement("div");
-  tray.className = "timers";
-  tray.setAttribute("aria-label", "Timers");
-  tray.hidden = true;
-  document.body.append(tray);
-
-  const timers = [];
-  let tick = null;
-  let audio = null;
-
-  // A short three-note alarm. The AudioContext is made on the tap that starts a
-  // timer, since browsers only allow sound after a user gesture.
-  const beep = () => {
-    if (!audio) return;
-    const now = audio.currentTime;
-    [0, 0.22, 0.44].forEach((offset) => {
-      const osc = audio.createOscillator();
-      const gain = audio.createGain();
-      osc.type = "square";
-      osc.frequency.value = 880;
-      gain.gain.setValueAtTime(0.0001, now + offset);
-      gain.gain.exponentialRampToValueAtTime(0.15, now + offset + 0.02);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + offset + 0.18);
-      osc.connect(gain).connect(audio.destination);
-      osc.start(now + offset);
-      osc.stop(now + offset + 0.2);
-    });
-  };
-
-  const removeTimer = (timer) => {
-    timers.splice(timers.indexOf(timer), 1);
-    timer.el.remove();
-    document.querySelectorAll(`[data-timer-key="${timer.key}"]`).forEach((b) => b.classList.remove("is-running"));
-    tray.hidden = timers.length === 0;
-    if (!timers.length) { clearInterval(tick); tick = null; }
-  };
-
-  const update = () => {
-    const now = Date.now();
-    timers.forEach((timer) => {
-      const left = (timer.end - now) / 1000;
-      if (left > 0) {
-        timer.time.textContent = formatClock(left);
-        return;
-      }
-      if (!timer.done) {
-        timer.done = true;
-        timer.el.classList.add("is-done");
-        timer.time.textContent = "Done";
-        timer.cancel.textContent = "OK";
-        timer.cancel.setAttribute("aria-label", `Dismiss ${timer.label} timer`);
-        timer.lastBeep = 0;
-        if (navigator.vibrate) navigator.vibrate([300, 150, 300, 150, 300]);
-      }
-      // Keep beeping every few seconds for a minute, or until dismissed.
-      if (now - timer.lastBeep > 3000 && now - timer.end < 60000) {
-        timer.lastBeep = now;
-        beep();
-      }
-    });
-  };
-
-  const startTimer = (seconds, label, key) => {
-    if (!audio && (window.AudioContext || window.webkitAudioContext)) {
-      try { audio = new (window.AudioContext || window.webkitAudioContext)(); } catch (_) { /* no sound */ }
-    }
-    if (audio && audio.state === "suspended") audio.resume();
-    const existing = timers.find((t) => t.key === key);
-    if (existing) { existing.cancel.focus(); return; }
-
-    const el = document.createElement("div");
-    el.className = "timer";
-    el.innerHTML = '<span class="timer__label"></span><span class="timer__time"></span><button class="timer__cancel" type="button">&times;</button>';
-    const timer = {
-      key, label, el,
-      end: Date.now() + seconds * 1000,
-      time: el.querySelector(".timer__time"),
-      cancel: el.querySelector(".timer__cancel"),
-      done: false,
-    };
-    el.querySelector(".timer__label").textContent = label;
-    timer.cancel.setAttribute("aria-label", `Cancel ${label} timer`);
-    timer.cancel.addEventListener("click", () => removeTimer(timer));
-    timers.push(timer);
-    tray.append(el);
-    tray.hidden = false;
-    document.querySelectorAll(`[data-timer-key="${key}"]`).forEach((b) => b.classList.add("is-running"));
-    update();
-    if (!tick) tick = setInterval(update, 250);
-  };
+  const syncTimerButtons = () => document.querySelectorAll("[data-timer-key]").forEach((b) =>
+    b.classList.toggle("is-running", !!Timers && Timers.isRunning(b.dataset.timerKey)));
+  if (Timers) page.onLeave(Timers.onChange(syncTimerButtons));
 
   // ---------- Cook mode ----------
   const cookButton = recipe.querySelector("[data-cook]");
@@ -250,7 +182,7 @@
   const $ = (sel) => dialog.querySelector(sel);
   const ui = {
     count: $("[data-cook-count]"),
-    progress: $("[data-cook-progress]"),
+    segments: $("[data-cook-segments]"),
     stage: $("[data-cook-stage]"),
     step: $("[data-cook-step]"),
     num: $("[data-cook-num]"),
@@ -258,6 +190,12 @@
     text: $("[data-cook-text]"),
     panel: $("[data-cook-panel]"),
     panelToggle: $("[data-cook-ingredients]"),
+    stepsPanel: $("[data-cook-steps-panel]"),
+    stepsToggle: $("[data-cook-steps-toggle]"),
+    stepList: $("[data-cook-step-list]"),
+    restartLink: $("[data-cook-restart-link]"),
+    resume: $("[data-cook-resume]"),
+    finished: $("[data-cook-finished]"),
     prev: $("[data-cook-prev]"),
     next: $("[data-cook-next]"),
   };
@@ -265,11 +203,115 @@
   let current = 0;
   let pushed = false;
 
-  const showPanel = (open) => {
-    ui.panel.hidden = !open;
-    ui.panelToggle.setAttribute("aria-expanded", String(open));
-    ui.panelToggle.setAttribute("aria-pressed", String(open));
+  // Ingredients, the step list, and the "welcome back" and "all done" cards are
+  // sheets that cover the whole step view.
+  // While one is up, the step, Back / Next, and close button underneath are
+  // inert, so stray taps can't move or close cook mode. Running timers stay
+  // usable on top.
+  const underPanel = [$(".cook__bar"), ui.segments, ui.stage, $(".cook__nav")];
+  const sheets = {
+    ingredients: { el: ui.panel, toggle: ui.panelToggle },
+    steps: { el: ui.stepsPanel, toggle: ui.stepsToggle },
+    resume: { el: ui.resume },
+    finished: { el: ui.finished },
   };
+  let openSheet = null;
+  const showSheet = (name) => {
+    const was = openSheet;
+    openSheet = name;
+    Object.entries(sheets).forEach(([key, sheet]) => {
+      sheet.el.hidden = key !== name;
+      if (sheet.toggle) sheet.toggle.setAttribute("aria-expanded", String(key === name));
+    });
+    underPanel.forEach((el) => { el.inert = !!name; });
+    if (name) {
+      const sheet = sheets[name].el;
+      const back = sheet.querySelector("[data-cook-sheet-back]");
+      const list = sheet.querySelector(".cook__panel-list");
+      if (back) back.textContent = `Back to step ${current + 1}`;
+      if (list) list.scrollTop = 0;
+      if (name === "steps") {
+        renderStepList();
+        const here = ui.stepList.querySelector("[aria-current]");
+        here.scrollIntoView({ block: "center" });
+        here.focus({ preventScroll: true });
+      } else {
+        (back || sheet.querySelector(".button")).focus({ preventScroll: true });
+      }
+    } else if (was && dialog.open) {
+      (sheets[was].toggle || ui.next).focus({ preventScroll: true });
+    }
+  };
+  const showPanel = (open) => showSheet(open ? "ingredients" : null);
+  const panelOpen = () => openSheet !== null;
+
+  // ---------- Progress ----------
+  // Progress follows where you are in cook mode: every step before the one
+  // you're on counts as done, and the rest don't, however you got there (Next,
+  // Back, the bar, or the step list). So the bar never has gaps, and peeking
+  // ahead then coming back leaves nothing wrongly ticked. On the page itself,
+  // steps can still be ticked one by one.
+  const reached = () => {
+    for (let i = steps.length; i > 0; i--) if (steps[i - 1].classList.contains("is-done")) return i;
+    return 0;
+  };
+  const isDone = (index) => index < reached();
+  const restart = () => {
+    showSheet(null);
+    go(0);
+  };
+
+  // ---------- Picking a step ----------
+  // The segments along the top and the step list both jump straight to a step.
+  const stepTitle = (step) => {
+    const title = step.querySelector(".step__title");
+    if (title) return title.textContent.trim();
+    const text = step.querySelector(".step__text").textContent.trim().replace(/\s+/g, " ");
+    return text.length > 60 ? `${text.slice(0, 57).trimEnd()}…` : text;
+  };
+  const hasTimer = (index) => !!Timers && Timers.keys().some((k) => k.startsWith(`${recipeKey}:${index}-`));
+  const stepState = (index) =>
+    index === current ? "current step" : isDone(index) ? "done" : "not started";
+
+  const segments = steps.map((step, i) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "cook__seg";
+    button.innerHTML = `<span class="cook__seg-num" aria-hidden="true">${i + 1}</span>`;
+    button.addEventListener("click", () => go(i));
+    ui.segments.append(button);
+    return button;
+  });
+  const renderSegments = () => segments.forEach((button, i) => {
+    button.classList.toggle("is-done", isDone(i));
+    button.classList.toggle("is-current", i === current);
+    button.classList.toggle("has-timer", hasTimer(i));
+    button.setAttribute("aria-label", `Step ${i + 1}: ${stepTitle(steps[i])}, ${stepState(i)}${hasTimer(i) ? ", timer running" : ""}`);
+    if (i === current) button.setAttribute("aria-current", "step");
+    else button.removeAttribute("aria-current");
+  });
+
+  const stepItems = steps.map((step, i) => {
+    const li = document.createElement("li");
+    li.innerHTML = '<button class="cook__pick" type="button"><span class="cook__pick-num"></span><span class="cook__pick-title"></span><span class="cook__pick-state"></span></button>';
+    const button = li.querySelector("button");
+    button.querySelector(".cook__pick-num").textContent = String(i + 1).padStart(2, "0");
+    button.querySelector(".cook__pick-title").textContent = stepTitle(step);
+    button.addEventListener("click", () => { showSheet(null); go(i); });
+    ui.stepList.append(li);
+    return button;
+  });
+  const renderStepList = () => stepItems.forEach((button, i) => {
+    ui.restartLink.hidden = reached() === 0;
+    const done = isDone(i);
+    button.classList.toggle("is-done", done);
+    button.classList.toggle("has-timer", hasTimer(i));
+    button.querySelector(".cook__pick-state").textContent =
+      i === current ? "You're here" : hasTimer(i) ? "⏱\uFE0E Timer" : done ? "Done" : "";
+    if (i === current) button.setAttribute("aria-current", "step");
+    else button.removeAttribute("aria-current");
+  });
+  if (Timers) page.onLeave(Timers.onChange(() => { renderSegments(); if (openSheet === "steps") renderStepList(); }));
 
   const render = (direction = 0) => {
     const step = steps[current];
@@ -279,25 +321,35 @@
     ui.title.textContent = title ? title.textContent : "";
     ui.title.hidden = !title;
     ui.text.innerHTML = step.querySelector(".step__text").innerHTML;
-    ui.progress.style.width = `${((current + 1) / steps.length) * 100}%`;
+    renderSegments();
     ui.prev.disabled = current === 0;
     ui.next.textContent = current === steps.length - 1 ? "Finish" : "Next";
 
     ui.text.querySelectorAll("strong").forEach((strong, i) => {
       const seconds = parseSeconds(strong.textContent);
       if (!seconds) return;
-      const key = `${current}-${i}`;
+      const key = `${recipeKey}:${current}-${i}`;
       const button = document.createElement("button");
       button.type = "button";
       button.className = "timer-start";
       button.dataset.timerKey = key;
       button.textContent = strong.textContent;
       button.setAttribute("aria-label", `Start a ${strong.textContent} timer`);
-      if (timers.some((t) => t.key === key)) button.classList.add("is-running");
+      if (Timers && Timers.isRunning(key)) button.classList.add("is-running");
+      const stepTitle = title ? title.textContent.trim() : "";
       button.addEventListener("click", () =>
-        startTimer(seconds, `Step ${current + 1} · ${strong.textContent}`, key));
+        startTimer(seconds, { key, step: current + 1, title: stepTitle, time: strong.textContent }));
       strong.replaceWith(button);
     });
+
+    const timerButtons = ui.text.querySelectorAll(".timer-start");
+    if (timerButtons.length && !timerHintSeen()) {
+      timerButtons.forEach((b) => b.classList.add("is-new"));
+      const hint = document.createElement("p");
+      hint.className = "cook__hint";
+      hint.textContent = "Tap a highlighted time to start a timer.";
+      ui.text.append(hint);
+    }
 
     if (direction && !reduceMotion.matches) {
       ui.step.classList.remove("is-enter-next", "is-enter-prev");
@@ -307,35 +359,58 @@
     ui.stage.scrollTop = 0;
   };
 
+  const markUpTo = (index) => {
+    steps.forEach((s, i) => setStep(s, i < index));
+    saveSteps();
+  };
   const go = (index) => {
     const direction = Math.sign(index - current);
     current = Math.max(0, Math.min(steps.length - 1, index));
+    markUpTo(current);
     render(direction);
   };
 
   // Moving on marks the step you're leaving as done, on the page too.
   const next = () => {
-    setStep(steps[current], true);
-    saveSteps();
-    if (current === steps.length - 1) close();
+    if (current === steps.length - 1) { markUpTo(steps.length); showSheet("finished"); }
     else go(current + 1);
   };
   const prev = () => { if (current > 0) go(current - 1); };
 
-  const open = () => {
-    const firstOpen = steps.findIndex((s) => !s.classList.contains("is-done"));
-    current = firstOpen === -1 ? 0 : firstOpen;
-    showPanel(false);
+  const COOK_HASH = /^#cook(?:-(\d+))?$/;
+  // Opened with a step (a timer, a #cook-3 link) goes straight there. Otherwise
+  // pick up where you left off, after asking; a recipe you finished last time
+  // starts fresh. Progress older than 12 hours is already gone (see load).
+  const open = (stepNumber) => {
+    let ask = false;
+    if (stepNumber >= 1 && stepNumber <= steps.length) {
+      current = stepNumber - 1;
+      markUpTo(current);
+    } else {
+      if (reached() === steps.length) { steps.forEach((s) => setStep(s, false)); saveSteps(); }
+      current = reached();
+      ask = current > 0;
+    }
+    showSheet(null);
     render();
     dialog.showModal();
     document.documentElement.classList.add("is-cooking");
+    page.onLeave(() => document.documentElement.classList.remove("is-cooking"));
     ui.next.focus();
+    if (ask) {
+      ui.resume.querySelector("[data-cook-resume-title]").textContent = `Pick up at step ${current + 1}?`;
+      ui.resume.querySelector("[data-cook-resume-text]").textContent = stepTitle(steps[current]);
+      ui.resume.querySelector("[data-cook-resume-continue]").textContent = `Continue at step ${current + 1}`;
+      showSheet("resume");
+    }
     wake.cook = true;
     syncWake();
     // The back button (or Android's back gesture) closes cook mode. Opened from
     // a #cook link there's nothing of ours to go back to, so just drop the hash.
-    pushed = location.hash !== "#cook";
-    if (pushed) history.pushState({ cook: true }, "", "#cook");
+    pushed = !COOK_HASH.test(location.hash);
+    // Keep Turbo's entry data (history.state.turbo) so Back still works after
+    // moving on to another page from cook mode.
+    if (pushed) history.pushState({ ...history.state, cook: true }, "", "#cook");
   };
 
   const close = () => { if (dialog.open) dialog.close(); };
@@ -345,21 +420,34 @@
     wake.cook = false;
     syncWake();
     if (pushed && history.state && history.state.cook) history.back();
-    else if (location.hash === "#cook") history.replaceState(null, "", location.pathname + location.search);
+    else if (COOK_HASH.test(location.hash)) history.replaceState(history.state, "", location.pathname + location.search);
     pushed = false;
     const target = steps[current];
     if (target) target.scrollIntoView({ block: "center", behavior: reduceMotion.matches ? "auto" : "smooth" });
     cookButton.focus({ preventScroll: true });
   });
-  addEventListener("popstate", () => { if (dialog.open) dialog.close(); });
+  // Back (button or gesture) with a sheet up closes just the sheet.
+  page.on(window, "popstate", () => {
+    if (!dialog.open) return;
+    if (panelOpen()) {
+      showPanel(false);
+      history.pushState({ ...history.state, cook: true }, "", "#cook");
+      pushed = true;
+      return;
+    }
+    dialog.close();
+  });
 
-  // Escape closes the ingredients panel first, then cook mode.
+  // Escape closes a sheet first, then cook mode.
   dialog.addEventListener("cancel", (event) => {
-    if (!ui.panel.hidden) { event.preventDefault(); showPanel(false); }
+    if (panelOpen()) { event.preventDefault(); showPanel(false); }
   });
 
   dialog.addEventListener("keydown", (event) => {
-    if (event.target.closest("input")) return;
+    // Escape closes a sheet first. Handled here as well as on "cancel", which
+    // Chrome won't let us stop unless the page was tapped or typed in first.
+    if (event.key === "Escape" && panelOpen()) { event.preventDefault(); showSheet(null); return; }
+    if (event.target.closest("input") || panelOpen()) return;
     if (event.key === "ArrowRight" || event.key === "PageDown") { event.preventDefault(); next(); }
     if (event.key === "ArrowLeft" || event.key === "PageUp") { event.preventDefault(); prev(); }
   });
@@ -383,13 +471,34 @@
   ui.next.addEventListener("click", next);
   ui.prev.addEventListener("click", prev);
   $("[data-cook-close]").addEventListener("click", close);
-  ui.panelToggle.addEventListener("click", () => showPanel(ui.panel.hidden));
+  ui.panelToggle.addEventListener("click", () => showSheet("ingredients"));
+  ui.stepsToggle.addEventListener("click", () => showSheet("steps"));
+  dialog.querySelectorAll("[data-cook-sheet-close]").forEach((b) => b.addEventListener("click", () => showSheet(null)));
+  dialog.querySelectorAll("[data-cook-restart]").forEach((b) => b.addEventListener("click", restart));
+  $("[data-cook-finish-close]").addEventListener("click", close);
+  // Tapped Finish by mistake: back to the last step, not done yet.
+  $("[data-cook-finish-back]").addEventListener("click", () => {
+    markUpTo(current);
+    showSheet(null);
+    render();
+  });
 
   // While cook mode is open, the timers sit inside it so they stay on top.
-  const placeTray = () => (dialog.open ? dialog : document.body).append(tray);
-  new MutationObserver(placeTray).observe(dialog, { attributes: true, attributeFilter: ["open"] });
+  if (Timers) {
+    const placeTray = () => (dialog.open ? dialog : document.body).append(Timers.tray);
+    new MutationObserver(placeTray).observe(dialog, { attributes: true, attributeFilter: ["open"] });
+  }
+
+  // Tapping a timer for this recipe jumps cook mode to its step.
+  page.on(document, "hawkins:timer-open", (event) => {
+    event.preventDefault();
+    if (panelOpen()) showPanel(false);
+    if (dialog.open) go(event.detail.step - 1);
+    else open(event.detail.step);
+  });
 
   cookButton.hidden = false;
-  cookButton.addEventListener("click", open);
-  if (location.hash === "#cook") open();
+  cookButton.addEventListener("click", () => open());
+  const deepLink = location.hash.match(COOK_HASH);
+  if (deepLink) open(Number(deepLink[1]));
 })();
