@@ -181,7 +181,7 @@ const slugs = (await (await fetch(BASE + "/recipes/")).text()).match(/href="\/re
 let bad = [], total = 0;
 await ev("localStorage.clear()");
 for (const slug of [...new Set(slugs)]) {
-  await send("Page.navigate", { url: BASE + slug }); await sleep(500);
+  await go(slug);
   if (await q("!!document.querySelector('[data-classified]')")) continue;
   const r = await q(`(() => { const d = document.querySelector('.cook'); document.querySelector('[data-cook]').click();
     const out = []; const n = document.querySelectorAll('.step').length;

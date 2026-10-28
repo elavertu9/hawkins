@@ -185,21 +185,21 @@ description: Dinners, desserts, and family favorites, written out step by step.
     gate.addEventListener("click", () => {
       const showing = cards.filter((card) => !card.hidden);
       const pool = showing.length ? showing : cards;
-      let last = null;
-      try { last = sessionStorage.getItem("hawkins:last-random"); } catch (e) {}
+      const last = HawkinsPage.session.getText("hawkins:last-random");
       const choices = pool.length > 1 ? pool.filter((c) => c.querySelector(".card__link").href !== last) : pool;
       const href = choices[Math.floor(Math.random() * choices.length)].querySelector(".card__link").href;
-      try { sessionStorage.setItem("hawkins:last-random", href); } catch (e) {}
+      HawkinsPage.session.setText("hawkins:last-random", href);
       const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
       gate.classList.add("is-opening");
       gate.textContent = "Opening…";
-      setTimeout(() => { window.HawkinsPage ? HawkinsPage.visit(href) : (location.href = href); }, still ? 0 : 450);
+      setTimeout(() => { HawkinsPage.visit(href); }, still ? 0 : 450);
     });
     // Reset the button if the page comes back from the back/forward cache.
     const resetGate = () => {
       gate.classList.remove("is-opening");
       gate.textContent = "Open the gate";
     };
+    // This inline script runs before page.js on a full page load.
     if (window.HawkinsPage) HawkinsPage.on(window, "pageshow", resetGate);
     else addEventListener("pageshow", resetGate);
 

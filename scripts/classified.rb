@@ -7,6 +7,7 @@
 # data. assets/js/classified.js does the same in reverse in the browser.
 require "base64"
 require "date"
+require "digest"
 require "fileutils"
 require "json"
 require "openssl"
@@ -20,6 +21,14 @@ ITERATIONS = 310_000
 START = "<!--classified:start-->"
 FINISH = "<!--classified:end-->"
 SKIP = %w[_site .git _classified .classified-code .jekyll-cache .jekyll-metadata vendor .bundle].freeze
+
+# Which version of the recipe layout the locked pages were built with. The
+# pre-commit hook (scripts/hooks/pre-commit) computes the same thing and
+# refuses a commit whose classified pages are out of date. Must match it.
+def layout_fingerprint
+  files = ["_layouts/recipe.html"] + Dir.chdir(ROOT) { Dir["_includes/*.html"].sort }
+  Digest::SHA256.hexdigest(files.map { |f| File.binread(File.join(ROOT, f)) }.join)[0, 12]
+end
 
 # Must match normalize in assets/js/classified.js.
 def normalize(code) = code.strip.gsub(/\s+/, " ").downcase
@@ -93,6 +102,7 @@ Dir.mktmpdir("hawkins-classified") do |tmp|
       "summary" => "Contents redacted. Level 4 clearance required to open this file.",
       "image" => data["image"],
       "image_alt" => data["image_alt"],
+      "built_from" => layout_fingerprint,
       "cipher" => same ? old["cipher"] : encrypt(html, code),
     }.compact
     text = [

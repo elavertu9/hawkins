@@ -11,6 +11,8 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 export const BASE = process.env.HAWKINS_URL || "http://127.0.0.1:4123";
 export const SHOTS = process.env.SHOTS_DIR || join(ROOT, "tests", ".shots");
 const CHROME = process.env.CHROME || "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
+// GitHub's Ubuntu runners don't allow Chrome's sandbox.
+const SANDBOX = process.env.CI ? ["--no-sandbox"] : [];
 
 // The clearance code, for the classified tests. It lives in the gitignored
 // .classified-code, never in a test.
@@ -24,7 +26,7 @@ export async function open() {
   const profile = mkdtempSync(join(tmpdir(), "hawkins-test-"));
   // Port 0 lets Chrome pick a free port and write it to DevToolsActivePort.
   const chrome = spawn(CHROME, [
-    "--headless=new", "--disable-gpu", "--hide-scrollbars", "--remote-debugging-port=0",
+    "--headless=new", "--disable-gpu", "--hide-scrollbars", "--remote-debugging-port=0", ...SANDBOX,
     `--user-data-dir=${profile}`, "about:blank",
   ], { stdio: "ignore" });
 
@@ -44,10 +46,12 @@ export async function open() {
   let id = 0;
   const pending = new Map();
   const errors = [];
+  let onLoad = [];
   ws.addEventListener("message", (e) => {
     const m = JSON.parse(e.data);
     if (m.id && pending.has(m.id)) { pending.get(m.id)(m); pending.delete(m.id); }
     if (m.method === "Runtime.exceptionThrown") errors.push(m.params.exceptionDetails.exception?.description);
+    if (m.method === "Page.loadEventFired") { const fns = onLoad; onLoad = []; fns.forEach((fn) => fn()); }
   });
 
   const send = (method, params = {}) => new Promise((r) => {
@@ -55,7 +59,20 @@ export async function open() {
   });
   const ev = async (expression) =>
     (await send("Runtime.evaluate", { expression, returnByValue: true, awaitPromise: true })).result.result.value;
-  const go = async (path) => { await send("Page.navigate", { url: BASE + path }); await sleep(1500); };
+  // Opens a page and waits for it to load (or 5 s, for a same-page #hash change).
+  const go = async (path) => {
+    const loaded = new Promise((r) => { onLoad.push(r); setTimeout(r, 5000); });
+    await send("Page.navigate", { url: BASE + path });
+    await loaded;
+    await sleep(250); // let deferred scripts settle
+  };
+  // Waits until a page expression is truthy (or the timeout passes), and returns its value.
+  const until = async (expression, timeout = 3000) => {
+    const end = Date.now() + timeout;
+    let value;
+    while (!(value = await ev(expression)) && Date.now() < end) await sleep(50);
+    return value;
+  };
 
   let failed = 0;
   const check = (label, ok) => { if (!ok) failed++; console.log(ok ? "PASS" : "FAIL", label); };
@@ -68,5 +85,5 @@ export async function open() {
 
   await send("Page.enable");
   await send("Runtime.enable");
-  return { send, ev, q: ev, go, sleep, check, shot, errors, finish };
+  return { send, ev, q: ev, go, until, sleep, check, shot, errors, finish };
 }

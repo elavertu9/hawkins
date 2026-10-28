@@ -14,13 +14,7 @@
   <button class="card__plan" type="button" data-plan-add="{{ r.slug }}" data-plan-title="{{ r.title | escape }}" aria-pressed="false" hidden></button>
   {%- endunless %}
   <div class="card__media{% if r.image %} is-photo{% endif %}">
-    {%- if r.image %}
-      <img src="{{ r.image | relative_url }}" alt="{{ r.image_alt | default: r.title | escape }}"
-           width="1200" height="800" loading="lazy" decoding="async">
-    {%- else %}
-      <img src="{{ site.recipe_placeholder | relative_url }}" alt=""
-           width="1200" height="800" loading="lazy" decoding="async">
-    {%- endif %}
+    {% include recipe-image.html recipe=r alt="" attrs='loading="lazy"' sizes="(max-width: 40rem) 7rem, 20rem" %}
     {%- if r.classified %}
     <span class="card__stamp" aria-hidden="true">Classified</span>
     {%- endif %}

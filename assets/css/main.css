@@ -798,6 +798,8 @@ a.tag:hover { border-color: var(--amber); }
    and warmer, with a soft vignette that pulls bright edges (white plates,
    countertops) toward the page. The food itself keeps its own colors. */
 .is-photo { position: relative; }
+/* <picture> only picks the file; the <img> inside is what's laid out. */
+.is-photo picture { display: contents; }
 .is-photo img { filter: brightness(0.92) contrast(1.06) saturate(1.08) sepia(0.06); }
 .is-photo::before {
   content: "";

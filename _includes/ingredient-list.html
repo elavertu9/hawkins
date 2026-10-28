@@ -1,0 +1,25 @@
+{%- comment -%}
+  A recipe's ingredients as checklists, one per group. The recipe page and cook
+  mode each show a copy; key names the checkbox attribute that tells them apart
+  (data-key on the page, data-mirror in cook mode; recipe.js keeps them in sync).
+{%- endcomment -%}
+{%- for group in include.ingredients %}
+  {%- assign group_index = forloop.index %}
+  {%- if group.group %}
+  <h3 class="ingredients__group">{{ group.group }}</h3>
+  {%- endif %}
+  <ul class="checklist">
+    {%- for ingredient in group.items %}
+    <li>
+      <label class="check">
+        <input type="checkbox" {{ include.key }}="{{ group_index }}-{{ forloop.index }}">
+        <span class="check__box" aria-hidden="true"></span>
+        <span class="check__text">
+          {%- if ingredient.qty != "" %}<span class="qty">{{ ingredient.qty }}</span> {% endif -%}
+          {{ ingredient.item }}
+        </span>
+      </label>
+    </li>
+    {%- endfor %}
+  </ul>
+{%- endfor %}

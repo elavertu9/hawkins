@@ -29,19 +29,12 @@
     return h ? `${h}:${String(m).padStart(2, "0")}:${sec}` : `${m}:${sec}`;
   };
 
+  const { store, wake } = HawkinsPage;
   const read = () => {
-    try {
-      const saved = JSON.parse(localStorage.getItem(KEY));
-      if (Array.isArray(saved)) return saved.filter((t) => t && t.key && Date.now() - t.end < MAX_AGE_MS);
-    } catch (_) { /* storage unavailable or corrupt */ }
-    return [];
+    const saved = store.get(KEY);
+    return Array.isArray(saved) ? saved.filter((t) => t && t.key && Date.now() - t.end < MAX_AGE_MS) : [];
   };
-  const write = (list) => {
-    try {
-      if (list.length) localStorage.setItem(KEY, JSON.stringify(list));
-      else localStorage.removeItem(KEY);
-    } catch (_) { /* ignore */ }
-  };
+  const write = (list) => (list.length ? store.set(KEY, list) : store.remove(KEY));
 
   let list = read();
   const listeners = [];
@@ -91,21 +84,6 @@
     });
   };
 
-  // ---------- Keep the screen awake while a timer runs ----------
-  let lock = null;
-  const syncWake = async () => {
-    if (!("wakeLock" in navigator)) return;
-    const wanted = list.length > 0 && document.visibilityState === "visible";
-    if (wanted && !lock) {
-      try {
-        lock = await navigator.wakeLock.request("screen");
-        lock.addEventListener("release", () => { lock = null; });
-      } catch (_) { lock = null; }
-    } else if (!wanted && lock) {
-      await lock.release();
-    }
-  };
-
   // ---------- Tray ----------
   const els = new Map(); // key -> { el, time, cancel, done, lastBeep }
 
@@ -114,8 +92,7 @@
     // On the recipe itself, cook mode jumps to the step; elsewhere, go there.
     if (samePage(timer) && document.dispatchEvent(new CustomEvent("hawkins:timer-open", { detail: timer, cancelable: true })) === false) return;
     const url = `${timer.url}#cook-${timer.step}`;
-    if (window.HawkinsPage) HawkinsPage.visit(url);
-    else location.href = url;
+    HawkinsPage.visit(url);
   };
 
   const buildEl = (timer) => {
@@ -194,7 +171,7 @@
     if (list.length && !tick) tick = setInterval(update, 250);
     if (!list.length && tick) { clearInterval(tick); tick = null; }
     update();
-    syncWake();
+    wake.set("timers", list.length > 0); // keep the screen on while any timer is up
     listeners.forEach((fn) => fn());
   };
 
@@ -227,8 +204,6 @@
     list = read();
     render();
   });
-  // The browser drops the wake lock when the tab is hidden; take it back.
-  document.addEventListener("visibilitychange", syncWake);
 
   // Back on the recipe of a timer that already finished: it's done its job.
   const clearFinishedHere = () => {

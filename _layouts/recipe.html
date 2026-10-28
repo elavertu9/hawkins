@@ -70,13 +70,7 @@ layout: default
       </div>
 
       <figure class="recipe-hero__media{% if page.image %} is-photo{% endif %}">
-        {%- if page.image %}
-          <img src="{{ page.image | relative_url }}" alt="{{ page.image_alt | default: page.title | escape }}"
-               width="1200" height="800" decoding="async" fetchpriority="high">
-        {%- else %}
-          <img src="{{ site.recipe_placeholder | relative_url }}" alt="Photo coming soon"
-               width="1200" height="800" decoding="async" fetchpriority="high">
-        {%- endif %}
+        {% include recipe-image.html recipe=page alt="Photo coming soon" attrs='fetchpriority="high"' sizes="(min-width: 56rem) 34rem, 100vw" %}
       </figure>
     </header>
 
@@ -87,26 +81,7 @@ layout: default
             <h2 id="ingredients-title">Ingredients</h2>
             <span class="section-head__count">{{ ingredient_count }} items</span>
           </div>
-          {%- for group in page.ingredients %}
-            {%- assign group_index = forloop.index %}
-            {%- if group.group %}
-            <h3 class="ingredients__group">{{ group.group }}</h3>
-            {%- endif %}
-            <ul class="checklist">
-              {%- for ingredient in group.items %}
-              <li>
-                <label class="check">
-                  <input type="checkbox" data-key="{{ group_index }}-{{ forloop.index }}">
-                  <span class="check__box" aria-hidden="true"></span>
-                  <span class="check__text">
-                    {%- if ingredient.qty != "" %}<span class="qty">{{ ingredient.qty }}</span> {% endif -%}
-                    {{ ingredient.item }}
-                  </span>
-                </label>
-              </li>
-              {%- endfor %}
-            </ul>
-          {%- endfor %}
+          {% include ingredient-list.html ingredients=page.ingredients key="data-key" %}
         </div>
       </aside>
 
@@ -209,26 +184,7 @@ layout: default
           <button class="cook__close" type="button" data-cook-sheet-close aria-label="Close ingredients">&times;</button>
         </div>
         <div class="cook__panel-list">
-        {%- for group in page.ingredients %}
-          {%- assign group_index = forloop.index %}
-          {%- if group.group %}
-          <h3 class="ingredients__group">{{ group.group }}</h3>
-          {%- endif %}
-          <ul class="checklist">
-            {%- for ingredient in group.items %}
-            <li>
-              <label class="check">
-                <input type="checkbox" data-mirror="{{ group_index }}-{{ forloop.index }}">
-                <span class="check__box" aria-hidden="true"></span>
-                <span class="check__text">
-                  {%- if ingredient.qty != "" %}<span class="qty">{{ ingredient.qty }}</span> {% endif -%}
-                  {{ ingredient.item }}
-                </span>
-              </label>
-            </li>
-            {%- endfor %}
-          </ul>
-        {%- endfor %}
+        {% include ingredient-list.html ingredients=page.ingredients key="data-mirror" %}
         </div>
         <div class="cook__panel-nav">
           <button class="button cook__next" type="button" data-cook-sheet-close data-cook-sheet-back data-cook-panel-back>Back to step</button>
@@ -339,4 +295,5 @@ layout: default
 }
 </script>
 <script src="{{ '/assets/js/recipe.js' | relative_url }}?v={{ site.time | date: '%s' }}" defer></script>
+<script src="{{ '/assets/js/cook.js' | relative_url }}?v={{ site.time | date: '%s' }}" defer></script>
 {%- endif %}

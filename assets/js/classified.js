@@ -29,9 +29,9 @@
     return new TextDecoder().decode(plain);
   };
 
-  const remembered = () => { try { return localStorage.getItem(STORAGE_KEY); } catch (_) { return null; } };
-  const remember = (code) => { try { localStorage.setItem(STORAGE_KEY, code); } catch (_) { /* ignore */ } };
-  const forget = () => { try { localStorage.removeItem(STORAGE_KEY); } catch (_) { /* ignore */ } };
+  const remembered = () => HawkinsPage.store.getText(STORAGE_KEY);
+  const remember = (code) => HawkinsPage.store.setText(STORAGE_KEY, code);
+  const forget = () => HawkinsPage.store.remove(STORAGE_KEY);
 
   const open = (html) => {
     const template = document.createElement("template");
@@ -45,10 +45,15 @@
 
     lock.replaceWith(bar, template.content);
 
-    // Now that the recipe is on the page, start its checklists, cook mode, and timers.
-    const script = document.createElement("script");
-    script.src = document.querySelector('script[src*="classified.js"]').src.replace("classified.js", "recipe.js");
-    document.body.append(script);
+    // Now that the recipe is on the page, start its checklists, then cook mode
+    // and timers (cook.js builds on recipe.js, so keep them in order).
+    const base = document.querySelector('script[src*="classified.js"]').src;
+    ["recipe.js", "cook.js"].forEach((name) => {
+      const script = document.createElement("script");
+      script.src = base.replace("classified.js", name);
+      script.async = false;
+      document.body.append(script);
+    });
   };
 
   const tryCode = async (code, fromForm) => {

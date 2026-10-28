@@ -1,0 +1,40 @@
+# Runs the checks and browser tests on every push and pull request, so a break
+# shows up here (a red X on the commit) instead of on starcourt.org. GitHub
+# Pages still publishes main on its own; this only reports.
+#
+# There's no clearance code here, so the tests that open classified recipes
+# skip themselves; run tests/run.sh locally for those.
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Classified recipes are locked and up to date
+        run: scripts/hooks/pre-commit
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Build and test
+        env:
+          CHROME: /usr/bin/google-chrome
+          JOBS: 2
+        run: tests/run.sh
+
+      - name: Keep the screenshots if something failed
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots
+          path: tests/.shots/

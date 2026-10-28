@@ -5,18 +5,17 @@
   const STORAGE_KEY = "hawkins:plan";
   const SCALES = [0.5, 1, 2, 3, 4];
 
+  const { store } = HawkinsPage;
   const load = () => {
-    try {
-      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-      if (saved && Array.isArray(saved.recipes)) {
-        return {
-          recipes: saved.recipes,
-          checked: Array.isArray(saved.checked) ? saved.checked : [],
-          extras: Array.isArray(saved.extras) ? saved.extras : [],
-          hideChecked: Boolean(saved.hideChecked),
-        };
-      }
-    } catch (_) { /* storage unavailable or corrupt */ }
+    const saved = store.get(STORAGE_KEY);
+    if (saved && Array.isArray(saved.recipes)) {
+      return {
+        recipes: saved.recipes,
+        checked: Array.isArray(saved.checked) ? saved.checked : [],
+        extras: Array.isArray(saved.extras) ? saved.extras : [],
+        hideChecked: Boolean(saved.hideChecked),
+      };
+    }
     return { recipes: [], checked: [], extras: [], hideChecked: false };
   };
 
@@ -29,20 +28,17 @@
   const PANTRY_START = ["Spices & Seasonings|salt", "Spices & Seasonings|black pepper",
     "Oils, Vinegar & Sauces|olive oil", "Baking|flour", "Baking|sugar"];
   const loadPantry = () => {
-    try {
-      const saved = JSON.parse(localStorage.getItem(PANTRY_KEY));
-      if (Array.isArray(saved)) return new Set(saved);
-    } catch (_) { /* storage unavailable or corrupt */ }
-    return new Set(PANTRY_START);
+    const saved = store.get(PANTRY_KEY);
+    return new Set(Array.isArray(saved) ? saved : PANTRY_START);
   };
   let pantry = loadPantry();
   const savePantry = () => {
-    try { localStorage.setItem(PANTRY_KEY, JSON.stringify([...pantry])); } catch (_) { /* ignore */ }
+    store.set(PANTRY_KEY, [...pantry]);
     refresh();
   };
 
   const save = () => {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(plan)); } catch (_) { /* ignore */ }
+    store.set(STORAGE_KEY, plan);
     refresh();
   };
 
@@ -101,8 +97,7 @@
     if (event.key === STORAGE_KEY) { plan = load(); refresh(); }
     if (event.key === PANTRY_KEY) { pantry = loadPantry(); refresh(); }
   };
-  if (window.HawkinsPage) HawkinsPage.on(window, "storage", onStorage);
-  else addEventListener("storage", onStorage);
+  HawkinsPage.on(window, "storage", onStorage);
 
   // ---------- Plan page ----------
   const page = document.querySelector("[data-plan-page]");

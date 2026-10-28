@@ -14,12 +14,7 @@
 
   let typed = "";
 
-  const remember = (on) => {
-    try {
-      if (on) sessionStorage.setItem(STORAGE_KEY, "1");
-      else sessionStorage.removeItem(STORAGE_KEY);
-    } catch (_) { /* storage unavailable */ }
-  };
+  const remember = (on) => (on ? HawkinsPage.session.setText(STORAGE_KEY, "1") : HawkinsPage.session.remove(STORAGE_KEY));
 
   const maxScroll = () => document.documentElement.scrollHeight - window.innerHeight;
 

@@ -5,6 +5,7 @@
 # Usage: tests/run.sh                 build, then run every test
 #        tests/run.sh plan cook       run only these tests
 #        tests/run.sh --no-build      skip the build and test the current _site
+#        JOBS=1 tests/run.sh          run the test files one at a time (default 4 at once)
 #
 # Screenshots land in tests/.shots/ (gitignored).
 
@@ -40,7 +41,7 @@ server=""
 if ! curl -s -o /dev/null "http://127.0.0.1:$PORT/"; then
   python3 -m http.server "$PORT" --bind 127.0.0.1 --directory "$SITE_DIR/_site" >/dev/null 2>&1 &
   server=$!
-  trap 'kill "$server" 2>/dev/null || true' EXIT
+  disown "$server" # no "Terminated" message when it's stopped at the end
   for _ in $(seq 50); do curl -s -o /dev/null "http://127.0.0.1:$PORT/" && break; sleep 0.1; done
 fi
 
@@ -51,18 +52,25 @@ else
   for name in "${names[@]}"; do tests+=("$SITE_DIR/tests/$name.test.mjs"); done
 fi
 
+# Run the test files a few at a time (each has its own Chrome), then print
+# each one's output in order. JOBS=1 runs them one by one.
+JOBS="${JOBS:-4}"
+logs="$(mktemp -d)"
+trap 'kill "$server" 2>/dev/null || true; rm -rf "$logs"' EXIT
+for test in "${tests[@]}"; do
+  name="$(basename "$test" .test.mjs)"
+  if [ ! -f "$test" ]; then echo "No test called $name." >&2; echo 1 > "$logs/$name.status"; continue; fi
+  printf '%s\n' "$test"
+done | xargs -P "$JOBS" -I{} sh -c 'name="$(basename "$1" .test.mjs)"; node "$1" > "$2/$name.log" 2>&1; echo $? > "$2/$name.status"' _ {} "$logs"
+
 passed=0
 failed=()
 for test in "${tests[@]}"; do
   name="$(basename "$test" .test.mjs)"
-  if [ ! -f "$test" ]; then
-    echo "No test called $name." >&2
-    failed+=("$name")
-    continue
-  fi
   echo
   echo "== $name"
-  if node "$test"; then
+  [ -f "$logs/$name.log" ] && cat "$logs/$name.log"
+  if [ "$(cat "$logs/$name.status" 2>/dev/null)" = 0 ]; then
     passed=$((passed + 1))
   else
     failed+=("$name")

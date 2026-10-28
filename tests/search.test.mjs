@@ -31,7 +31,7 @@ check("typing 011 in search does NOT flip", !(await ev("document.documentElement
 await type("beef");
 await ev(`document.querySelector('.chip[data-category="soup"]').click()`); await sleep(100);
 await go("/recipes/zuppa-toscana/");
-await send("Page.navigate", { url: BASE + "/recipes/?q=beef&category=soup" }); await sleep(1200);
+await go("/recipes/?q=beef&category=soup");
 check(`URL restores: input='${await ev("document.querySelector('#recipe-search').value")}', ${await ev(status)}`, await ev(visible) > 0 && await ev(`[...document.querySelectorAll('.card')].filter(c => !c.hidden).every(c => c.dataset.category === "soup" && c.dataset.search.includes("beef"))`) && await ev(`document.querySelector('.chip[data-category="soup"]').getAttribute('aria-pressed')`) === "true");
 check("no overflow at 390px", await ev("document.documentElement.scrollWidth <= innerWidth"));
 await go("/recipes/"); await type("chicken"); await shot("search-mobile");

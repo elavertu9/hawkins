@@ -13,12 +13,14 @@ automatically on every push to `main`. There is no build step to run yourself.
 | `_classified/` | Classified recipes, readable and gitignored. `./classified.sh` encrypts them into `_recipes/`. |
 | `_layouts/recipe.html` | The template every recipe page uses, so they all look the same. |
 | `_data/sections.yml` | Top-level sections (Recipes, Packing Lists, ...) for the nav and home page. |
-| `_includes/` | Shared pieces: head, header, footer, recipe card, duration formatter. |
+| `_includes/` | Shared pieces: head, header, footer, recipe card, recipe image, ingredient list, duration formatter. |
 | `assets/css/main.css` | All styles, including colors and fonts as variables at the top. |
 | `plan/index.html` | The meal plan page: pick recipes, get one shopping list sorted by aisle. |
-| `assets/js/` | `recipe.js` for checklists and cook mode; `timers.js` for kitchen timers, which follow you to every page; `plan.js` for the meal plan and shopping list; `lights.js` for the home page lights; `upside-down.js` for the easter egg; `page.js` and `lib/turbo.js` for in-place page changes (see below). |
+| `assets/js/` | `recipe.js` for checklists and Keep screen on; `cook.js` for cook mode; `timers.js` for kitchen timers, which follow you to every page; `plan.js` for the meal plan and shopping list; `lights.js` for the home page lights; `upside-down.js` for the easter egg; `page.js` (page changes, plus shared storage and screen-on helpers) and `lib/turbo.min.js` for in-place page changes (see below). |
 | `assets/images/recipes/` | Recipe photos. |
 | `tests/` | Browser tests for the site's features. `tests/run.sh` runs them. |
+| `scripts/` | Tools: `add-photo.sh` for recipe photos, `classified.rb` (run by `./classified.sh`), and `hooks/pre-commit`. |
+| `.github/workflows/test.yml` | Runs the checks and tests on GitHub after every push. |
 
 ## Add a recipe
 
@@ -87,7 +89,13 @@ the site nor this (public) repo shows them without it.
 - The code lives in `.classified-code` (one line, also gitignored). Case and extra
   spaces don't matter. Use a phrase, not a short number.
 - After adding or editing one, run `./classified.sh`. It writes a locked page with
-  the same name to `_recipes/`, which is safe to commit.
+  the same name to `_recipes/`, which is safe to commit. Run it again after changing
+  `_layouts/recipe.html` or anything in `_includes/`, since the locked pages carry
+  the recipe's markup.
+- A pre-commit hook (`scripts/hooks/pre-commit`) stops a commit that includes
+  `_classified/`, `.classified-code`, or the code itself, or whose locked pages are
+  out of date with the layout. Turn it on once per clone:
+  `git config core.hooksPath scripts/hooks`. GitHub runs the same check.
 - To change the code, edit `.classified-code` and run `./classified.sh`. Anyone who
   saved the old code is asked for the new one.
 - Classified recipes show on the recipes page with a "Classified" stamp over
@@ -98,9 +106,19 @@ the site nor this (public) repo shows them without it.
 
 ## Photos
 
-Put a photo in `assets/images/recipes/` and set `image:` in the recipe. Any size or
-shape works: every recipe image is cropped to the same 3:2 frame on cards and recipe
-pages. Around 1200×800 is plenty. Recipes without an `image:` show the "Missing"
+```sh
+scripts/add-photo.sh banana-bread ~/Downloads/IMG_1234.HEIC 70 "Loaf of banana bread in a pan"
+```
+
+That's the recipe's file name, the photo (straight from a phone is fine), where to
+crop (0-100: for a tall photo 0 keeps the top and 100 the bottom; default 50), and
+alt text (optional if the recipe has one). It crops to the site's 3:2 frame, saves a
+JPG plus smaller WebP copies in `assets/images/recipes/` so phones download far less,
+and sets `image:` and `image_alt:` in the recipe. If the crop is off, run it again
+with a different number. It needs macOS and `brew install webp`.
+
+Photos get a light grade and vignette in the stylesheet (`.is-photo` in `main.css`)
+so they sit in the dark theme. Recipes without an `image:` show the "Missing"
 placeholder.
 
 ## Add a new section (e.g. packing lists)
@@ -115,7 +133,7 @@ placeholder.
 ## Scripts and page changes (Turbo)
 
 Links swap pages in place with [Turbo Drive](https://turbo.hotwired.dev/handbook/drive)
-(`assets/js/lib/turbo.js`, version 8.0.12), so the browser tab stays loaded as you
+(`assets/js/lib/turbo.min.js`, version 8.0.12, minified from the official build), so the browser tab stays loaded as you
 move around. That's what keeps timers beeping and the screen awake from page to page.
 
 - Scripts in `<head>` (`_includes/head.html`) run once per visit to the site. Scripts in
@@ -126,6 +144,10 @@ move around. That's what keeps timers beeping and the screen awake from page to 
   `HawkinsPage.onLeave(fn)`. Both are undone before the next page renders (`page.js`).
 - Don't call `history.replaceState(null, ...)`: pass `history.state` instead, or Back
   breaks. Use `HawkinsPage.visit(url)` to go somewhere from code.
+- Save things with `HawkinsPage.store` (or `.session`) rather than `localStorage`
+  directly; it never throws when storage is blocked. Keep the screen on with
+  `HawkinsPage.wake.set(name, true)`. An inline `<script>` runs before `page.js`
+  on a full page load, so check `window.HawkinsPage` there first.
 - To make a link do a normal full page load, add `data-turbo="false"` to it.
 - `tests/turbo.test.mjs` checks moving around the site this way.
 
@@ -154,8 +176,15 @@ and phone. It needs Docker, Node 22 or newer, and Google Chrome.
 
 - `tests/run.sh plan cook` runs only those tests (the names match `tests/*.test.mjs`).
 - `tests/run.sh --no-build` skips the build and tests the current `_site/`.
+- Test files run four at a time; `JOBS=1 tests/run.sh` runs them one by one, which
+  helps when reading a failure.
+- `recipes` checks every recipe page: title, ingredients, steps, photos that load,
+  alt text, and the structured data search engines read. It catches front matter
+  typos in a new recipe.
 - Screenshots of each run land in `tests/.shots/` (gitignored).
 - The classified test reads the code from `.classified-code` and the readable copies from
   `_classified/`, and skips itself on a machine that doesn't have them.
 
-Run it before pushing a change to how the site looks or works.
+Run it before pushing a change to how the site looks or works. GitHub also runs it
+after every push (the Actions tab, or the check mark next to a commit); without the
+clearance code there, the classified tests skip themselves.

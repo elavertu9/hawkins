@@ -1,0 +1,46 @@
+#!/bin/bash
+# Checks before every commit, so classified recipes stay locked. Turn it on once
+# per clone with:  git config core.hooksPath scripts/hooks
+# CI runs it too. To skip it for one commit (you shouldn't need to): git commit --no-verify
+#
+# 1. The readable classified recipes, the clearance code, and the backup script
+#    are never committed (they're gitignored, but `git add -f` gets past that).
+# 2. The clearance code itself doesn't appear anywhere in the commit.
+# 3. The locked recipe pages were built from the current recipe layout. If the
+#    layout or an include changed, they'd show the old markup once unlocked, so
+#    run ./classified.sh first.
+
+set -euo pipefail
+cd "$(git rev-parse --show-toplevel)"
+problems=()
+
+blocked="$(git diff --cached --name-only --diff-filter=ACMR | grep -E '^(_classified/|\.classified-code$|backup-classified\.sh$)' || true)"
+if [ -n "$blocked" ]; then
+  problems+=("These must never be committed (git rm --cached them):"$'\n'"$blocked")
+fi
+
+if [ -f .classified-code ]; then
+  code="$(head -1 .classified-code | tr -s '[:space:]' ' ' | sed 's/^ //; s/ $//')"
+  if [ -n "$code" ] && git diff --cached -U0 --no-color | grep '^+' | grep -qiF -- "$code"; then
+    problems+=("The clearance code appears in this commit. Find it with: git diff --cached")
+  fi
+fi
+
+# Same as layout_fingerprint in scripts/classified.rb, but from what's staged.
+fingerprint="$( { git show :_layouts/recipe.html; for f in $(git ls-files '_includes/*.html' | LC_ALL=C sort); do git show ":$f"; done; } | shasum -a 256 | cut -c1-12)"
+stale=()
+for stub in $(git ls-files '_recipes/*.md'); do
+  content="$(git show ":$stub")"
+  grep -q '^classified: true' <<<"$content" || continue
+  built="$(sed -n 's/^built_from: //p' <<<"$content")"
+  [ "$built" = "$fingerprint" ] || stale+=("$stub")
+done
+if [ ${#stale[@]} -gt 0 ]; then
+  problems+=("The recipe layout changed since these classified recipes were locked:"$'\n'"$(printf '  %s\n' "${stale[@]}")"$'\n'"Run ./classified.sh, then git add _recipes/ and commit again.")
+fi
+
+if [ ${#problems[@]} -gt 0 ]; then
+  echo "Commit stopped:" >&2
+  printf '\n%s\n' "${problems[@]}" >&2
+  exit 1
+fi

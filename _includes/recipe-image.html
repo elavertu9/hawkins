@@ -1,0 +1,33 @@
+{%- comment -%}
+  A recipe's photo, or the "Missing" placeholder. Used on cards and the recipe
+  page. Photos added with scripts/add-photo.sh also have smaller WebP copies
+  (name-480.webp, name-800.webp, name.webp), so phones download a fraction of
+  the full JPG; any that exist are offered to the browser.
+
+  recipe: the recipe (page or card); sizes: how wide it shows (the sizes attribute);
+  alt: text for the placeholder; attrs: extra <img> attributes (loading, fetchpriority).
+{%- endcomment -%}
+{%- assign image = include.recipe.image -%}
+{%- if image -%}
+  {%- assign srcset = "" -%}
+  {%- assign base = image | split: "." | pop | join: "." -%}
+  {%- assign widths = "480,800,full" | split: "," -%}
+  {%- for w in widths -%}
+    {%- if w == "full" -%}{%- assign file = base | append: ".webp" -%}{%- else -%}{%- assign file = base | append: "-" | append: w | append: ".webp" -%}{%- endif -%}
+    {%- assign found = site.static_files | where: "path", file | first -%}
+    {%- if found -%}
+      {%- if w == "full" -%}{%- assign px = 1200 -%}{%- else -%}{%- assign px = w -%}{%- endif -%}
+      {%- capture srcset -%}{{ srcset }}{% if srcset != "" %}, {% endif %}{{ file | relative_url }} {{ px }}w{%- endcapture -%}
+    {%- endif -%}
+  {%- endfor -%}
+  <picture>
+    {%- if srcset != "" %}
+    <source type="image/webp" srcset="{{ srcset }}" sizes="{{ include.sizes }}">
+    {%- endif %}
+    <img src="{{ image | relative_url }}" alt="{{ include.recipe.image_alt | default: include.recipe.title | escape }}"
+         width="1200" height="800" decoding="async" {{ include.attrs }}>
+  </picture>
+{%- else -%}
+  <img src="{{ site.recipe_placeholder | relative_url }}" alt="{{ include.alt }}"
+       width="1200" height="800" decoding="async" {{ include.attrs }}>
+{%- endif -%}
