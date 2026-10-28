@@ -65,14 +65,18 @@
     state.steps = steps.map((s, i) => (s.classList.contains("is-done") ? i : -1)).filter((i) => i >= 0);
     save();
   };
+  // Progress is how far you've got: steps before index are done, the rest not.
+  const markUpTo = (index) => {
+    steps.forEach((s, i) => setStep(s, i < index));
+    saveSteps();
+  };
 
   steps.forEach((step, index) => {
     setStep(step, state.steps.includes(index));
 
-    const toggle = () => {
-      setStep(step, !step.classList.contains("is-done"));
-      saveSteps();
-    };
+    // Tapping a step marks it and everything before it done; tapping a done
+    // step takes you back to just before it. Same as moving around cook mode.
+    const toggle = () => markUpTo(step.classList.contains("is-done") ? index : index + 1);
 
     step.querySelector(".step__num").addEventListener("click", toggle);
     step.querySelector(".step__body").addEventListener("click", (event) => {
@@ -111,5 +115,5 @@
   // Leaving the page lets the screen sleep again (unless a timer is running).
   page.onLeave(() => { page.wake.set("button", false); page.wake.set("cook", false); });
 
-  window.HawkinsRecipe = { el: recipe, steps, setStep, saveSteps };
+  window.HawkinsRecipe = { el: recipe, steps, setStep, saveSteps, markUpTo };
 })();

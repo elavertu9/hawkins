@@ -158,6 +158,18 @@ for (let i = 0; i < 5; i++) { await q("document.querySelector('[data-cook-next]'
 await q("document.querySelector('[data-cook-finished] [data-cook-restart]').click()"); await sleep(300);
 check(`Cook it again -> ${await q(count)}, nothing done`, (await q(count)) === "Step 1 of 5" && !(await q(sheetUp("[data-cook-finished]"))) && (await q("document.querySelectorAll('.step.is-done').length")) === 0);
 await q("document.querySelector('[data-cook-close]').click()"); await sleep(300);
+// The step list on the page works like cook mode: progress is how far you've got.
+await ev("localStorage.clear()"); await go("/recipes/beef-and-broccoli/");
+const listState = "[...document.querySelectorAll('.step')].map(s => s.classList.contains('is-done') ? 1 : 0).join('')";
+await q("document.querySelector('#step-3 .step__num').click()");
+check(`tap step 3 -> ${await q(listState)}`, (await q(listState)) === "11100");
+await q("document.querySelector('#step-2 .step__body').click()");
+check(`tap done step 2 -> ${await q(listState)}`, (await q(listState)) === "10000");
+await go("/recipes/beef-and-broccoli/");
+check(`kept after reload -> ${await q(listState)}`, (await q(listState)) === "10000");
+await q("document.querySelector('[data-cook]').click()"); await sleep(300);
+check(`cook mode offers to resume at step 2: ${await q("document.querySelector('[data-cook-resume]')?.textContent.trim().slice(0, 60)")}`, await q(sheetUp("[data-cook-resume]")));
+await key("Escape"); await sleep(300);
 // Deep link.
 await go("/recipes/zuppa-toscana/#cook");
 check(`#cook deep link opens: ${await q(count)}`, await q("document.querySelector('.cook').open"));

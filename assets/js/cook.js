@@ -3,7 +3,7 @@
 (() => {
   const shared = window.HawkinsRecipe;
   if (!shared) return;
-  const { el: recipe, steps, setStep, saveSteps } = shared;
+  const { el: recipe, steps, markUpTo } = shared;
   const page = HawkinsPage;
 
   // Set once someone starts their first timer; until then cook mode explains them.
@@ -229,10 +229,6 @@
     ui.stage.scrollTop = 0;
   };
 
-  const markUpTo = (index) => {
-    steps.forEach((s, i) => setStep(s, i < index));
-    saveSteps();
-  };
   const go = (index) => {
     const direction = Math.sign(index - current);
     current = Math.max(0, Math.min(steps.length - 1, index));
@@ -257,7 +253,7 @@
       current = stepNumber - 1;
       markUpTo(current);
     } else {
-      if (reached() === steps.length) { steps.forEach((s) => setStep(s, false)); saveSteps(); }
+      if (reached() === steps.length) markUpTo(0);
       current = reached();
       ask = current > 0;
     }
