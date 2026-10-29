@@ -1,6 +1,6 @@
 // Recipe page helpers: check off ingredients and steps, change the servings,
-// favorite the recipe, and keep the screen awake. Cook mode is in cook.js, which builds on what this file shares as
-// window.HawkinsRecipe.
+// favorite the recipe, and keep the screen awake while you cook. Cook mode is
+// in cook.js, which builds on what this file shares as window.HawkinsRecipe.
 // Progress is saved per recipe in this browser and forgotten after 12 hours,
 // so a half-finished session from last week doesn't greet you next time.
 (() => {
@@ -23,10 +23,12 @@
 
   const state = load();
 
+  const syncWake = () => page.wake.set("progress", state.ingredients.length > 0 || state.steps.length > 0);
   const save = () => {
     state.at = Date.now();
     page.store.set(STORAGE_KEY, state);
     resetButton.hidden = state.ingredients.length === 0 && state.steps.length === 0;
+    syncWake();
   };
 
   const boxes = [...recipe.querySelectorAll(".ingredients .checklist input[type=checkbox]")];
@@ -144,24 +146,12 @@
     renderFaves();
   }
 
-  // Keep the screen awake while cooking. The button asks for it here; cook mode
-  // and running timers ask for it themselves (see HawkinsPage.wake).
-  const wakeButton = recipe.querySelector("[data-wake]");
-  let wakeWanted = false;
-  const renderWake = () => wakeButton && wakeButton.setAttribute("aria-pressed", String(wakeWanted && page.wake.active()));
-
-  if (wakeButton && page.wake.supported) {
-    wakeButton.hidden = false;
-    wakeButton.addEventListener("click", async () => {
-      wakeWanted = !wakeWanted;
-      await page.wake.set("button", wakeWanted);
-      if (!page.wake.active()) wakeWanted = false; // the browser said no
-      renderWake();
-    });
-    page.onLeave(page.wake.onChange(renderWake));
-  }
-  // Leaving the page lets the screen sleep again (unless a timer is running).
-  page.onLeave(() => { page.wake.set("button", false); page.wake.set("cook", false); });
+  // Keep the screen awake once you've started (an ingredient or step ticked),
+  // so it doesn't dim while you cook from the page. Cook mode and running
+  // timers ask for it themselves (see HawkinsPage.wake). Leaving the page, or
+  // Start over, lets the screen sleep again (unless a timer is running).
+  syncWake();
+  page.onLeave(() => { page.wake.set("progress", false); page.wake.set("cook", false); });
 
   window.HawkinsRecipe = { el: recipe, steps, setStep, saveSteps, markUpTo };
 })();

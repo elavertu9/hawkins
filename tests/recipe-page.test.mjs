@@ -22,8 +22,18 @@ await q("localStorage.clear()"); await go("/recipes/banana-bread/");
 
 // One primary action, waiting at the bottom of the screen on a phone.
 const cook = "document.querySelector('[data-cook]')";
-check(`Start cooking: "${await q(cook + ".textContent.trim()")}", pinned to the bottom`,
-  (await q(cook + ".textContent.trim()")) === "Start cooking" && await q(`getComputedStyle(${cook}).position === 'fixed' && ${cook}.getBoundingClientRect().bottom > innerHeight - 40`));
+check(`Start cooking: "${await q(cook + ".textContent.trim()")}", pinned to the bottom, no Start over yet`,
+  (await q(cook + ".textContent.trim()")) === "Start cooking" && await q(`getComputedStyle(document.querySelector('.cook-start')).position === 'fixed' && ${cook}.getBoundingClientRect().bottom > innerHeight - 40 && document.querySelector('[data-reset]').hidden`));
+check("no Keep screen on button", await q("!document.querySelector('[data-wake]')"));
+// Ticking something keeps the screen on; Start over (beside the button) lets it sleep.
+await q("(() => { const w = HawkinsPage.wake, set = w.set; window.wakeCalls = []; w.set = (name, on) => { wakeCalls.push(name + ':' + on); return set(name, on); }; })()");
+await q("document.querySelector('.ingredients input[type=checkbox]').click()");
+const reset = "document.querySelector('[data-reset]')";
+check(`tick an ingredient -> ${await q("wakeCalls.join(' ')")}; Start over shows beside the button`,
+  await q("wakeCalls.includes('progress:true')") && await q(`!${reset}.hidden && Math.abs(${reset}.getBoundingClientRect().top - ${cook}.getBoundingClientRect().top) < 30 && ${reset}.getBoundingClientRect().right <= ${cook}.getBoundingClientRect().left`));
+await shot("recipe-mobile-progress");
+await q(reset + ".click()");
+check(`Start over -> ${await q("wakeCalls.at(-1)")}, hidden again`, (await q("wakeCalls.at(-1)")) === "progress:false" && await q(reset + ".hidden"));
 await shot("recipe-mobile");
 await tap("[data-cook]");
 check("it opens cook mode", await q("document.querySelector('.cook').open"));
