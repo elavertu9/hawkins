@@ -2164,6 +2164,9 @@ body:has(> .timers:not([hidden])) { padding-bottom: 8rem; }
 .cart[open] summary { margin-bottom: 0.5rem; }
 .pantry__hint { margin: 0 0 0.25rem; font-size: 0.875rem; color: var(--text-faint); }
 .pantry .shopping__name { color: var(--text-muted); }
+/* At home rows have nothing to tick: the name lines up with the hint. */
+.shopping__item { margin: 0; padding: 0.6rem 0 0; }
+.pantry .shopping__from { padding-left: 0; }
 .aisle .ingredients__group { margin-top: 1rem; }
 .aisle:first-child .ingredients__group { margin-top: 0.5rem; }
 .shopping__from {

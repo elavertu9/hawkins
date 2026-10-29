@@ -495,20 +495,26 @@
 
   // One line of the shopping list, with its button on the right:
   // "Have at home" for recipe items, "Need it" under At home, × for your own items.
-  const renderRow = ({ row, amount, name }, checked, inPantry) => {
+  // where: "list" (an aisle), "cart" (In the cart: just the ticked box, to
+  // untick a slip), or "pantry" (At home: nothing to tick, just Need it).
+  const renderRow = ({ row, amount, name }, checked, where) => {
     const li = document.createElement("li");
     li.className = "shopping__row";
-    li.innerHTML = `
+    const text = `<span class="check__text"><span class="qty"></span> <span class="shopping__name"></span></span>`;
+    li.innerHTML = where === "pantry" ? `
+      <p class="shopping__item">${text}</p>
+      <button class="shopping__action" type="button"></button>
+      <span class="shopping__from"></span>` : `
       <label class="check">
         <input type="checkbox">
         <span class="check__box" aria-hidden="true"></span>
-        <span class="check__text"><span class="qty"></span> <span class="shopping__name"></span></span>
+        ${text}
       </label>
-      <button class="shopping__action" type="button"></button>
+      ${where === "list" ? `<button class="shopping__action" type="button"></button>` : ""}
       <span class="shopping__from"></span>`;
     const box = li.querySelector("input");
-    box.checked = checked.has(row.key);
-    box.addEventListener("change", () => {
+    if (box) box.checked = checked.has(row.key);
+    box?.addEventListener("change", () => {
       // Checking an item on the list strikes it through for a moment before
       // it moves to "In the cart", so you see the tap land (and can untick a
       // slip before it goes). Unticking in the cart puts it straight back.
@@ -546,7 +552,9 @@
     }
 
     const action = li.querySelector(".shopping__action");
-    if (row.extra) {
+    if (!action) {
+      // In the cart: nothing beside the box.
+    } else if (row.extra) {
       action.innerHTML = "&times;";
       action.classList.add("shopping__action--remove");
       action.setAttribute("aria-label", `Remove ${name}`);
@@ -556,22 +564,22 @@
         save();
         toast(`Removed ${name}`, restore(before));
       });
-    } else if (inPantry) {
+    } else if (where === "pantry") {
       action.textContent = "Need it";
       action.setAttribute("aria-label", `Need ${name}: put it back on the list`);
       action.addEventListener("click", () => {
         pantry.delete(row.key);
         savePantry();
-        toast(`${name} is back on the list`, () => { pantry.add(row.key); savePantry(); });
+        toast(`${name[0].toUpperCase()}${name.slice(1)} is back on the list`, () => { pantry.add(row.key); savePantry(); });
       });
     } else {
       action.textContent = "Have at home";
-      action.title = "You keep this at home. Moves it to At home, off every plan's list.";
+      action.title = "You have this at home: take it off every plan's list.";
       action.setAttribute("aria-label", `Have ${name} at home: take it off the list`);
       action.addEventListener("click", () => {
         pantry.add(row.key);
         savePantry();
-        toast(`Moved ${name} to At home`, () => { pantry.delete(row.key); savePantry(); });
+        toast(`You have ${name} at home`, () => { pantry.delete(row.key); savePantry(); });
       });
     }
     return li;
@@ -604,21 +612,21 @@
       heading.textContent = aisle;
       const list = document.createElement("ul");
       list.className = "checklist";
-      list.append(...rows.map((entry) => renderRow(entry, checked, false)));
+      list.append(...rows.map((entry) => renderRow(entry, checked, "list")));
       section.append(heading, list);
       return section;
     }));
 
     ui.cart.hidden = inCart.length === 0;
     ui.cartCount.textContent = inCart.length;
-    ui.cartList.replaceChildren(...inCart.sort(byName).map((entry) => renderRow(entry, checked, false)));
+    ui.cartList.replaceChildren(...inCart.sort(byName).map((entry) => renderRow(entry, checked, "cart")));
 
     ui.pantry.hidden = stocked.length === 0;
     ui.pantrySummary.hidden = stocked.length === 0;
     ui.pantrySummaryText.textContent =
       `Skipping ${stocked.length} you have at home: ${pantryNames(stocked)}.`;
     ui.pantryCount.textContent = stocked.length;
-    ui.pantryList.replaceChildren(...stocked.sort(byName).map((entry) => renderRow(entry, checked, true)));
+    ui.pantryList.replaceChildren(...stocked.sort(byName).map((entry) => renderRow(entry, checked, "pantry")));
 
     const left = toBuy.length - inCart.length;
     ui.itemCount.textContent = !toBuy.length ? "" : left ? `${left} to get${inCart.length ? ` · ${inCart.length} in the cart` : ""}` : "All in the cart";

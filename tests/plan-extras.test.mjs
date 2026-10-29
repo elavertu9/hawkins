@@ -21,6 +21,7 @@ check(`olive oil (in pantry): ${await pantryQty("olive oil")}`, (await pantryQty
 check(`soy sauce stays: ${await qtyOf("low-sodium soy sauce")}`, (await qtyOf("low-sodium soy sauce")) === "6 tablespoons");
 check(`ground beef: ${await qtyOf("lean ground beef")}`, (await qtyOf("lean ground beef")) === "4 pounds");
 // 1. pantry defaults
+check("At home rows: no checkbox, just Need it", await q("[...document.querySelectorAll('[data-plan-pantry-list] li')].every(li => !li.querySelector('input') && li.querySelector('.shopping__action').textContent === 'Need it')"));
 check(`pantry defaults: ${await q(pantryNames)} | black pepper on list: ${await qtyOf("black pepper")}`, (await q(pantryNames)).includes("black pepper") && (await qtyOf("black pepper")) === null);
 await q(`${rowSel("broccoli")}.querySelector('.shopping__action').click()`); await sleep(200);
 check(`broccoli -> pantry: ${await q(pantryNames)} | toast "${await q(toastText)}"`, (await q(pantryNames)).includes("broccoli") && (await qtyOf("broccoli")) === null);
@@ -54,6 +55,8 @@ check("untick during the strike-through: stays on the list", (await qtyOf("brocc
 await q(`${rowSel("broccoli")}.querySelector('input').click()`); await sleep(1100);
 const cartNames = "[...document.querySelectorAll('[data-plan-cart-list] .shopping__name')].map(e => e.textContent).join(', ')";
 check(`checked -> in the cart: ${await q(cartNames)}, gone from produce`, (await q(cartNames)) === "broccoli" && (await qtyOf("broccoli")) === null);
+check("cart rows: just the ticked box", await q("[...document.querySelectorAll('[data-plan-cart-list] li')].every(li => li.querySelector('input').checked && !li.querySelector('.shopping__action'))"));
+await shot("plan-cart-pantry");
 await q("[...document.querySelectorAll('[data-plan-cart-list] li')][0].querySelector('input').click()"); await sleep(200);
 check("unchecked -> back in its aisle", (await qtyOf("broccoli")) === "1 pound" && await q("document.querySelector('[data-plan-cart]').hidden"));
 await shot("plan2-mobile");
