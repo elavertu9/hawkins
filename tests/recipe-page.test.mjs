@@ -98,6 +98,21 @@ await send("Emulation.setEmulatedMedia", { features: [{ name: "prefers-color-sch
 await go("/recipes/cannoli-dip/");
 check(`desktop: Start cooking sits in the page: ${await q("getComputedStyle(document.querySelector('[data-cook]')).position")}`, (await q("getComputedStyle(document.querySelector('[data-cook]')).position")) === "static");
 await shot("recipe-desktop");
+// The Appearance switch at the bottom overrides the device's setting.
+const bodyBg = "getComputedStyle(document.body).backgroundColor";
+const paper = "rgb(243, 237, 225)";
+await q("document.querySelector('[data-theme-pick=\"light\"]').click()");
+check(`Light on a dark device: ${await q(bodyBg)}`, (await q(bodyBg)) === paper);
+await go("/plan/");
+check(`remembered on the next page: ${await q(bodyBg)}, theme-color ${await q("document.querySelector('meta[name=theme-color]').content")}`,
+  (await q(bodyBg)) === paper && (await q("document.querySelector('[data-theme-pick=\"light\"]').getAttribute('aria-pressed')")) === "true");
+await send("Emulation.setEmulatedMedia", { features: [{ name: "prefers-color-scheme", value: "light" }] });
+await q("document.querySelector('[data-theme-pick=\"dark\"]').click()");
+check(`Dark on a light device: ${await q(bodyBg)}`, (await q(bodyBg)) !== paper);
+await shot("theme-pick-desktop");
+await q("document.querySelector('[data-theme-pick=\"\"]').click()");
+check(`Auto follows the device again: ${await q(bodyBg)}, saved: ${await q("localStorage.getItem('hawkins:theme')")}`, (await q(bodyBg)) === paper && (await q("localStorage.getItem('hawkins:theme')")) === null);
+await send("Emulation.setEmulatedMedia", { features: [{ name: "prefers-color-scheme", value: "dark" }] });
 await q("localStorage.clear()");
 check(`JS errors: ${errors.length} ${errors.join(" | ")}`, errors.length === 0);
 finish();

@@ -88,9 +88,9 @@ await tap("[data-cook-close]");
 check(`closing leaves a clean URL: ${await q(path)}`, (await q(path)) === "/recipes/cannoli-dip/");
 
 // Cook mode's own Back handling, after Turbo visits.
+check(`button offers to continue: ${await q("document.querySelector('[data-cook]').textContent")}`, (await q("document.querySelector('[data-cook]').textContent")) === "Continue at step 2");
 await tap("[data-cook]");
-check(`reopen asks to pick up at step 2: ${await q("document.querySelector('[data-cook-resume-title]').textContent")}`, (await q("document.querySelector('[data-cook-resume-title]').textContent")) === "Pick up at step 2?");
-await tap("[data-cook-resume-continue]");
+check(`-> ${await q(count)}`, (await q(count)) === "Step 2 of 4");
 check(`cook open, hash ${await q("location.hash")}`, (await q("location.hash")) === "#cook");
 await q("history.back()"); await sleep(800);
 check(`Back closes cook mode once: open=${await q("document.querySelector('.cook').open")} at ${await q(path)}`,

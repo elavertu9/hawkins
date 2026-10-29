@@ -146,6 +146,16 @@
     go(0);
   };
 
+  // The page's button says where cook mode will open: "Start cooking", or
+  // "Continue at step 3" once some steps are done (a finished recipe starts
+  // fresh). Tapping Continue goes straight there, since the button already
+  // said so; Start over on the page and in the step list still start fresh.
+  const renderCookButton = () => {
+    const at = reached();
+    cookButton.textContent = at > 0 && at < steps.length ? `Continue at step ${at + 1}` : "Start cooking";
+  };
+  recipe.addEventListener("hawkins:steps", renderCookButton);
+
   // ---------- Picking a step ----------
   // The segments along the top and the step list both jump straight to a step.
   const stepTitle = (step) => {
@@ -267,9 +277,10 @@
   const prev = () => { if (current > 0) go(current - 1); };
 
   const COOK_HASH = /^#cook(?:-(\d+))?$/;
-  // Opened with a step (a timer, a #cook-3 link) goes straight there. Otherwise
-  // pick up where you left off, after asking; a recipe you finished last time
-  // starts fresh. Progress older than 12 hours is already gone (see load).
+  // Opened with a step (Continue at step 3, a timer, a #cook-3 link) goes
+  // straight there. Otherwise (a #cook link, like the meal plan's Cook) pick up
+  // where you left off, after asking; a recipe you finished last time starts
+  // fresh. Progress older than 12 hours is already gone (see load).
   const open = (stepNumber) => {
     let ask = false;
     if (stepNumber >= 1 && stepNumber <= steps.length) {
@@ -414,7 +425,11 @@
   });
 
   cookButton.hidden = false;
-  cookButton.addEventListener("click", () => open());
+  renderCookButton();
+  cookButton.addEventListener("click", () => {
+    const at = reached();
+    open(at > 0 && at < steps.length ? at + 1 : undefined);
+  });
   const deepLink = location.hash.match(COOK_HASH);
   if (deepLink) open(Number(deepLink[1]));
 })();

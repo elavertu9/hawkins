@@ -104,28 +104,36 @@ await q("document.querySelector('[data-cook-close]').click()"); await sleep(300)
 await q(finished.replace("8 * 60", "6 * 60"));
 await go("/recipes/beef-and-broccoli/");
 check("visiting the recipe clears its finished timer", await q("!document.querySelector('.timer') && localStorage.getItem('hawkins:timers') === null"));
-// Reopen asks before picking up where you left off; back button closes it.
+// With progress, the button says where it'll open and goes straight there;
+// the back button closes cook mode.
 const sheetUp = (sel) => `!document.querySelector('${sel}').hidden`;
+const cookLabel = "document.querySelector('[data-cook]').textContent";
 check(`Continue recipe at step 1 left nothing done: ${await q("document.querySelectorAll('.step.is-done').length")}`, (await q("document.querySelectorAll('.step.is-done').length")) === 0);
+check(`no progress: "${await q(cookLabel)}"`, (await q(cookLabel)) === "Start cooking");
 await q("document.querySelector('[data-cook]').click()"); await sleep(300);
 check("no progress: opens without asking", !(await q(sheetUp("[data-cook-resume]"))));
 await q(segs + "[2].click()"); await sleep(200);
 await q("document.querySelector('[data-cook-close]').click()"); await sleep(300);
+check(`after jumping to step 3: "${await q(cookLabel)}"`, (await q(cookLabel)) === "Continue at step 3");
 await q("document.querySelector('[data-cook]').click()"); await sleep(300);
-check(`reopen asks: ${await q("document.querySelector('[data-cook-resume-title]').textContent")} | ${await q("document.querySelector('[data-cook-resume-continue]').textContent")}`,
-  await q(sheetUp("[data-cook-resume]")) && (await q("document.querySelector('[data-cook-resume-title]').textContent")) === "Pick up at step 3?" && await q("document.querySelector('.cook__nav').inert"));
-await shot("cook-mobile-resume");
-await q("document.querySelector('[data-cook-resume-continue]').click()"); await sleep(300);
-check(`Continue -> ${await q(count)}, card gone`, (await q(count)) === "Step 3 of 5" && !(await q(sheetUp("[data-cook-resume]"))));
+check(`Continue -> ${await q(count)}, no card`, (await q(count)) === "Step 3 of 5" && !(await q(sheetUp("[data-cook-resume]"))));
 check(`segments fill from the left: ${await q("[...document.querySelectorAll('.cook__seg')].map(s => s.classList.contains('is-current') ? 'C' : s.classList.contains('is-done') ? 'D' : '-').join('')")}`,
   (await q("[...document.querySelectorAll('.cook__seg')].map(s => s.classList.contains('is-current') ? 'C' : s.classList.contains('is-done') ? 'D' : '-').join('')")) === "DDC--");
 check(`current segment shows its number: ${await q("getComputedStyle(document.querySelector('.cook__seg.is-current .cook__seg-num')).opacity")}`,
   (await q("getComputedStyle(document.querySelector('.cook__seg.is-current .cook__seg-num')).opacity")) === "1");
 await q("history.back()"); await sleep(500);
 check(`back button closes: open=${await q("document.querySelector('.cook').open")} path=${await q("location.pathname + location.hash")}`, !(await q("document.querySelector('.cook').open")) && (await q("location.pathname + location.hash")) === "/recipes/beef-and-broccoli/");
+// Opened from a #cook link (like the meal plan's Cook), it asks first.
+await go("/recipes/"); await go("/recipes/beef-and-broccoli/#cook");
+check(`#cook link asks: ${await q("document.querySelector('[data-cook-resume-title]').textContent")} | ${await q("document.querySelector('[data-cook-resume-continue]').textContent")}`,
+  await q(sheetUp("[data-cook-resume]")) && (await q("document.querySelector('[data-cook-resume-title]').textContent")) === "Pick up at step 3?" && await q("document.querySelector('.cook__nav').inert"));
+await shot("cook-mobile-resume");
+await q("document.querySelector('[data-cook-resume-continue]').click()"); await sleep(300);
+check(`Continue -> ${await q(count)}, card gone`, (await q(count)) === "Step 3 of 5" && !(await q(sheetUp("[data-cook-resume]"))));
+await q("document.querySelector('[data-cook-close]').click()"); await sleep(300);
 // Start from step 1 on the card clears steps (not ingredients).
 await q("(() => { const b = document.querySelector('.ingredients input[type=checkbox]'); if (!b.checked) b.click(); })()");
-await q("document.querySelector('[data-cook]').click()"); await sleep(300);
+await go("/recipes/"); await go("/recipes/beef-and-broccoli/#cook");
 await q("document.querySelector('[data-cook-resume] [data-cook-restart]').click()"); await sleep(300);
 check(`Start from step 1 -> ${await q(count)}, done ${await q("document.querySelectorAll('.step.is-done').length")}, kept ${await q("document.querySelector('.ingredients input[type=checkbox]').checked")}`, (await q(count)) === "Step 1 of 5" && (await q("document.querySelectorAll('.step.is-done').length")) === 0 && await q("document.querySelector('.ingredients input[type=checkbox]').checked"));
 // Jumping ahead then Next fills in everything before.
@@ -167,9 +175,9 @@ await q("document.querySelector('#step-2 .step__body').click()");
 check(`tap done step 2 -> ${await q(listState)}`, (await q(listState)) === "10000");
 await go("/recipes/beef-and-broccoli/");
 check(`kept after reload -> ${await q(listState)}`, (await q(listState)) === "10000");
-await q("document.querySelector('[data-cook]').click()"); await sleep(300);
-check(`cook mode offers to resume at step 2: ${await q("document.querySelector('[data-cook-resume]')?.textContent.trim().slice(0, 60)")}`, await q(sheetUp("[data-cook-resume]")));
-await key("Escape"); await sleep(300);
+check(`the button follows: "${await q(cookLabel)}"`, (await q(cookLabel)) === "Continue at step 2");
+await q("document.querySelector('[data-reset]').click()");
+check(`Start over on the page -> "${await q(cookLabel)}"`, (await q(cookLabel)) === "Start cooking");
 // A running timer counts down on its step; when it ends there, one tap moves on.
 await ev("localStorage.clear()"); await go("/recipes/"); await go("/recipes/beef-and-broccoli/#cook-3");
 await q("document.querySelector('.cook .timer-start').click()"); await sleep(600);

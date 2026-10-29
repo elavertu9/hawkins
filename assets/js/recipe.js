@@ -61,9 +61,11 @@
     const button = step.querySelector(".step__num");
     button.setAttribute("aria-pressed", String(done));
   };
+  // Cook mode listens for "hawkins:steps" to keep its button's label current.
   const saveSteps = () => {
     state.steps = steps.map((s, i) => (s.classList.contains("is-done") ? i : -1)).filter((i) => i >= 0);
     save();
+    recipe.dispatchEvent(new Event("hawkins:steps"));
   };
   // Progress is how far you've got: steps before index are done, the rest not.
   const markUpTo = (index) => {
@@ -90,9 +92,8 @@
     boxes.forEach((b) => { b.checked = false; });
     steps.forEach((s) => setStep(s, false));
     state.ingredients = [];
-    state.steps = [];
     syncMirrors();
-    save();
+    saveSteps();
   });
   resetButton.hidden = state.ingredients.length === 0 && state.steps.length === 0;
 

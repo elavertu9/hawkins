@@ -16,6 +16,10 @@
 // HawkinsPage.favorites: the recipes you've hearted, saved in this browser
 // (no expiry). Cards for them get .is-favorite on every page.
 //
+// Appearance: Auto (the device's setting), Light, or Dark, picked at the
+// bottom of every page and remembered in this browser. head.html applies it
+// before the page draws.
+//
 // HawkinsPage.wake: keeps the screen on (Screen Wake Lock API) while anything
 // asks for it. Each part of the site asks under its own name (cook mode, the
 // Keep screen on button, running timers), and the screen can sleep again once
@@ -49,6 +53,29 @@
 
   const store = storage("localStorage");
   const session = storage("sessionStorage");
+
+  (() => {
+    const KEY = "hawkins:theme";
+    const metaColor = (theme) => document.querySelectorAll('meta[name="theme-color"]').forEach((m) => {
+      if (!m.dataset.color) m.dataset.color = m.content;
+      m.content = theme === "light" ? "#f3ede1" : theme === "dark" ? "#060608" : m.dataset.color;
+    });
+    const apply = () => {
+      const theme = store.getText(KEY) || "";
+      if (theme) document.documentElement.dataset.theme = theme;
+      else delete document.documentElement.dataset.theme;
+      metaColor(theme);
+      document.querySelectorAll("[data-theme-pick]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.themePick === theme)));
+    };
+    document.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-theme-pick]");
+      if (!button) return;
+      if (button.dataset.themePick) store.setText(KEY, button.dataset.themePick); else store.remove(KEY);
+      apply();
+    });
+    document.addEventListener("turbo:load", apply);
+    document.addEventListener("DOMContentLoaded", apply);
+  })();
 
   const wake = (() => {
     const supported = "wakeLock" in navigator;

@@ -15,6 +15,8 @@
 
 {%- comment -%} Classified cards drop their stamp once this device has the clearance code (see classified.js). Inline so the stamp doesn't flash. {%- endcomment %}
 <script>try { if (localStorage.getItem("hawkins:clearance-code")) document.documentElement.dataset.clearance = "granted"; } catch (_) {}</script>
+{%- comment %} Light or Dark picked at the bottom of the page (see page.js). Inline so the page doesn't flash the other colors. {% endcomment %}
+<script>try { var t = localStorage.getItem("hawkins:theme"); if (t === "light" || t === "dark") document.documentElement.dataset.theme = t; } catch (_) {}</script>
 
 <meta property="og:site_name" content="{{ site.title }}">
 <meta property="og:title" content="{{ page.title | default: site.title | escape }}">
