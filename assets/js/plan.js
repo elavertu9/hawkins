@@ -386,10 +386,12 @@
   };
   let currentRows = [];
 
-  // On a phone the recipes fold into one line once there are some, so the
-  // shopping list is right there in the store. Edit opens them again.
+  // On a phone, a plan you come back to opens with its recipes folded into
+  // one line, so the shopping list is right there in the store; Edit opens
+  // them. Starting from an empty plan, they stay open while you add (no
+  // folding under your finger) until you tap Done.
   const narrow = matchMedia("(max-width: 55.99rem)");
-  let editing = false;
+  let editing = !plan.recipes.some((r) => bySlug.has(r.slug));
   const renderFold = () => {
     const count = plan.recipes.filter((r) => bySlug.has(r.slug)).length;
     const folded = narrow.matches && count > 0 && !editing;
@@ -480,6 +482,17 @@
     renderFold();
   };
 
+  const LEAVE_MS = 900;
+  const leaving = new Map(); // key -> timer, for items on their way to the cart
+  const commitCheck = (key) => {
+    clearTimeout(leaving.get(key));
+    leaving.delete(key);
+    plan.checked = [...new Set([...plan.checked, key])];
+    save();
+  };
+  // Leaving the page mid-strike still counts the tick.
+  HawkinsPage.onLeave(() => [...leaving.keys()].forEach(commitCheck));
+
   // One line of the shopping list, with its button on the right:
   // "Pantry" for recipe items, "Need it" in the pantry, × for your own items.
   const renderRow = ({ row, amount, name }, checked, inPantry) => {
@@ -496,7 +509,21 @@
     const box = li.querySelector("input");
     box.checked = checked.has(row.key);
     box.addEventListener("change", () => {
-      plan.checked = box.checked ? [...new Set([...plan.checked, row.key])] : plan.checked.filter((k) => k !== row.key);
+      // Checking an item on the list strikes it through for a moment before
+      // it moves to "In the cart", so you see the tap land (and can untick a
+      // slip before it goes). Unticking in the cart puts it straight back.
+      if (box.checked && !checked.has(row.key)) {
+        li.classList.add("is-leaving");
+        leaving.set(row.key, setTimeout(() => commitCheck(row.key), LEAVE_MS));
+        return;
+      }
+      if (leaving.has(row.key)) {
+        clearTimeout(leaving.get(row.key));
+        leaving.delete(row.key);
+        li.classList.remove("is-leaving");
+        return;
+      }
+      plan.checked = plan.checked.filter((k) => k !== row.key);
       save();
     });
     const qty = li.querySelector(".qty");
@@ -538,7 +565,7 @@
         toast(`${name} is back on the list`, () => { pantry.add(row.key); savePantry(); });
       });
     } else {
-      action.textContent = "Have it";
+      action.textContent = "Always have";
       action.title = "Always have this. Moves it to Probably have, for every plan.";
       action.setAttribute("aria-label", `Always have ${name}: move it to the pantry`);
       action.addEventListener("click", () => {

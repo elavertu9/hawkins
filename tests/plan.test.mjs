@@ -29,6 +29,8 @@ check(`+: serves ${await q("document.querySelector('.stepper__value').textConten
   (await q(row("broccoli"))) === "2 pounds" && (await q("document.querySelector('.stepper__value').textContent")) === "8");
 check(`ground beef (goulash 1x + none): ${await q(row("ground beef"))}`, true);
 await q("[...document.querySelectorAll('.aisle li')].find(li => li.querySelector('.shopping__name').textContent === 'broccoli').querySelector('input').click()"); await sleep(200);
+check("checked: struck through in its aisle for a moment", await q("[...document.querySelectorAll('.aisle li')].find(li => li.querySelector('.shopping__name').textContent === 'broccoli')?.classList.contains('is-leaving')"));
+await sleep(1000);
 check(`checked -> "In the cart": ${await q("document.querySelector('[data-plan-item-count]').textContent")}`, /1 in the cart/.test(await q("document.querySelector('[data-plan-item-count]').textContent"))
   && (await q(row("broccoli"))) === null && !(await q("document.querySelector('[data-plan-cart]').hidden")));
 await go("/plan/");
@@ -84,6 +86,12 @@ check(`empty plan adopts shared: ${await q("document.querySelectorAll('.plan-ite
 await q("localStorage.clear()"); await go("/plan/");
 check("empty state shown, list hidden", await q("!document.querySelector('[data-plan-empty]').hidden && document.querySelector('[data-plan-list-tools]').hidden"));
 await shot("plan-empty");
+// Starting from an empty plan on a phone, the recipes stay open while you add.
+await q("(() => { const s = document.querySelector('[data-plan-select]'); s.value = 'goulash'; s.dispatchEvent(new Event('change')); })()"); await sleep(200);
+check("first recipe added: panel stays open", await q("!document.querySelector('[data-plan-recipes-body]').hidden && document.querySelector('[data-plan-summary]').hidden"));
+await go("/plan/");
+check("coming back with a plan: folded", await q("document.querySelector('[data-plan-recipes-body]').hidden"));
+await q("localStorage.removeItem('hawkins:plan')");
 // Favorites show as one-tap adds.
 await q("localStorage.setItem('hawkins:favorites', JSON.stringify(['banana-bread', 'goulash']))"); await go("/plan/");
 check(`favorites offered: ${await q("[...document.querySelectorAll('[data-plan-faves-list] .chip')].map(c => c.textContent).join(', ')")}`, (await q("document.querySelectorAll('[data-plan-faves-list] .chip').length")) === 2);

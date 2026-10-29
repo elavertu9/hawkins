@@ -49,6 +49,9 @@ await undo();
 check("undo remove extra", (await aisleOf("paper towels")) !== null);
 // 3. checked items move to "In the cart", and come back when unchecked
 await q(`${rowSel("broccoli")}.querySelector('input').click()`); await sleep(200);
+await q(`${rowSel("broccoli")}.querySelector('input').click()`); await sleep(1100);
+check("untick during the strike-through: stays on the list", (await qtyOf("broccoli")) === "1 pound" && await q("document.querySelector('[data-plan-cart]').hidden"));
+await q(`${rowSel("broccoli")}.querySelector('input').click()`); await sleep(1100);
 const cartNames = "[...document.querySelectorAll('[data-plan-cart-list] .shopping__name')].map(e => e.textContent).join(', ')";
 check(`checked -> in the cart: ${await q(cartNames)}, gone from produce`, (await q(cartNames)) === "broccoli" && (await qtyOf("broccoli")) === null);
 await q("[...document.querySelectorAll('[data-plan-cart-list] li')][0].querySelector('input').click()"); await sleep(200);
