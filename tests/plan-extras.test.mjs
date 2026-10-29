@@ -26,6 +26,12 @@ await q(`${rowSel("broccoli")}.querySelector('.shopping__action').click()`); awa
 check(`broccoli -> pantry: ${await q(pantryNames)} | toast "${await q(toastText)}"`, (await q(pantryNames)).includes("broccoli") && (await qtyOf("broccoli")) === null);
 await undo();
 check("undo pantry move", (await qtyOf("broccoli")) === "1 pound");
+// A long name wraps inside the toast instead of spilling out of it.
+const longName = await q("[...document.querySelectorAll('[data-plan-aisles] .shopping__name')].map(e => e.textContent).sort((a, b) => b.length - a.length)[0]");
+await q(`${rowSel(longName)}.querySelector('.shopping__action').click()`); await sleep(300);
+check(`toast holds "${longName}"`, await q(`(() => { const t = document.querySelector('[data-plan-toast]').getBoundingClientRect(), x = document.querySelector('[data-plan-toast-text]').getBoundingClientRect(), u = document.querySelector('[data-plan-toast-action]').getBoundingClientRect(); return x.left >= t.left && x.right <= u.left && u.right <= t.right && x.bottom <= t.bottom && t.left >= 0 && t.right <= innerWidth; })()`));
+await shot("plan-toast-long");
+await undo();
 await q(`[...document.querySelectorAll('[data-plan-pantry-list] li')].find(li => li.querySelector('.shopping__name').textContent === 'black pepper').querySelector('.shopping__action').click()`); await sleep(200);
 check(`Need it -> black pepper back: ${await qtyOf("black pepper")}`, (await qtyOf("black pepper")) === "¼ teaspoon");
 await go("/plan/");

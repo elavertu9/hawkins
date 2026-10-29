@@ -2160,29 +2160,42 @@ body:has(> .timers:not([hidden])) { padding-bottom: 8rem; }
   bottom: calc(env(safe-area-inset-bottom, 0px) + 1.5rem);
   z-index: 70;
   margin: 0;
-  padding: 0.6rem 1.1rem;
-  font-family: var(--font-mono);
-  font-size: 0.875rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
+  padding: 0.55rem 0.6rem 0.55rem 1.1rem;
+  font-family: var(--font-body);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  line-height: 1.35;
   color: var(--text);
   background: var(--surface-2);
   border: 1px solid var(--red-bright);
-  border-radius: 999px;
+  /* Rounded enough to read as a pill on one line, and still hold a long
+     ingredient name that wraps to two. */
+  border-radius: 1.4rem;
   box-shadow: 0 0 20px var(--red-glow);
   display: flex;
   align-items: center;
   gap: 1rem;
-  max-width: calc(100% - 2 * var(--gutter));
+  width: max-content;
+  max-width: min(28rem, calc(100% - 2 * var(--gutter)));
   opacity: 0;
   visibility: hidden;
   transform: translate(-50%, 0.75rem);
   transition: opacity 0.2s, transform 0.2s, visibility 0s 0.2s;
 }
 .plan-toast.is-shown { opacity: 1; visibility: visible; transform: translate(-50%, 0); transition: opacity 0.2s, transform 0.2s; }
+.plan-toast [data-plan-toast-text] {
+  flex: 1;
+  min-width: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
 .plan-toast__undo {
-  padding: 0.2rem 0.7rem;
+  flex: none;
+  padding: 0.35rem 0.9rem;
   font: inherit;
+  font-weight: 600;
   color: #fff;
   background: var(--red);
   border: 0;
