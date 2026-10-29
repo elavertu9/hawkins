@@ -9,8 +9,10 @@
 <title>{{ full_title }}</title>
 <meta name="description" content="{{ description | escape }}">
 <link rel="canonical" href="{{ page.url | absolute_url }}">
-<meta name="theme-color" content="#060608">
-<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#060608" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f3ede1" media="(prefers-color-scheme: light)">
+<meta name="color-scheme" content="dark light">
+
 {%- comment -%} Classified cards drop their stamp once this device has the clearance code (see classified.js). Inline so the stamp doesn't flash. {%- endcomment %}
 <script>try { if (localStorage.getItem("hawkins:clearance-code")) document.documentElement.dataset.clearance = "granted"; } catch (_) {}</script>
 
@@ -36,6 +38,7 @@
 <meta name="turbo-cache-control" content="no-cache">
 <script src="{{ '/assets/js/lib/turbo.min.js' | relative_url }}?v=8.0.12" defer data-turbo-track="reload"></script>
 <script src="{{ '/assets/js/page.js' | relative_url }}?v={{ site.time | date: '%s' }}" defer data-turbo-track="reload"></script>
+<script src="{{ '/assets/js/qty.js' | relative_url }}?v={{ site.time | date: '%s' }}" defer data-turbo-track="reload"></script>
 <script src="{{ '/assets/js/timers.js' | relative_url }}?v={{ site.time | date: '%s' }}" defer data-turbo-track="reload"></script>
 <script src="{{ '/assets/js/upside-down.js' | relative_url }}?v={{ site.time | date: '%s' }}" defer data-turbo-track="reload"></script>
 

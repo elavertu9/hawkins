@@ -8,10 +8,13 @@
 // can only beep while the site is open on screen, and the browser needs one tap
 // after the site loads before it allows sound.
 //
-// recipe.js uses window.HawkinsTimers:
+// cook.js uses window.HawkinsTimers:
 //   start({ key, seconds, recipe, url, step, title, time })
-//   isRunning(key), keys(), onChange(fn) -> unsubscribe, tray (the element,
-//   so cook mode can hold it)
+//   isRunning(key), keys(), secondsLeft(key), formatClock(seconds),
+//   onChange(fn) -> unsubscribe, tray (the element, so cook mode can hold it)
+//   continueTo: set by cook mode while it's open. Given a finished timer, it
+//   returns { label, go } to offer one tap to the next step instead of
+//   "Continue recipe", or null.
 //
 // A finished timer stays up, with "Stop alarm" and "Continue recipe" buttons,
 // until it's dismissed with its ×, or you go back to its recipe. Stopping only
@@ -118,9 +121,14 @@
     stopButton.setAttribute("aria-label", `Stop the ${label} alarm`);
     stopButton.addEventListener("click", () => stop(timer.key));
     const continueButton = el.querySelector(".timer__continue");
-    continueButton.setAttribute("aria-label", `Continue ${timer.recipe} at step ${timer.step}`);
-    continueButton.addEventListener("click", () => { remove(timer.key); goTo(timer); });
-    return { el, time: el.querySelector(".timer__time"), cancel, actions: el.querySelector(".timer__actions"), stopButton, label, done: false, lastBeep: 0 };
+    const continueLabel = `Continue ${timer.recipe} at step ${timer.step}`;
+    continueButton.setAttribute("aria-label", continueLabel);
+    continueButton.addEventListener("click", () => {
+      const next = api.continueTo && api.continueTo(timer);
+      remove(timer.key);
+      if (next) next.go(); else goTo(timer);
+    });
+    return { el, time: el.querySelector(".timer__time"), cancel, actions: el.querySelector(".timer__actions"), stopButton, continueButton, continueLabel, label, done: false, lastBeep: 0 };
   };
 
   let tick = null;
@@ -146,6 +154,10 @@
       // Finished while you were away: say how long ago.
       const ago = Math.floor(-left / 60);
       view.time.textContent = ago >= 1 ? `Done ${ago} min ago` : "Done";
+      // In cook mode on this timer's step, offer to move straight on.
+      const next = api.continueTo && api.continueTo(timer);
+      view.continueButton.textContent = next ? next.label : "Continue recipe ›";
+      view.continueButton.setAttribute("aria-label", next ? `Step ${timer.step} done: ${next.label.replace(/ ›$/, "")}` : view.continueLabel);
       // Beep every few seconds for a minute, or until dismissed. Only the
       // tab you're looking at beeps, so two open tabs don't both go off.
       if (!timer.stopped && now - view.lastBeep > 3000 && now - timer.end < BEEP_FOR_MS && document.visibilityState === "visible") {
@@ -215,16 +227,23 @@
   };
   document.addEventListener("turbo:load", clearFinishedHere);
 
-  window.HawkinsTimers = {
+  const api = {
     start,
     isRunning: (key) => list.some((t) => t.key === key),
     keys: () => list.map((t) => t.key),
+    secondsLeft: (key) => {
+      const timer = list.find((t) => t.key === key);
+      return timer ? Math.max(0, (timer.end - Date.now()) / 1000) : null;
+    },
+    formatClock,
+    continueTo: null,
     onChange: (fn) => {
       listeners.push(fn);
       return () => { const i = listeners.indexOf(fn); if (i >= 0) listeners.splice(i, 1); };
     },
     tray,
   };
+  window.HawkinsTimers = api;
 
   write(list); // drop expired ones
   clearFinishedHere();

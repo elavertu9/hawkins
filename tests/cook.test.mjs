@@ -170,6 +170,41 @@ check(`kept after reload -> ${await q(listState)}`, (await q(listState)) === "10
 await q("document.querySelector('[data-cook]').click()"); await sleep(300);
 check(`cook mode offers to resume at step 2: ${await q("document.querySelector('[data-cook-resume]')?.textContent.trim().slice(0, 60)")}`, await q(sheetUp("[data-cook-resume]")));
 await key("Escape"); await sleep(300);
+// A running timer counts down on its step; when it ends there, one tap moves on.
+await ev("localStorage.clear()"); await go("/recipes/"); await go("/recipes/beef-and-broccoli/#cook-3");
+await q("document.querySelector('.cook .timer-start').click()"); await sleep(600);
+const onStep = "document.querySelector('.cook .timer-start').dataset.left";
+check(`countdown on the step: ${await q(onStep)}`, /^[34]:\d\d$/.test(await q(onStep)));
+await q("(() => { const real = Date.now.bind(Date); Date.now = () => real() + 250 * 1000; })()"); await sleep(600);
+check(`step says ${await q(onStep)}, card offers "${await q("document.querySelector('.timer__continue').textContent")}"`,
+  (await q(onStep)) === "Done" && (await q("document.querySelector('.timer__continue').textContent")) === "Next step ›");
+await q("document.querySelector('.timer__continue').click()"); await sleep(400);
+check(`Next step -> ${await q(count)}, step 3 done, timer gone`, (await q(count)) === "Step 4 of 5" && await q("document.querySelector('#step-3').classList.contains('is-done') && !document.querySelector('.timer')"));
+// Swiping: the step follows the finger, springs back from a short drag, and
+// a long one moves on.
+const swipe = async (from, to) => {
+  const y = 500;
+  await send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x: from, y }] });
+  for (let i = 1; i <= 5; i++) await send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: [{ x: from + ((to - from) * i) / 5, y }] });
+  const moved = await q("document.querySelector('[data-cook-step]').style.transform");
+  await send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
+  await sleep(400);
+  return moved;
+};
+const moved = await swipe(300, 260);
+check(`short drag follows (${moved}) and springs back: ${await q(count)}`, /translateX\(-\d+px\)/.test(moved) && (await q(count)) === "Step 4 of 5");
+await swipe(320, 120);
+check(`long swipe left -> ${await q(count)}`, (await q(count)) === "Step 5 of 5");
+await swipe(100, 300);
+check(`swipe right -> ${await q(count)}`, (await q(count)) === "Step 4 of 5");
+// Finishing: the check draws, and the recipe can be saved as a favorite.
+await q("document.querySelector('[data-cook-next]').click()"); await sleep(200);
+await q("document.querySelector('[data-cook-next]').click()"); await sleep(400);
+check("all done: the check draws", await q("document.querySelector('.cook__check').classList.contains('is-drawn')"));
+await q("document.querySelector('.cook__fave').click()");
+check("saved from the all-done card, and the page's heart agrees", await q("document.querySelector('.cook__fave').getAttribute('aria-pressed') === 'true' && document.querySelector('.recipe-hero [data-fave]').getAttribute('aria-pressed') === 'true'"));
+await shot("cook-finished");
+await ev("localStorage.clear()");
 // Deep link.
 await go("/recipes/zuppa-toscana/#cook");
 check(`#cook deep link opens: ${await q(count)}`, await q("document.querySelector('.cook').open"));
