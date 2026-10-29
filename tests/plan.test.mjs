@@ -25,26 +25,52 @@ await go("/plan/");
 check(`plan lists: ${await q("[...document.querySelectorAll('.plan-item__title')].map(a => a.textContent).join(', ')")}`, (await q("document.querySelectorAll('.plan-item').length")) === 2);
 check(`broccoli 1x: ${await q(row("broccoli"))}`, (await q(row("broccoli"))) === "1 pound");
 await q("document.querySelectorAll('.plan-item')[0].querySelector('[data-step=\"1\"]').click()"); await sleep(200);
-check(`2x: stepper ${await q("document.querySelector('.stepper__value').textContent")}, broccoli ${await q(row("broccoli"))}, serves ${await q("document.querySelector('.plan-item__meta').textContent")}`,
-  (await q(row("broccoli"))) === "2 pounds" && (await q("document.querySelector('.plan-item__meta').textContent")).startsWith("Serves 8"));
+check(`+: serves ${await q("document.querySelector('.stepper__value').textContent")}, broccoli ${await q(row("broccoli"))}`,
+  (await q(row("broccoli"))) === "2 pounds" && (await q("document.querySelector('.stepper__value').textContent")) === "8");
 check(`ground beef (goulash 1x + none): ${await q(row("ground beef"))}`, true);
 await q("[...document.querySelectorAll('.aisle li')].find(li => li.querySelector('.shopping__name').textContent === 'broccoli').querySelector('input').click()"); await sleep(200);
-check(`count after check: ${await q("document.querySelector('[data-plan-item-count]').textContent")}`, /1 checked/.test(await q("document.querySelector('[data-plan-item-count]').textContent")));
+check("checked: struck through in its aisle for a moment", await q("[...document.querySelectorAll('.aisle li')].find(li => li.querySelector('.shopping__name').textContent === 'broccoli')?.classList.contains('is-leaving')"));
+await sleep(1000);
+check(`checked -> "In the cart": ${await q("document.querySelector('[data-plan-item-count]').textContent")}`, /1 in the cart/.test(await q("document.querySelector('[data-plan-item-count]').textContent"))
+  && (await q(row("broccoli"))) === null && !(await q("document.querySelector('[data-plan-cart]').hidden")));
 await go("/plan/");
-check("check persists after reload", await q("[...document.querySelectorAll('.aisle li')].find(li => li.querySelector('.shopping__name').textContent === 'broccoli').querySelector('input').checked"));
+check("check persists after reload", await q("[...document.querySelectorAll('[data-plan-cart-list] li')].find(li => li.querySelector('.shopping__name').textContent === 'broccoli').querySelector('input').checked"));
+// On a phone the recipes fold into one line above the list.
+const summary = "document.querySelector('[data-plan-summary]')";
+check(`folded: "${await q(summary + ".textContent.replace(/\\s+/g, ' ').trim()")}"`, await q(`!${summary}.hidden && document.querySelector('[data-plan-recipes-body]').hidden`));
+await q(summary + ".click()"); await sleep(200);
+check("Edit opens the recipes", await q("!document.querySelector('[data-plan-recipes-body]').hidden && !document.querySelector('[data-plan-summary-done]').hidden"));
+await q("document.querySelector('[data-plan-summary-done]').click()"); await sleep(200);
+check("Done folds them again", await q("document.querySelector('[data-plan-recipes-body]').hidden"));
+check(`folded summary fits: Edit at ${await q("Math.round(document.querySelector('.plan-summary__edit').getBoundingClientRect().right)")}`, await q("document.querySelector('.plan-summary__edit').getBoundingClientRect().right <= innerWidth && document.querySelector('.shopping').getBoundingClientRect().right <= innerWidth"));
 check("plan page fits", await q(fits));
 await shot("plan-mobile");
 await q("document.querySelector('[data-plan-uncheck]').click()"); await sleep(200);
-check("uncheck all", !(await q("document.querySelector('[data-plan-item-count]').textContent")).includes("checked"));
+check("uncheck all (from the … menu)", !(await q("document.querySelector('[data-plan-item-count]').textContent")).includes("cart") && (await q(row("broccoli"))) === "2 pounds");
 // Add via select
 await q("(() => { const s = document.querySelector('[data-plan-select]'); s.value = 'banana-bread'; s.dispatchEvent(new Event('change')); })()"); await sleep(200);
 check(`select add -> ${await q("document.querySelectorAll('.plan-item').length")} recipes, option disabled ${await q("document.querySelector('option[value=\"banana-bread\"]').disabled")}`, (await q("document.querySelectorAll('.plan-item').length")) === 3);
 // Remove
 await q("document.querySelectorAll('.plan-item__remove')[2].click()"); await sleep(200);
 check(`remove -> ${await q("document.querySelectorAll('.plan-item').length")}, badge ${await q(badge)}`, (await q("document.querySelectorAll('.plan-item').length")) === 2 && (await q(badge)) === "2");
-// Copy list (headless may refuse the clipboard; the toast still reports)
-await q("document.querySelector('[data-plan-copy]').click()"); await sleep(300);
+// Share (headless may refuse the clipboard; the toast still reports)
+await q("Object.defineProperty(navigator, 'share', { value: undefined, configurable: true })"); // copy instead of the share sheet
+await q("document.querySelector('[data-plan-share]').click()"); await sleep(300);
 check(`copy toast: ${await q("document.querySelector('[data-plan-toast]').textContent")}`, /copied|Couldn't/.test(await q("document.querySelector('[data-plan-toast]').textContent")));
+// Share and ••• open menus that stay on a phone's screen; Share offers the list or just the link.
+const onScreen = (sel) => q(`(() => { const r = document.querySelector('${sel}').getBoundingClientRect(); return r.width > 0 && r.left >= 0 && r.right <= innerWidth; })()`);
+await q("document.querySelector('[aria-controls=\"plan-share-menu\"]').click()"); await sleep(150);
+check(`Share menu: ${await q("[...document.querySelectorAll('#plan-share-menu button')].map(b => b.firstChild.textContent).join(' / ')")}, on screen`,
+  (await q("document.querySelectorAll('#plan-share-menu button').length")) === 2 && await onScreen("#plan-share-menu"));
+await shot("plan-share-menu");
+await q("document.querySelector('[data-plan-share=\"link\"]').click()"); await sleep(300);
+check(`Just the link: "${await q("document.querySelector('[data-plan-toast-text]').textContent")}", menu closed`,
+  /Plan link copied|Couldn't/.test(await q("document.querySelector('[data-plan-toast-text]').textContent")) && await q("document.querySelector('#plan-share-menu').hidden"));
+await q("document.querySelector('[aria-controls=\"plan-menu\"]').click()"); await sleep(150);
+check("••• menu on screen", await onScreen("#plan-menu"));
+await shot("plan-more-menu");
+await q("document.body.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }))");
+check("tapping elsewhere closes it", await q("document.querySelector('#plan-menu').hidden"));
 // Shared link with an existing plan -> banner
 await go("/plan/?r=banana-bread,whoopie-pies:2,not-a-recipe");
 check(`shared banner: ${await q("document.querySelector('[data-plan-shared]').hidden ? 'hidden' : document.querySelector('[data-plan-shared]').textContent.replace(/\\s+/g,' ').trim()")}`, !(await q("document.querySelector('[data-plan-shared]').hidden")));
@@ -60,6 +86,24 @@ check(`empty plan adopts shared: ${await q("document.querySelectorAll('.plan-ite
 await q("localStorage.clear()"); await go("/plan/");
 check("empty state shown, list hidden", await q("!document.querySelector('[data-plan-empty]').hidden && document.querySelector('[data-plan-list-tools]').hidden"));
 await shot("plan-empty");
+// Starting from an empty plan on a phone, the recipes stay open while you add.
+await q("(() => { const s = document.querySelector('[data-plan-select]'); s.value = 'goulash'; s.dispatchEvent(new Event('change')); })()"); await sleep(200);
+check("first recipe added: panel stays open", await q("!document.querySelector('[data-plan-recipes-body]').hidden && document.querySelector('[data-plan-summary]').hidden"));
+await go("/plan/");
+check("coming back with a plan: folded", await q("document.querySelector('[data-plan-recipes-body]').hidden"));
+await q("localStorage.removeItem('hawkins:plan')");
+// Favorites show as one-tap adds.
+await q("localStorage.setItem('hawkins:favorites', JSON.stringify(['banana-bread', 'goulash']))"); await go("/plan/");
+check(`favorites offered: ${await q("[...document.querySelectorAll('[data-plan-faves-list] .chip')].map(c => c.textContent).join(', ')")}`, (await q("document.querySelectorAll('[data-plan-faves-list] .chip').length")) === 2);
+await shot("plan-empty-faves");
+await q("document.querySelector('[data-plan-faves-list] .chip').click()"); await sleep(200);
+check(`tap -> ${await q("[...document.querySelectorAll('.plan-item__title')].map(a => a.textContent).join()")}, one favorite left`, (await q("document.querySelectorAll('.plan-item').length")) === 1 && (await q("document.querySelectorAll('[data-plan-faves-list] .chip').length")) === 1);
+// Servings picked on a recipe page come along when it's added.
+await q("localStorage.clear()"); await go("/recipes/beef-and-broccoli/");
+await q("document.querySelector('[data-servings-step=\"1\"]').click()");
+await q("document.querySelector('.button--plan').click()"); await sleep(200);
+await go("/plan/");
+check(`added at the page's servings: ${await q("document.querySelector('.stepper__value').textContent")}`, (await q("document.querySelector('.stepper__value').textContent")) === "8");
 // Desktop with a few recipes
 await q(`localStorage.setItem('hawkins:plan', JSON.stringify({recipes: [{slug:'beef-and-broccoli',scale:1},{slug:'goulash',scale:2},{slug:'famous-chocolate-cake',scale:1},{slug:'baked-ziti',scale:1}], checked: []}))`);
 await send("Emulation.setDeviceMetricsOverride", { width: 1280, height: 900, deviceScaleFactor: 1, mobile: false });
