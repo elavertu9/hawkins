@@ -1,6 +1,7 @@
 #!/bin/bash
 # Preview the site locally, with the same Jekyll setup GitHub Pages uses.
 # Opens http://localhost:4000 and reloads the page whenever you save a file.
+# Prints an address for testing on a phone on the same Wi-Fi.
 #
 # Usage: ./serve.sh [port]     (Ctrl+C to stop)
 
@@ -47,6 +48,8 @@ docker rm -f "$CONTAINER" >/dev/null 2>&1 || true
 ) &
 
 echo "Building the site. It opens at $URL when ready. Press Ctrl+C to stop."
+LAN_IP="$(ipconfig getifaddr en0 2>/dev/null || true)"
+[ -n "$LAN_IP" ] && echo "On a phone on the same Wi-Fi: http://$LAN_IP:$PORT/"
 
 TTY_FLAGS="-i"
 [ -t 0 ] && TTY_FLAGS="-it"

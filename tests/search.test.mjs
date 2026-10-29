@@ -1,9 +1,8 @@
-// Recipe search and the course filter, including the URL they leave behind.
+// Recipe search and the dish filter, including the URL they leave behind.
 import { BASE, open } from "./lib.mjs";
 
 const { send, ev, go, sleep, check, shot, errors, finish } = await open();
 const visible = "[...document.querySelectorAll('.card')].filter(c => !c.hidden).length";
-const counts = "[...document.querySelectorAll('.chip')].map(c => c.textContent.replace(/\\s+/g,' ').trim()).join(', ')";
 const type = async (text) => { await ev(`(() => { const i = document.querySelector('#recipe-search'); i.focus(); i.value = ''; })()`);
   for (const ch of text) await send("Input.insertText", { text: ch }); await sleep(150); };
 const status = "document.querySelector('[data-status]').textContent";
@@ -11,15 +10,15 @@ const allShown = "document.querySelectorAll('.card').length === [...document.que
 
 await send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
 await go("/recipes/");
-check(`initial: ${await ev(status)} | ${await ev(counts)}`, await ev(allShown));
+check(`initial: ${await ev(status)}`, await ev(allShown));
 await type("jalapeno");
 const n = await ev(visible);
-check(`"jalapeno" (no accent) finds ${n}: ${await ev(counts)}`, n === 3);
+check(`"jalapeno" (no accent) finds ${n}`, n === 3);
 check(`URL ${await ev("location.search")}`, (await ev("location.search")) === "?q=jalapeno");
 await ev(`document.querySelector('.chip[data-category="appetizer"]').click()`); await sleep(100);
 check(`+ Appetizer: ${await ev(status)}`, await ev(visible) === 3);
 await type("chicken");
-check(`"chicken" in Appetizer: ${await ev(visible)} | ${await ev(counts)}`, await ev(visible) === 1);
+check(`"chicken" in Appetizer: ${await ev(visible)}`, await ev(visible) === 1);
 await type("sausage kale");
 check(`multi-word "sausage kale" in Appetizer -> empty state shown`, await ev(visible) === 0 && await ev("!document.querySelector('[data-empty]').hidden"));
 await shot("search-empty-mobile");
@@ -32,7 +31,7 @@ await type("beef");
 await ev(`document.querySelector('.chip[data-category="soup"]').click()`); await sleep(100);
 await go("/recipes/zuppa-toscana/");
 await go("/recipes/?q=beef&category=soup");
-check(`URL restores: input='${await ev("document.querySelector('#recipe-search').value")}', ${await ev(status)}`, await ev(visible) > 0 && await ev(`[...document.querySelectorAll('.card')].filter(c => !c.hidden).every(c => c.dataset.category === "soup" && c.dataset.search.includes("beef"))`) && await ev(`document.querySelector('.chip[data-category="soup"]').getAttribute('aria-pressed')`) === "true");
+check(`URL restores: input='${await ev("document.querySelector('#recipe-search').value")}', ${await ev(status)}`, await ev(visible) > 0 && await ev(`[...document.querySelectorAll('.card')].filter(c => !c.hidden).every(c => c.dataset.category === "soup" && c.dataset.search.includes("beef"))`) && await ev(`document.querySelector('.token[data-kind="category"]')?.dataset.value`) === "soup");
 check("no overflow at 390px", await ev("document.documentElement.scrollWidth <= innerWidth"));
 await go("/recipes/"); await type("chicken"); await shot("search-mobile");
 await send("Emulation.setDeviceMetricsOverride", { width: 1280, height: 900, deviceScaleFactor: 1, mobile: false });

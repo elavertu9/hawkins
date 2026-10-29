@@ -11,8 +11,9 @@ const fits = "document.documentElement.scrollWidth <= innerWidth";
 // Desktop, with a mouse.
 await send("Emulation.setDeviceMetricsOverride", { width: 1280, height: 900, deviceScaleFactor: 1, mobile: false });
 await go("/recipes/"); await ev("localStorage.clear()"); await go("/recipes/");
+await sortBy("az");
 const az = await ev("[...document.querySelectorAll('.card__title')].map(e => e.textContent.trim())");
-check(`A–Z by default: ${az.slice(0, 3).join(" | ")}`, az.every((t, i) => i === 0 || az[i - 1].localeCompare(t) <= 0));
+check(`A–Z: ${az.slice(0, 3).join(" | ")}`, az.every((t, i) => i === 0 || az[i - 1].localeCompare(t) <= 0));
 
 await sortBy("quickest");
 const totals = await ev("[...document.querySelectorAll('.card')].map(c => c.dataset.total === undefined ? 1e9 : +c.dataset.total)");
@@ -53,7 +54,7 @@ check("phone fits", await ev(fits));
 check(`+ Plan always shows on touch: ${await ev(planOpacity)}`, (await ev(planOpacity)) === "1");
 const perScreen = await ev("(() => { const c = document.querySelectorAll('.card'); return innerHeight / (c[1].getBoundingClientRect().top - c[0].getBoundingClientRect().top); })()");
 check(`phone list fits ${perScreen.toFixed(1)} recipes per screen`, perScreen >= 4);
-check("search and Open the gate share a row", await ev("(() => { const a = document.querySelector('.search').getBoundingClientRect(), b = document.querySelector('[data-random]').getBoundingClientRect(); return Math.abs((a.top + a.bottom) / 2 - (b.top + b.bottom) / 2) < 12; })()"));
+check("Open the gate sits beside the title", await ev("(() => { const a = document.querySelector('.page-title').getBoundingClientRect(), b = document.querySelector('[data-random]').getBoundingClientRect(); return Math.abs((a.top + a.bottom) / 2 - (b.top + b.bottom) / 2) < 12; })()"));
 check("thumbnails are 3:2 and pinned to the top", await ev("[...document.querySelectorAll('.card__media')].slice(0, 5).every(m => { const b = m.getBoundingClientRect(), c = m.closest('.card').getBoundingClientRect(); return Math.abs(b.width / b.height - 1.5) < 0.05 && b.top - c.top < 20; })"));
 check("+ Plan sits below the thumbnail", await ev("(() => { const c = document.querySelector('.card'); return c.querySelector('.card__plan').getBoundingClientRect().top >= c.querySelector('.card__media').getBoundingClientRect().bottom; })()"));
 await ev("scrollTo(0, document.querySelector('.results').getBoundingClientRect().top + scrollY - 120)"); await sleep(300);

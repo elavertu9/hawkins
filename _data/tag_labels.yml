@@ -1,0 +1,3 @@
+# How a tag reads in the recipe finder, when that should differ from the tag
+# itself. Cards and recipe pages keep the short tag.
+Crowd: Feeds a crowd

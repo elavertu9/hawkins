@@ -44,7 +44,8 @@ check(`Forward -> ${await q(path)}`, (await q("location.pathname")) === "/recipe
 
 // Filters on the list page keep the URL, and Back still works after them.
 await tap('.site-header a[href="/recipes/"]');
-await tap('.chip[data-category="dessert"]');
+await tap("#recipe-search");
+await tap('.suggest .chip[data-category="dessert"]');
 check(`filter in URL: ${await q("location.search")}`, (await q("location.search")).includes("category=dessert"));
 await tap(".card:not([hidden]) .card__link");
 const dessert = await q("location.pathname");

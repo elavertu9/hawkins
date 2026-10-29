@@ -8,52 +8,61 @@ description: Dinners, desserts, and family favorites, written out step by step.
 {%- assign all_tags = "" | split: "" -%}
 {%- for r in recipes %}{% if r.tags %}{% assign all_tags = all_tags | concat: r.tags %}{% endif %}{% endfor -%}
 {%- assign all_tags = all_tags | uniq | sort -%}
+{%- comment -%} Dishes in mealtime order; any new category goes at the end. {%- endcomment -%}
+{%- assign dish_order = "Dinner,Soup,Side,Appetizer,Breakfast,Dessert,Sauce" | split: "," -%}
+{%- assign dishes = "" | split: "" -%}
+{%- for dish in dish_order %}{% if categories contains dish %}{% assign dishes = dishes | push: dish %}{% endif %}{% endfor -%}
+{%- for dish in categories %}{% unless dishes contains dish %}{% assign dishes = dishes | push: dish %}{% endunless %}{% endfor -%}
 
 <div class="container">
   <header class="page-head">
     <p class="eyebrow">File 001</p>
-    <h1 class="page-title">Recipes</h1>
+    <div class="page-head__row">
+      <h1 class="page-title">Recipes</h1>
+      <button class="button button--gate" type="button" data-random hidden>Open the gate</button>
+    </div>
     <p class="page-head__lede">{{ page.description }}</p>
   </header>
 
   <div class="finder" data-finder hidden>
     <div class="finder__row">
-      <div class="search">
-        <label class="visually-hidden" for="recipe-search">Search recipes</label>
+      <div class="search search--tokens" data-search>
         <span class="search__prompt" aria-hidden="true">&gt;</span>
-        <input class="search__input" id="recipe-search" type="search" placeholder="Search the files" autocomplete="off" spellcheck="false" data-search-input>
+        <ul class="search__tokens" aria-label="Filters" data-tokens hidden></ul>
+        <label class="visually-hidden" for="recipe-search">Search recipes, or pick a dish or tag</label>
+        <input class="search__input" id="recipe-search" type="search" placeholder="Search or filter" autocomplete="off" spellcheck="false" enterkeyhint="search" aria-controls="recipe-suggest" aria-expanded="false" data-search-input>
       </div>
-      <button class="button button--gate" type="button" data-random>Open the gate</button>
     </div>
-    {%- if categories.size > 1 %}
-    <div class="filter">
-    <p class="filter__label" id="filter-course">Course</p>
-    <div class="chips" role="group" aria-labelledby="filter-course">
-      <button class="chip" type="button" data-category="" aria-pressed="true">All <span class="chip__count" data-count>{{ recipes.size }}</span></button>
-      {%- for category in categories %}
-      {%- assign in_category = recipes | where: "category", category %}
-      <button class="chip" type="button" data-category="{{ category | slugify }}" aria-pressed="false">{{ category }} <span class="chip__count" data-count>{{ in_category.size }}</span></button>
-      {%- endfor %}
+    <div class="suggest" id="recipe-suggest" role="region" aria-label="Filter suggestions" data-suggest hidden>
+      {%- if dishes.size > 1 %}
+      <div class="suggest__group" role="group" aria-labelledby="suggest-dish">
+        <p class="suggest__label" id="suggest-dish">Dish</p>
+        <div class="chips">
+          {%- for dish in dishes %}
+          <button class="chip" type="button" data-category="{{ dish | slugify }}" data-label="{{ dish }}">{{ dish }}</button>
+          {%- endfor %}
+        </div>
+      </div>
+      {%- endif %}
+      {%- if all_tags.size > 0 %}
+      <div class="suggest__group" role="group" aria-labelledby="suggest-tags">
+        <p class="suggest__label" id="suggest-tags">Tags</p>
+        <div class="chips">
+          {%- for tag in all_tags %}
+          {%- assign label = site.data.tag_labels[tag] | default: tag %}
+          <button class="chip chip--tag" type="button" data-tag="{{ tag | slugify }}" data-label="{{ label }}">{{ label }}</button>
+          {%- endfor %}
+        </div>
+      </div>
+      {%- endif %}
     </div>
-    </div>
-    {%- endif %}
-    {%- if all_tags.size > 0 %}
-    <div class="filter">
-    <p class="filter__label" id="filter-tags">Good for</p>
-    <div class="chips chips--tags" role="group" aria-labelledby="filter-tags">
-      {%- for tag in all_tags %}
-      {%- assign tagged = recipes | where_exp: "r", "r.tags contains tag" %}
-      <button class="chip chip--tag" type="button" data-tag="{{ tag | slugify }}" aria-pressed="false">{{ tag }} <span class="chip__count" data-count>{{ tagged.size }}</span></button>
-      {%- endfor %}
-    </div>
-    </div>
-    {%- endif %}
     <div class="results">
       <p class="results__count" role="status" data-status></p>
       <label class="results__sort">
         <span>Sort</span>
         <select class="select" data-sort>
-          <option value="">A–Z</option>
+          <option value="">By dish</option>
+          <option value="az">A–Z</option>
           <option value="newest">Newest</option>
           <option value="quickest">Quickest</option>
         </select>
@@ -61,127 +70,262 @@ description: Dinners, desserts, and family favorites, written out step by step.
     </div>
   </div>
 
-  <div class="card-grid" data-filter-target>
-    {%- for recipe in recipes %}
-      {% include recipe-card.html recipe=recipe %}
+  {%- comment -%} Grouped by dish to browse; one flat grid when sorted another way. {%- endcomment %}
+  <div class="dish-groups" data-browse>
+    {%- for dish in dishes %}
+    {%- assign in_dish = recipes | where: "category", dish %}
+    <section class="dish-group" data-group="{{ dish | slugify }}" aria-labelledby="dish-{{ dish | slugify }}">
+      <h2 class="dish-group__title" id="dish-{{ dish | slugify }}">{{ dish }} <span class="dish-group__count" data-group-count>{{ in_dish.size }}</span></h2>
+      <div class="card-grid">
+        {%- for recipe in in_dish %}
+          {% include recipe-card.html recipe=recipe %}
+        {%- endfor %}
+      </div>
+    </section>
     {%- endfor %}
   </div>
+  <div class="card-grid" data-flat hidden></div>
 
   <div class="empty" data-empty hidden>
     <p class="empty__title">Nothing here but the Upside Down.</p>
-    <p>No recipes match that search.</p>
+    <p data-empty-text>No recipes match that search.</p>
     <button class="button" type="button" data-clear>Clear search</button>
   </div>
 </div>
 
 <script>
-  // Search, category, and tag filters. Without JavaScript the tools stay hidden
-  // and every recipe shows. They're kept in the URL (?q=...&category=...&tag=...)
-  // so the back button returns to the same results. A category and a tag work
-  // together: Breakfast + Low Calorie shows low-calorie breakfasts. Sorting
-  // (?sort=newest or quickest) reorders the cards; A–Z is the page's own order.
+  // Search and filters. Without JavaScript the tools stay hidden and every
+  // recipe shows, grouped by dish.
+  //
+  // One search box does it all: tapping it suggests dishes and tags, and
+  // picking one adds it to the box as a pill (tap the pill to remove it).
+  // Typing narrows the suggestions as well as the recipes. Filters work
+  // together: Dessert + Quick + Vegetarian shows recipes that are all three.
+  // They're kept in the URL (?q=...&category=...&tag=...&tag=...) so the back
+  // button returns to the same results. Sorting (?sort=az, newest, quickest)
+  // trades the dish groups for one list.
   (() => {
     const finder = document.querySelector("[data-finder]");
     if (!finder) return;
     const input = finder.querySelector("[data-search-input]");
-    const chips = [...finder.querySelectorAll(".chip[data-category]")];
-    const tagChips = [...finder.querySelectorAll(".chip[data-tag]")];
+    const search = finder.querySelector("[data-search]");
+    const tokenList = finder.querySelector("[data-tokens]");
+    const suggest = finder.querySelector("[data-suggest]");
+    const dishChips = [...suggest.querySelectorAll(".chip[data-category]")];
+    const tagChips = [...suggest.querySelectorAll(".chip[data-tag]")];
     const status = finder.querySelector("[data-status]");
-    const empty = document.querySelector("[data-empty]");
-    const grid = document.querySelector("[data-filter-target]");
-    const cards = [...grid.querySelectorAll(".card")];
     const sortSelect = finder.querySelector("[data-sort]");
+    const empty = document.querySelector("[data-empty]");
+    const emptyText = empty.querySelector("[data-empty-text]");
+    const browse = document.querySelector("[data-browse]");
+    const groups = [...browse.querySelectorAll("[data-group]")];
+    const flat = document.querySelector("[data-flat]");
+    const cards = [...browse.querySelectorAll(".card")];
 
     // Lowercase and drop accents, so "jalapeno" finds "jalapeño".
-    const fold = (text) => text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    const fold = (text) => text.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+    const wordsOf = (text) => fold(text).split(/\s+/).filter(Boolean);
     cards.forEach((card) => { card.searchText = fold(card.dataset.search || ""); });
+    const titleOf = (card) => card.querySelector(".card__title").textContent.trim();
+    const byTitle = [...cards].sort((a, b) => titleOf(a).localeCompare(titleOf(b)));
+    const labelOf = (kind, slug) => (kind === "tag" ? tagChips : dishChips)
+      .find((c) => (kind === "tag" ? c.dataset.tag : c.dataset.category) === slug).dataset.label;
 
     const params = new URLSearchParams(location.search);
     input.value = params.get("q") || "";
     let category = params.get("category") || "";
-    if (!chips.some((c) => c.dataset.category === category)) category = "";
-    let tag = params.get("tag") || "";
-    if (!tagChips.some((c) => c.dataset.tag === tag)) tag = "";
-    const hasTag = (card, slug) => (card.dataset.tags || "").split(" ").includes(slug);
+    if (!dishChips.some((c) => c.dataset.category === category)) category = "";
+    let tags = [...new Set(params.getAll("tag").flatMap((t) => t.split(",")))]
+      .filter((t) => tagChips.some((c) => c.dataset.tag === t));
     let sort = params.get("sort") || "";
     if (![...sortSelect.options].some((o) => o.value === sort)) sort = "";
     sortSelect.value = sort;
 
+    const hasTag = (card, slug) => (card.dataset.tags || "").split(" ").includes(slug);
+    const inDish = (card, dish = category) => !dish || card.dataset.category === dish;
+    const inTags = (card, list = tags) => list.every((t) => hasTag(card, t));
+
     // Ties keep A–Z order. Classified recipes have no time, so they go last on Quickest.
     const sorters = {
+      az: () => 0,
       newest: (a, b) => (b.dataset.added || "").localeCompare(a.dataset.added || ""),
       quickest: (a, b) => (a.dataset.total ? +a.dataset.total : Infinity) - (b.dataset.total ? +b.dataset.total : Infinity),
     };
     const reorder = () => {
-      const ordered = sorters[sort] ? [...cards].sort((a, b) => sorters[sort](a, b) || cards.indexOf(a) - cards.indexOf(b)) : cards;
-      grid.append(...ordered);
+      const grouped = !sorters[sort];
+      if (grouped) {
+        const grids = Object.fromEntries(groups.map((g) => [g.dataset.group, g.querySelector(".card-grid")]));
+        byTitle.forEach((card) => grids[card.dataset.category].append(card));
+      } else {
+        flat.append(...[...byTitle].sort((a, b) => sorters[sort](a, b) || byTitle.indexOf(a) - byTitle.indexOf(b)));
+      }
+      browse.hidden = !grouped;
+      flat.hidden = grouped;
+    };
+
+    // Suggestions: what you could add next. Leaves out what's already picked,
+    // what wouldn't match anything, and (once you type) what doesn't match the
+    // words you typed.
+    let open = false;
+    const fitsTyped = (chip) => {
+      const typed = wordsOf(input.value);
+      if (!typed.length) return true;
+      const label = wordsOf(chip.dataset.label);
+      return typed.some((w) => label.some((l) => l.startsWith(w)));
+    };
+    const offered = () => [
+      ...dishChips.filter((c) => c.dataset.category !== category
+        && cards.some((card) => inDish(card, c.dataset.category) && inTags(card))),
+      ...tagChips.filter((c) => !tags.includes(c.dataset.tag)
+        && cards.some((card) => inDish(card) && inTags(card, [...tags, c.dataset.tag]))),
+    ].filter(fitsTyped);
+    const renderSuggest = () => {
+      const shown = new Set(open ? offered() : []);
+      [...dishChips, ...tagChips].forEach((chip) => { chip.hidden = !shown.has(chip); });
+      suggest.querySelectorAll(".suggest__group").forEach((g) => { g.hidden = !g.querySelector(".chip:not([hidden])"); });
+      suggest.hidden = shown.size === 0;
+      input.setAttribute("aria-expanded", String(shown.size > 0));
+    };
+    const setOpen = (on) => { open = on; renderSuggest(); };
+
+    const renderTokens = () => {
+      const picked = [
+        ...(category ? [["category", category]] : []),
+        ...tags.map((t) => ["tag", t]),
+      ];
+      tokenList.replaceChildren(...picked.map(([kind, slug]) => {
+        const label = labelOf(kind, slug);
+        const item = document.createElement("li");
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = kind === "tag" ? "token token--tag" : "token";
+        button.dataset.kind = kind;
+        button.dataset.value = slug;
+        button.setAttribute("aria-label", `Remove ${label}`);
+        const x = document.createElement("span");
+        x.className = "token__x";
+        x.setAttribute("aria-hidden", "true");
+        x.textContent = "×";
+        button.append(label, x);
+        item.append(button);
+        return item;
+      }));
+      tokenList.hidden = picked.length === 0;
+      input.placeholder = picked.length ? "Search" : "Search or filter";
     };
 
     const update = () => {
-      const words = fold(input.value).split(/\s+/).filter(Boolean);
-      const matchesSearch = (card) => words.every((w) => card.searchText.includes(w));
-      const found = cards.filter(matchesSearch);
-
-      // Counts reflect the search and the other filter, so you can see where
-      // the matches are.
-      const inCategory = (card) => !category || card.dataset.category === category;
-      const inTag = (card) => !tag || hasTag(card, tag);
-      chips.forEach((chip) => {
-        const slug = chip.dataset.category;
-        chip.setAttribute("aria-pressed", String(slug === category));
-        const pool = found.filter(inTag);
-        chip.querySelector("[data-count]").textContent =
-          slug ? pool.filter((c) => c.dataset.category === slug).length : pool.length;
-      });
-      tagChips.forEach((chip) => {
-        chip.setAttribute("aria-pressed", String(chip.dataset.tag === tag));
-        chip.querySelector("[data-count]").textContent =
-          found.filter(inCategory).filter((c) => hasTag(c, chip.dataset.tag)).length;
-      });
-
+      const words = wordsOf(input.value);
       let shown = 0;
       cards.forEach((card) => {
-        card.hidden = !(found.includes(card) && inCategory(card) && inTag(card));
+        card.hidden = !(words.every((w) => card.searchText.includes(w)) && inDish(card) && inTags(card));
         if (!card.hidden) shown++;
       });
+      groups.forEach((group) => {
+        const count = group.querySelectorAll(".card:not([hidden])").length;
+        group.hidden = count === 0;
+        group.querySelector("[data-group-count]").textContent = count;
+      });
 
-      const filtered = words.length || category || tag;
+      const filtered = words.length || category || tags.length;
       status.textContent = filtered ? `Showing ${shown} of ${cards.length} recipes` : `${cards.length} recipes`;
       empty.hidden = shown > 0;
+      const asked = [
+        ...(input.value.trim() ? [`“${input.value.trim()}”`] : []),
+        ...(category ? [labelOf("category", category)] : []),
+        ...tags.map((t) => labelOf("tag", t)),
+      ];
+      emptyText.textContent = asked.length > 1
+        ? `No recipes match ${asked.join(" + ")}. Try removing one.`
+        : "No recipes match that search.";
+
+      renderTokens();
+      renderSuggest();
 
       const next = new URLSearchParams();
       if (input.value.trim()) next.set("q", input.value.trim());
       if (category) next.set("category", category);
-      if (tag) next.set("tag", tag);
+      tags.forEach((t) => next.append("tag", t));
       if (sort) next.set("sort", sort);
       const query = next.toString();
       history.replaceState(history.state, "", query ? `?${query}` : location.pathname); // keeps Turbo's entry data
     };
 
-    finder.addEventListener("click", (event) => {
+    // Picking a suggestion adds it as a pill, and drops the typed words that
+    // found it: "chicken din" + Dinner leaves "chicken".
+    const pick = (chip) => {
+      if (chip.dataset.tag !== undefined) tags.push(chip.dataset.tag);
+      else category = chip.dataset.category;
+      const label = wordsOf(chip.dataset.label);
+      input.value = input.value.split(/\s+/).filter((w) => w && !label.some((l) => l.startsWith(fold(w)))).join(" ");
+      update();
+    };
+    const remove = (kind, slug) => {
+      if (kind === "tag") tags = tags.filter((t) => t !== slug);
+      else category = "";
+      update();
+    };
+
+    suggest.addEventListener("click", (event) => {
       const chip = event.target.closest(".chip");
       if (!chip) return;
-      // Tags toggle on and off; categories pick one, with All to reset.
-      if (chip.dataset.tag !== undefined) tag = tag === chip.dataset.tag ? "" : chip.dataset.tag;
-      else category = chip.dataset.category;
-      update();
+      pick(chip);
+      // From the keyboard, stay in the search to keep going. On a phone, put
+      // the keyboard away so the results show.
+      if (event.detail === 0) input.focus();
+      else { input.blur(); setOpen(false); }
     });
-    input.addEventListener("input", update);
-    sortSelect.addEventListener("change", () => { sort = sortSelect.value; reorder(); update(); });
+    tokenList.addEventListener("click", (event) => {
+      const token = event.target.closest(".token");
+      if (!token) return;
+      remove(token.dataset.kind, token.dataset.value);
+      if (event.detail === 0) input.focus();
+    });
+    // The whole box opens the search, not just the text part of it.
+    search.addEventListener("click", (event) => {
+      if (event.target.closest(".token")) return;
+      input.focus();
+      setOpen(true);
+    });
+    input.addEventListener("focus", () => setOpen(true));
+    input.addEventListener("input", () => { open = true; update(); });
     input.addEventListener("keydown", (event) => {
-      if (event.key === "Escape" && input.value) { input.value = ""; update(); }
+      if (event.key === "Escape") {
+        if (open && !suggest.hidden) setOpen(false);
+        else if (input.value) { input.value = ""; update(); }
+      } else if (event.key === "Backspace" && !input.value && !input.selectionStart && (category || tags.length)) {
+        // Backspace in an empty box removes the last pill, like a text field with tokens.
+        if (tags.length) tags.pop(); else category = "";
+        update();
+      } else if (event.key === "ArrowDown" && !suggest.hidden) {
+        event.preventDefault();
+        suggest.querySelector(".chip:not([hidden])").focus();
+      } else if (event.key === "Enter") {
+        // Enter takes the suggestion when only one is left, then shows the results.
+        const left = offered();
+        if (input.value.trim() && left.length === 1) pick(left[0]);
+        input.blur();
+        setOpen(false);
+      }
     });
+    // Close the suggestions when you tap or tab somewhere else. (Tapping a
+    // suggestion doesn't focus it on iPhone, so this listens for the tap.)
+    const inside = (node) => node && (search.contains(node) || suggest.contains(node));
+    const closeOutside = (event) => { if (open && !inside(event.target)) setOpen(false); };
+    finder.addEventListener("focusout", (event) => { if (event.relatedTarget && !inside(event.relatedTarget)) setOpen(false); });
+
+    sortSelect.addEventListener("change", () => { sort = sortSelect.value; reorder(); update(); });
     empty.querySelector("[data-clear]").addEventListener("click", () => {
       input.value = "";
       category = "";
-      tag = "";
+      tags = [];
       update();
       input.focus();
     });
 
     // "Open the gate" goes to a random recipe from the ones showing, so it
     // respects the search and filter. It skips the last one it picked.
-    const gate = finder.querySelector("[data-random]");
+    const gate = document.querySelector("[data-random]");
     gate.addEventListener("click", () => {
       const showing = cards.filter((card) => !card.hidden);
       const pool = showing.length ? showing : cards;
@@ -200,17 +344,17 @@ description: Dinners, desserts, and family favorites, written out step by step.
       gate.textContent = "Open the gate";
     };
     // This inline script runs before page.js on a full page load.
-    if (window.HawkinsPage) HawkinsPage.on(window, "pageshow", resetGate);
-    else addEventListener("pageshow", resetGate);
+    if (window.HawkinsPage) {
+      HawkinsPage.on(window, "pageshow", resetGate);
+      HawkinsPage.on(document, "pointerdown", closeOutside);
+    } else {
+      addEventListener("pageshow", resetGate);
+      document.addEventListener("pointerdown", closeOutside);
+    }
 
     finder.hidden = false;
+    gate.hidden = false;
     reorder();
     update();
-
-    // On phones each row scrolls sideways; bring a chip picked from the URL into view.
-    finder.querySelectorAll('.chips [aria-pressed="true"]').forEach((chip) => {
-      const row = chip.parentElement;
-      if (row.scrollWidth > row.clientWidth) row.scrollLeft = chip.offsetLeft - row.offsetLeft - 16;
-    });
   })();
 </script>
