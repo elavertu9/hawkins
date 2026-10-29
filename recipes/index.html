@@ -19,7 +19,7 @@ description: Dinners, desserts, and family favorites, written out step by step.
     <p class="eyebrow">File 001</p>
     <div class="page-head__row">
       <h1 class="page-title">Recipes</h1>
-      <button class="button button--gate" type="button" data-random hidden>Open the gate</button>
+      <button class="button button--gate" type="button" data-random hidden>Surprise me</button>
     </div>
     <p class="page-head__lede">{{ page.description }}</p>
   </header>
@@ -34,6 +34,12 @@ description: Dinners, desserts, and family favorites, written out step by step.
       </div>
     </div>
     <div class="suggest" id="recipe-suggest" role="region" aria-label="Filter suggestions" data-suggest hidden>
+      <div class="suggest__group" role="group" aria-labelledby="suggest-yours">
+        <p class="suggest__label" id="suggest-yours">Yours</p>
+        <div class="chips">
+          <button class="chip chip--fave" type="button" data-fav data-label="Favorites"><svg class="fave-icon" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-9.3-9.2C1.4 8 3.4 4.5 6.9 4.5c2.1 0 3.8 1.2 5.1 3 1.3-1.8 3-3 5.1-3 3.5 0 5.5 3.5 4.2 6.8-1.8 4.6-9.3 9.2-9.3 9.2z"/></svg>Favorites</button>
+        </div>
+      </div>
       {%- if dishes.size > 1 %}
       <div class="suggest__group" role="group" aria-labelledby="suggest-dish">
         <p class="suggest__label" id="suggest-dish">Dish</p>
@@ -101,18 +107,26 @@ description: Dinners, desserts, and family favorites, written out step by step.
   // picking one adds it to the box as a pill (tap the pill to remove it).
   // Typing narrows the suggestions as well as the recipes. Filters work
   // together: Dessert + Quick + Vegetarian shows recipes that are all three.
-  // They're kept in the URL (?q=...&category=...&tag=...&tag=...) so the back
+  // Favorites (hearted on a recipe page) work the same way. They're kept in
+  // the URL (?q=...&category=...&tag=...&tag=...&favorites=1) so the back
   // button returns to the same results. Sorting (?sort=az, newest, quickest)
   // trades the dish groups for one list.
   (() => {
     const finder = document.querySelector("[data-finder]");
     if (!finder) return;
+    // On a full page load this runs before page.js, so it waits for it.
+    if (window.HawkinsPage) start();
+    else addEventListener("DOMContentLoaded", start, { once: true });
+
+  function start() {
     const input = finder.querySelector("[data-search-input]");
     const search = finder.querySelector("[data-search]");
     const tokenList = finder.querySelector("[data-tokens]");
     const suggest = finder.querySelector("[data-suggest]");
     const dishChips = [...suggest.querySelectorAll(".chip[data-category]")];
     const tagChips = [...suggest.querySelectorAll(".chip[data-tag]")];
+    const favChip = suggest.querySelector(".chip[data-fav]");
+    const favorites = new Set(HawkinsPage.favorites.list());
     const status = finder.querySelector("[data-status]");
     const sortSelect = finder.querySelector("[data-sort]");
     const empty = document.querySelector("[data-empty]");
@@ -128,8 +142,8 @@ description: Dinners, desserts, and family favorites, written out step by step.
     cards.forEach((card) => { card.searchText = fold(card.dataset.search || ""); });
     const titleOf = (card) => card.querySelector(".card__title").textContent.trim();
     const byTitle = [...cards].sort((a, b) => titleOf(a).localeCompare(titleOf(b)));
-    const labelOf = (kind, slug) => (kind === "tag" ? tagChips : dishChips)
-      .find((c) => (kind === "tag" ? c.dataset.tag : c.dataset.category) === slug).dataset.label;
+    const labelOf = (kind, slug) => (kind === "fav" ? favChip : (kind === "tag" ? tagChips : dishChips)
+      .find((c) => (kind === "tag" ? c.dataset.tag : c.dataset.category) === slug)).dataset.label;
 
     const params = new URLSearchParams(location.search);
     input.value = params.get("q") || "";
@@ -137,6 +151,7 @@ description: Dinners, desserts, and family favorites, written out step by step.
     if (!dishChips.some((c) => c.dataset.category === category)) category = "";
     let tags = [...new Set(params.getAll("tag").flatMap((t) => t.split(",")))]
       .filter((t) => tagChips.some((c) => c.dataset.tag === t));
+    let favOnly = params.get("favorites") === "1" && favorites.size > 0;
     let sort = params.get("sort") || "";
     if (![...sortSelect.options].some((o) => o.value === sort)) sort = "";
     sortSelect.value = sort;
@@ -144,6 +159,9 @@ description: Dinners, desserts, and family favorites, written out step by step.
     const hasTag = (card, slug) => (card.dataset.tags || "").split(" ").includes(slug);
     const inDish = (card, dish = category) => !dish || card.dataset.category === dish;
     const inTags = (card, list = tags) => list.every((t) => hasTag(card, t));
+    const inFavs = (card, on = favOnly) => !on || favorites.has(card.dataset.slug);
+    // Everything picked so far, apart from the search words.
+    const picked = (card) => inDish(card) && inTags(card) && inFavs(card);
 
     // Ties keep A–Z order. Classified recipes have no time, so they go last on Quickest.
     const sorters = {
@@ -174,14 +192,15 @@ description: Dinners, desserts, and family favorites, written out step by step.
       return typed.some((w) => label.some((l) => l.startsWith(w)));
     };
     const offered = () => [
+      ...(!favOnly && cards.some((card) => picked(card) && inFavs(card, true)) ? [favChip] : []),
       ...dishChips.filter((c) => c.dataset.category !== category
-        && cards.some((card) => inDish(card, c.dataset.category) && inTags(card))),
+        && cards.some((card) => inDish(card, c.dataset.category) && inTags(card) && inFavs(card))),
       ...tagChips.filter((c) => !tags.includes(c.dataset.tag)
-        && cards.some((card) => inDish(card) && inTags(card, [...tags, c.dataset.tag]))),
+        && cards.some((card) => picked(card) && hasTag(card, c.dataset.tag))),
     ].filter(fitsTyped);
     const renderSuggest = () => {
       const shown = new Set(open ? offered() : []);
-      [...dishChips, ...tagChips].forEach((chip) => { chip.hidden = !shown.has(chip); });
+      [favChip, ...dishChips, ...tagChips].forEach((chip) => { chip.hidden = !shown.has(chip); });
       suggest.querySelectorAll(".suggest__group").forEach((g) => { g.hidden = !g.querySelector(".chip:not([hidden])"); });
       suggest.hidden = shown.size === 0;
       input.setAttribute("aria-expanded", String(shown.size > 0));
@@ -189,16 +208,17 @@ description: Dinners, desserts, and family favorites, written out step by step.
     const setOpen = (on) => { open = on; renderSuggest(); };
 
     const renderTokens = () => {
-      const picked = [
+      const pills = [
+        ...(favOnly ? [["fav", ""]] : []),
         ...(category ? [["category", category]] : []),
         ...tags.map((t) => ["tag", t]),
       ];
-      tokenList.replaceChildren(...picked.map(([kind, slug]) => {
+      tokenList.replaceChildren(...pills.map(([kind, slug]) => {
         const label = labelOf(kind, slug);
         const item = document.createElement("li");
         const button = document.createElement("button");
         button.type = "button";
-        button.className = kind === "tag" ? "token token--tag" : "token";
+        button.className = { tag: "token token--tag", fav: "token token--fave" }[kind] || "token";
         button.dataset.kind = kind;
         button.dataset.value = slug;
         button.setAttribute("aria-label", `Remove ${label}`);
@@ -210,15 +230,15 @@ description: Dinners, desserts, and family favorites, written out step by step.
         item.append(button);
         return item;
       }));
-      tokenList.hidden = picked.length === 0;
-      input.placeholder = picked.length ? "Search" : "Search or filter";
+      tokenList.hidden = pills.length === 0;
+      input.placeholder = pills.length ? "Search" : "Search or filter";
     };
 
     const update = () => {
       const words = wordsOf(input.value);
       let shown = 0;
       cards.forEach((card) => {
-        card.hidden = !(words.every((w) => card.searchText.includes(w)) && inDish(card) && inTags(card));
+        card.hidden = !(words.every((w) => card.searchText.includes(w)) && picked(card));
         if (!card.hidden) shown++;
       });
       groups.forEach((group) => {
@@ -227,11 +247,12 @@ description: Dinners, desserts, and family favorites, written out step by step.
         group.querySelector("[data-group-count]").textContent = count;
       });
 
-      const filtered = words.length || category || tags.length;
+      const filtered = words.length || category || tags.length || favOnly;
       status.textContent = filtered ? `Showing ${shown} of ${cards.length} recipes` : `${cards.length} recipes`;
       empty.hidden = shown > 0;
       const asked = [
         ...(input.value.trim() ? [`“${input.value.trim()}”`] : []),
+        ...(favOnly ? [labelOf("fav")] : []),
         ...(category ? [labelOf("category", category)] : []),
         ...tags.map((t) => labelOf("tag", t)),
       ];
@@ -246,6 +267,7 @@ description: Dinners, desserts, and family favorites, written out step by step.
       if (input.value.trim()) next.set("q", input.value.trim());
       if (category) next.set("category", category);
       tags.forEach((t) => next.append("tag", t));
+      if (favOnly) next.set("favorites", "1");
       if (sort) next.set("sort", sort);
       const query = next.toString();
       history.replaceState(history.state, "", query ? `?${query}` : location.pathname); // keeps Turbo's entry data
@@ -254,7 +276,8 @@ description: Dinners, desserts, and family favorites, written out step by step.
     // Picking a suggestion adds it as a pill, and drops the typed words that
     // found it: "chicken din" + Dinner leaves "chicken".
     const pick = (chip) => {
-      if (chip.dataset.tag !== undefined) tags.push(chip.dataset.tag);
+      if (chip.dataset.fav !== undefined) favOnly = true;
+      else if (chip.dataset.tag !== undefined) tags.push(chip.dataset.tag);
       else category = chip.dataset.category;
       const label = wordsOf(chip.dataset.label);
       input.value = input.value.split(/\s+/).filter((w) => w && !label.some((l) => l.startsWith(fold(w)))).join(" ");
@@ -262,6 +285,7 @@ description: Dinners, desserts, and family favorites, written out step by step.
     };
     const remove = (kind, slug) => {
       if (kind === "tag") tags = tags.filter((t) => t !== slug);
+      else if (kind === "fav") favOnly = false;
       else category = "";
       update();
     };
@@ -293,9 +317,9 @@ description: Dinners, desserts, and family favorites, written out step by step.
       if (event.key === "Escape") {
         if (open && !suggest.hidden) setOpen(false);
         else if (input.value) { input.value = ""; update(); }
-      } else if (event.key === "Backspace" && !input.value && !input.selectionStart && (category || tags.length)) {
+      } else if (event.key === "Backspace" && !input.value && !input.selectionStart && (favOnly || category || tags.length)) {
         // Backspace in an empty box removes the last pill, like a text field with tokens.
-        if (tags.length) tags.pop(); else category = "";
+        if (tags.length) tags.pop(); else if (category) category = ""; else favOnly = false;
         update();
       } else if (event.key === "ArrowDown" && !suggest.hidden) {
         event.preventDefault();
@@ -319,11 +343,12 @@ description: Dinners, desserts, and family favorites, written out step by step.
       input.value = "";
       category = "";
       tags = [];
+      favOnly = false;
       update();
       input.focus();
     });
 
-    // "Open the gate" goes to a random recipe from the ones showing, so it
+    // "Surprise me" goes to a random recipe from the ones showing, so it
     // respects the search and filter. It skips the last one it picked.
     const gate = document.querySelector("[data-random]");
     gate.addEventListener("click", () => {
@@ -341,20 +366,15 @@ description: Dinners, desserts, and family favorites, written out step by step.
     // Reset the button if the page comes back from the back/forward cache.
     const resetGate = () => {
       gate.classList.remove("is-opening");
-      gate.textContent = "Open the gate";
+      gate.textContent = "Surprise me";
     };
-    // This inline script runs before page.js on a full page load.
-    if (window.HawkinsPage) {
-      HawkinsPage.on(window, "pageshow", resetGate);
-      HawkinsPage.on(document, "pointerdown", closeOutside);
-    } else {
-      addEventListener("pageshow", resetGate);
-      document.addEventListener("pointerdown", closeOutside);
-    }
+    HawkinsPage.on(window, "pageshow", resetGate);
+    HawkinsPage.on(document, "pointerdown", closeOutside);
 
     finder.hidden = false;
     gate.hidden = false;
     reorder();
     update();
+  }
   })();
 </script>

@@ -45,7 +45,7 @@ layout: default
           <div class="stat"><dt>Rest</dt><dd>{% include duration.html minutes=t.additional %}</dd></div>
           {%- endif %}
           <div class="stat stat--total"><dt>Total</dt><dd>{% include duration.html minutes=total %}</dd></div>
-          <div class="stat"><dt>Serves</dt><dd>{{ page.servings }}</dd></div>
+          <div class="stat"><dt>Serves</dt><dd data-serves-stat>{{ page.servings }}</dd></div>
           {%- if page.calories %}
           {%- if page.calories_estimated %}
           <div class="stat stat--estimated" title="Estimated from the ingredients. The original recipe doesn't list calories.">
@@ -64,8 +64,21 @@ layout: default
           {%- endif %}
         </dl>
 
+        {%- comment %}
+          One clear action, Start cooking (or Continue at step 3), with Start over
+          beside it once there's progress. On phones the pair stays at the bottom
+          of the screen.
+        {% endcomment %}
         <div class="recipe-hero__actions">
+          <div class="cook-start">
+            <button class="button button--primary button--cook" type="button" data-cook hidden>Start cooking</button>
+            <button class="button button--quiet" type="button" data-reset hidden>Start over</button>
+          </div>
           <button class="button button--plan" type="button" data-plan-add="{{ page.slug }}" data-plan-title="{{ page.title | escape }}" aria-pressed="false" hidden></button>
+          <button class="button button--fave" type="button" data-fave="{{ page.slug }}" aria-pressed="false" hidden>
+            <svg class="fave-icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-9.3-9.2C1.4 8 3.4 4.5 6.9 4.5c2.1 0 3.8 1.2 5.1 3 1.3-1.8 3-3 5.1-3 3.5 0 5.5 3.5 4.2 6.8-1.8 4.6-9.3 9.2-9.3 9.2z"/></svg>
+            Favorite
+          </button>
         </div>
       </div>
 
@@ -81,6 +94,16 @@ layout: default
             <h2 id="ingredients-title">Ingredients</h2>
             <span class="section-head__count">{{ ingredient_count }} items</span>
           </div>
+          {%- comment %} Change the servings and the amounts follow (recipe.js). {% endcomment %}
+          <div class="servings" data-servings="{{ page.servings }}" hidden>
+            <span class="servings__label" id="servings-label">Serves</span>
+            <div class="stepper" role="group" aria-labelledby="servings-label">
+              <button type="button" data-servings-step="-1" aria-label="Fewer servings">−</button>
+              <span class="stepper__value" aria-live="polite" data-servings-value>{{ page.servings }}</span>
+              <button type="button" data-servings-step="1" aria-label="More servings">+</button>
+            </div>
+            <p class="servings__note" data-servings-note hidden>Amounts in the steps are for the original {{ page.servings }}.</p>
+          </div>
           {% include ingredient-list.html ingredients=page.ingredients key="data-key" %}
         </div>
       </aside>
@@ -89,13 +112,8 @@ layout: default
         <div class="section-head">
           <h2 id="directions-title">Directions</h2>
           <span class="section-head__count">{{ page.steps.size }} steps</span>
-          <div class="section-head__actions">
-            <button class="toggle toggle--cook" type="button" data-cook hidden>Cook mode</button>
-            <button class="toggle" type="button" data-wake aria-pressed="false" hidden>Keep screen on</button>
-            <button class="toggle" type="button" data-reset hidden>Start over</button>
-          </div>
         </div>
-        <p class="directions__hint">Tap a step to mark it done. Cook mode shows one step at a time, with timers.</p>
+        <p class="directions__hint">Tap a step to mark it done, and the screen stays on while you cook. Start cooking shows one step at a time, with timers.</p>
 
         <ol class="steps">
           {%- for step in page.steps %}
@@ -205,6 +223,7 @@ layout: default
 
       <div class="cook__sheet cook__notice" data-cook-finished role="dialog" aria-modal="true" aria-labelledby="cook-finished-title" hidden>
         <div class="cook__notice-card">
+          <svg class="cook__check" viewBox="0 0 52 52" width="64" height="64" aria-hidden="true"><circle cx="26" cy="26" r="24"/><path d="M15 27l7 7 15-16"/></svg>
           <p class="cook__notice-kicker">Recipe complete</p>
           <h2 class="cook__notice-title" id="cook-finished-title">All done!</h2>
           <p class="cook__notice-text">Enjoy your {{ page.title }}.</p>
@@ -212,6 +231,10 @@ layout: default
             <button class="button cook__next" type="button" data-cook-finish-close>Back to recipe</button>
             <button class="button cook__prev" type="button" data-cook-restart>Cook it again</button>
           </div>
+          <button class="button button--fave cook__fave" type="button" data-fave="{{ page.slug }}" aria-pressed="false" hidden>
+            <svg class="fave-icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-9.3-9.2C1.4 8 3.4 4.5 6.9 4.5c2.1 0 3.8 1.2 5.1 3 1.3-1.8 3-3 5.1-3 3.5 0 5.5 3.5 4.2 6.8-1.8 4.6-9.3 9.2-9.3 9.2z"/></svg>
+            Save to favorites
+          </button>
           <button class="cook__restart cook__notice-back" type="button" data-cook-finish-back>‹ Back to the last step</button>
         </div>
       </div>

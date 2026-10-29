@@ -40,8 +40,9 @@ export async function open() {
   for (const signal of ["SIGINT", "SIGTERM", "SIGHUP"]) process.on(signal, () => process.exit(130));
   process.on("unhandledRejection", (error) => { console.error(error); process.exit(1); });
 
+  // Up to 30 seconds: a busy CI machine running two at once can be slow to start one.
   let wsUrl;
-  for (let i = 0; i < 100 && !wsUrl; i++) {
+  for (let i = 0; i < 300 && !wsUrl; i++) {
     await sleep(100);
     try {
       const port = readFileSync(join(profile, "DevToolsActivePort"), "utf8").split("\n")[0];

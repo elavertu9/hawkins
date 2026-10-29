@@ -3,7 +3,7 @@
 // as a link (/plan/?r=goulash,banana-bread:2).
 (() => {
   const STORAGE_KEY = "hawkins:plan";
-  const SCALES = [0.5, 1, 2, 3, 4];
+  const { SCALES, QTY_RE, FRACTIONS, nearest, split, singular, plural, formatNumber, formatRange } = HawkinsQty;
 
   const { store } = HawkinsPage;
   const load = () => {
@@ -108,22 +108,6 @@
   const bySlug = new Map(recipes.map((r) => [r.slug, r]));
   const $ = (sel) => page.querySelector(sel);
 
-  // Quantities: "2 cups", "1½ tablespoons", "2–3", "1 to 2 drops", "1 can (15 ounces)".
-  const FRACTION_CHARS = { "½": 1 / 2, "¼": 1 / 4, "¾": 3 / 4, "⅓": 1 / 3, "⅔": 2 / 3, "⅛": 1 / 8, "⅜": 3 / 8, "⅝": 5 / 8, "⅞": 7 / 8 };
-  const NUM = "(?:\\d+(?:\\.\\d+)?\\s*[½¼¾⅓⅔⅛⅜⅝⅞]?(?:\\s+\\d+/\\d+)?|\\d+/\\d+|[½¼¾⅓⅔⅛⅜⅝⅞])";
-  const QTY_RE = new RegExp(`^(${NUM})(?:\\s*(?:–|-|to)\\s*(${NUM}))?\\s*(.*)$`, "i");
-
-  const toNumber = (text) => {
-    let s = text.trim();
-    let n = 0;
-    const glyph = s.match(/[½¼¾⅓⅔⅛⅜⅝⅞]$/);
-    if (glyph) { n += FRACTION_CHARS[glyph[0]]; s = s.slice(0, -1).trim(); }
-    const slash = s.match(/(\d+)\/(\d+)$/);
-    if (slash) { n += Number(slash[1]) / Number(slash[2]); s = s.slice(0, slash.index).trim(); }
-    if (s) n += parseFloat(s);
-    return n;
-  };
-
   // Volume units add up across teaspoons, tablespoons, and cups, and weights
   // across ounces and pounds. Each is stored in its smallest unit.
   const VOLUME = { tsp: 1, tbsp: 3, cup: 48 };
@@ -144,28 +128,16 @@
   };
   const SIZE_WORDS = /^(large|medium|small|whole)$/i;
 
-  const singular = (word) => {
-    if (/(ch|sh|x)es$/i.test(word)) return word.slice(0, -2);
-    if (/[^s]s$/i.test(word) && word.length > 3) return word.slice(0, -1);
-    return word;
-  };
-  const plural = (word) => {
-    if (/(ch|sh|x)$/i.test(word)) return `${word}es`;
-    if (/loaf$/i.test(word)) return word.replace(/f$/i, "ves");
-    if (/s$/i.test(word)) return word;
-    return `${word}s`;
-  };
   // Pluralize the last word before any "(15 ounces)" note: "small can" -> "small cans".
   const pluralUnit = (unit) => unit.replace(/^([^(]*?)(\S+)(\s*\(.*\))?$/, (_, before, last, note = "") =>
     `${before}${SIZE_WORDS.test(last) ? last : plural(last)}${note}`);
 
   const parseQty = (qty) => {
-    const match = qty.trim().match(QTY_RE);
-    if (!match) return null;
-    const lo = toNumber(match[1]);
-    const hi = match[2] ? toNumber(match[2]) : lo;
+    const parts = split(qty);
+    if (!parts) return null;
+    const { lo, hi } = parts;
     // Drop metric conversions like "(250 mL)"; they'd be wrong once scaled.
-    let rest = match[3].replace(/\s*\(\s*\d[\d.,]*\s*m?l\s*\)/i, "").replace(/\s+each\)/i, ")").trim();
+    let rest = parts.rest.replace(/\s*\(\s*\d[\d.,]*\s*m?l\s*\)/i, "").replace(/\s+each\)/i, ")").trim();
     if (/\bper\b/i.test(rest)) return null; // "½ can per can of consommé" doesn't add up
     for (const [re, unit] of KNOWN_UNITS) {
       if (re.test(rest)) return { lo, hi, unit, label: unit };
@@ -174,21 +146,6 @@
     const label = rest.replace(/^([^(]*?)(\S+)(\s*\(.*\))?$/, (_, before, last, note = "") => `${before}${singular(last)}${note}`);
     return { lo, hi, unit: label.toLowerCase(), label };
   };
-
-  const FRACTIONS = [[0, ""], [1 / 8, "⅛"], [1 / 4, "¼"], [1 / 3, "⅓"], [3 / 8, "⅜"], [1 / 2, "½"],
-    [5 / 8, "⅝"], [2 / 3, "⅔"], [3 / 4, "¾"], [7 / 8, "⅞"], [1, ""]];
-  const nearest = (n) => {
-    const whole = Math.floor(n);
-    const [value, glyph] = FRACTIONS.reduce((best, f) =>
-      (Math.abs(n - whole - f[0]) < Math.abs(n - whole - best[0]) ? f : best));
-    return value === 1 ? { whole: whole + 1, value: 0, glyph: "" } : { whole, value, glyph };
-  };
-  const formatNumber = (n) => {
-    const { whole, glyph } = nearest(n);
-    if (!whole && !glyph) return "⅛";
-    return `${whole || ""}${glyph}`;
-  };
-  const formatRange = (lo, hi) => (formatNumber(lo) === formatNumber(hi) ? formatNumber(lo) : `${formatNumber(lo)}–${formatNumber(hi)}`);
 
   // Item names: "garlic, minced (1 tablespoon)" -> "garlic". A list of
   // ingredients ("salt, pepper, and dried basil, to taste") keeps its list
@@ -285,7 +242,7 @@
       });
     });
     plan.extras.forEach((extra) => {
-      const words = extra.text.replace(QTY_RE, (m, a, b, rest) => rest).replace(/^(cups?|tablespoons?|teaspoons?|pounds?|ounces?|cans?|jars?|bags?|boxes?)\s+(of\s+)?/i, "");
+      const words = extra.text.replace(QTY_RE, (m, a, joiner, b, rest) => rest).replace(/^(cups?|tablespoons?|teaspoons?|pounds?|ounces?|cans?|jars?|bags?|boxes?)\s+(of\s+)?/i, "");
       const aisle = aisleFor(words || extra.text, "");
       rows.set(`extra|${extra.id}`, {
         key: `extra|${extra.id}`, aisle: aisle === "skip" ? "Other" : aisle, extra, names: [extra.text], recipes: new Map(),

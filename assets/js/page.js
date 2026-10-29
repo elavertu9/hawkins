@@ -13,6 +13,13 @@
 // (private browsing, blocked storage, corrupt data). get/set store JSON;
 // getText/setText store plain strings.
 //
+// HawkinsPage.favorites: the recipes you've hearted, saved in this browser
+// (no expiry). Cards for them get .is-favorite on every page.
+//
+// Appearance: Auto (the device's setting), Light, or Dark, picked at the
+// bottom of every page and remembered in this browser. head.html applies it
+// before the page draws.
+//
 // HawkinsPage.wake: keeps the screen on (Screen Wake Lock API) while anything
 // asks for it. Each part of the site asks under its own name (cook mode, the
 // Keep screen on button, running timers), and the screen can sleep again once
@@ -43,6 +50,32 @@
       },
     };
   };
+
+  const store = storage("localStorage");
+  const session = storage("sessionStorage");
+
+  (() => {
+    const KEY = "hawkins:theme";
+    const metaColor = (theme) => document.querySelectorAll('meta[name="theme-color"]').forEach((m) => {
+      if (!m.dataset.color) m.dataset.color = m.content;
+      m.content = theme === "light" ? "#f3ede1" : theme === "dark" ? "#060608" : m.dataset.color;
+    });
+    const apply = () => {
+      const theme = store.getText(KEY) || "";
+      if (theme) document.documentElement.dataset.theme = theme;
+      else delete document.documentElement.dataset.theme;
+      metaColor(theme);
+      document.querySelectorAll("[data-theme-pick]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.themePick === theme)));
+    };
+    document.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-theme-pick]");
+      if (!button) return;
+      if (button.dataset.themePick) store.setText(KEY, button.dataset.themePick); else store.remove(KEY);
+      apply();
+    });
+    document.addEventListener("turbo:load", apply);
+    document.addEventListener("DOMContentLoaded", apply);
+  })();
 
   const wake = (() => {
     const supported = "wakeLock" in navigator;
@@ -87,6 +120,31 @@
     };
   })();
 
+  const favorites = (() => {
+    const KEY = "hawkins:favorites";
+    const list = () => {
+      const saved = store.get(KEY, []);
+      return Array.isArray(saved) ? saved.filter((s) => typeof s === "string") : [];
+    };
+    const mark = () => {
+      const slugs = new Set(list());
+      document.querySelectorAll(".card[data-slug]").forEach((card) => {
+        card.classList.toggle("is-favorite", slugs.has(card.dataset.slug));
+      });
+    };
+    document.addEventListener("turbo:load", mark);
+    document.addEventListener("DOMContentLoaded", mark);
+    return {
+      list,
+      has: (slug) => list().includes(slug),
+      set(slug, on) {
+        const rest = list().filter((s) => s !== slug);
+        store.set(KEY, on ? [...rest, slug] : rest);
+        mark();
+      },
+    };
+  })();
+
   window.HawkinsPage = {
     on(target, type, listener, options) {
       target.addEventListener(type, listener, options);
@@ -100,10 +158,42 @@
     },
     // history.replaceState that keeps Turbo's entry data, so Back still works.
     replaceUrl(url) { history.replaceState(history.state, "", url); },
-    store: storage("localStorage"),
-    session: storage("sessionStorage"),
+    store,
+    session,
+    favorites,
     wake,
   };
+
+  // Page transitions: pages fade into each other, and the recipe card you
+  // tap (or come back to) shares its photo and title with the recipe page so
+  // they glide between the two. Skipped with reduced motion, while a dialog
+  // like cook mode is open, or when the tab is in the background, where the
+  // browser can't take its snapshot.
+  const CARD_KEY = "hawkins:transition-card";
+  const nameCard = (card) => {
+    const media = card && card.querySelector(".card__media");
+    if (!media) return;
+    media.style.viewTransitionName = "recipe-media";
+    card.querySelector(".card__title").style.viewTransitionName = "recipe-title";
+  };
+  document.addEventListener("click", (event) => {
+    const card = event.target.closest(".card");
+    if (!card || !event.target.closest(".card__link")) return;
+    nameCard(card);
+    session.setText(CARD_KEY, card.dataset.slug);
+  }, true);
+  document.addEventListener("turbo:before-render", (event) => {
+    if (!document.startViewTransition || document.visibilityState !== "visible"
+      || document.querySelector("dialog[open]") || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const slug = session.getText(CARD_KEY);
+    if (slug) nameCard(event.detail.newBody.querySelector(`.card[data-slug="${CSS.escape(slug)}"]`));
+    const render = event.detail.render;
+    event.detail.render = (current, next) => {
+      const transition = document.startViewTransition(() => render(current, next));
+      transition.ready.catch(() => {}); // a skipped transition still swaps the page
+      return transition.updateCallbackDone;
+    };
+  });
 
   document.addEventListener("turbo:before-render", () => {
     const fns = cleanups;

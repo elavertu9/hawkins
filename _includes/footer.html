@@ -2,5 +2,10 @@
   <div class="container site-footer__inner">
     <p class="site-footer__quote">Friends don't lie.</p>
     <p class="site-footer__meta">{{ site.title }} · {{ site.url | remove: "https://" }}</p>
+    <div class="theme-pick" role="group" aria-label="Appearance">
+      <button type="button" data-theme-pick="" aria-pressed="true">Auto</button>
+      <button type="button" data-theme-pick="light" aria-pressed="false">Light</button>
+      <button type="button" data-theme-pick="dark" aria-pressed="false">Dark</button>
+    </div>
   </div>
 </footer>

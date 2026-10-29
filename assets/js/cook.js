@@ -39,9 +39,24 @@
     document.querySelectorAll(".cook__hint").forEach((h) => h.remove());
     document.querySelectorAll(".timer-start.is-new").forEach((b) => b.classList.remove("is-new"));
   };
-  const syncTimerButtons = () => document.querySelectorAll("[data-timer-key]").forEach((b) =>
-    b.classList.toggle("is-running", !!Timers && Timers.isRunning(b.dataset.timerKey)));
-  if (Timers) page.onLeave(Timers.onChange(syncTimerButtons));
+  // A running timer counts down right on its step, not just in the tray.
+  const syncTimerButtons = () => document.querySelectorAll("[data-timer-key]").forEach((b) => {
+    const left = Timers ? Timers.secondsLeft(b.dataset.timerKey) : null;
+    b.classList.toggle("is-running", left !== null);
+    b.classList.toggle("is-finished", left === 0);
+    if (left === null) {
+      delete b.dataset.left;
+      b.setAttribute("aria-label", `Start a ${b.dataset.time} timer`);
+    } else {
+      b.dataset.left = left > 0 ? Timers.formatClock(left) : "Done";
+      b.setAttribute("aria-label", `${b.dataset.time} timer: ${left > 0 ? `${Timers.formatClock(left)} left` : "done"}`);
+    }
+  });
+  if (Timers) {
+    page.onLeave(Timers.onChange(syncTimerButtons));
+    const clock = setInterval(() => { if (document.querySelector(".timer-start.is-running")) syncTimerButtons(); }, 250);
+    page.onLeave(() => clearInterval(clock));
+  }
 
   // ---------- Cook mode ----------
   const cookButton = recipe.querySelector("[data-cook]");
@@ -131,6 +146,16 @@
     go(0);
   };
 
+  // The page's button says where cook mode will open: "Start cooking", or
+  // "Continue at step 3" once some steps are done (a finished recipe starts
+  // fresh). Tapping Continue goes straight there, since the button already
+  // said so; Start over on the page and in the step list still start fresh.
+  const renderCookButton = () => {
+    const at = reached();
+    cookButton.textContent = at > 0 && at < steps.length ? `Continue at step ${at + 1}` : "Start cooking";
+  };
+  recipe.addEventListener("hawkins:steps", renderCookButton);
+
   // ---------- Picking a step ----------
   // The segments along the top and the step list both jump straight to a step.
   const stepTitle = (step) => {
@@ -203,15 +228,15 @@
       button.type = "button";
       button.className = "timer-start";
       button.dataset.timerKey = key;
+      button.dataset.time = strong.textContent;
       button.textContent = strong.textContent;
-      button.setAttribute("aria-label", `Start a ${strong.textContent} timer`);
-      if (Timers && Timers.isRunning(key)) button.classList.add("is-running");
       const stepTitle = title ? title.textContent.trim() : "";
       button.addEventListener("click", () =>
         startTimer(seconds, { key, step: current + 1, title: stepTitle, time: strong.textContent }));
       strong.replaceWith(button);
     });
 
+    syncTimerButtons();
     const timerButtons = ui.text.querySelectorAll(".timer-start");
     if (timerButtons.length && !timerHintSeen()) {
       timerButtons.forEach((b) => b.classList.add("is-new"));
@@ -238,15 +263,24 @@
 
   // Moving on marks the step you're leaving as done, on the page too.
   const next = () => {
-    if (current === steps.length - 1) { markUpTo(steps.length); showSheet("finished"); }
+    if (current === steps.length - 1) {
+      markUpTo(steps.length);
+      showSheet("finished");
+      // The check draws itself each time you finish.
+      const check = ui.finished.querySelector(".cook__check");
+      check.classList.remove("is-drawn");
+      void check.getBoundingClientRect();
+      check.classList.add("is-drawn");
+    }
     else go(current + 1);
   };
   const prev = () => { if (current > 0) go(current - 1); };
 
   const COOK_HASH = /^#cook(?:-(\d+))?$/;
-  // Opened with a step (a timer, a #cook-3 link) goes straight there. Otherwise
-  // pick up where you left off, after asking; a recipe you finished last time
-  // starts fresh. Progress older than 12 hours is already gone (see load).
+  // Opened with a step (Continue at step 3, a timer, a #cook-3 link) goes
+  // straight there. Otherwise (a #cook link, like the meal plan's Cook) pick up
+  // where you left off, after asking; a recipe you finished last time starts
+  // fresh. Progress older than 12 hours is already gone (see load).
   const open = (stepNumber) => {
     let ask = false;
     if (stepNumber >= 1 && stepNumber <= steps.length) {
@@ -316,21 +350,40 @@
     if (event.key === "ArrowLeft" || event.key === "PageUp") { event.preventDefault(); prev(); }
   });
 
-  // Swipe left or right on the step to move between steps.
+  // Swipe left or right on the step to move between steps. The step follows
+  // your finger, and springs back if you let go early (or there's no step
+  // that way). Scrolling up and down still scrolls.
   let touch = null;
+  const settle = (animate) => {
+    ui.step.style.transition = animate && !reduceMotion.matches ? "transform 0.2s ease-out" : "";
+    ui.step.style.transform = "";
+  };
   ui.stage.addEventListener("touchstart", (event) => {
     const t = event.touches[0];
-    touch = event.touches.length === 1 ? { x: t.clientX, y: t.clientY } : null;
+    touch = event.touches.length === 1 ? { x: t.clientX, y: t.clientY, sideways: null } : null;
+  }, { passive: true });
+  ui.stage.addEventListener("touchmove", (event) => {
+    if (!touch) return;
+    const t = event.touches[0];
+    const dx = t.clientX - touch.x;
+    const dy = t.clientY - touch.y;
+    if (touch.sideways === null && Math.hypot(dx, dy) > 10) touch.sideways = Math.abs(dx) > Math.abs(dy) * 1.5;
+    if (!touch.sideways || reduceMotion.matches) return;
+    const blocked = (dx > 0 && current === 0); // nothing before step 1
+    ui.step.style.transition = "none";
+    ui.step.style.transform = `translateX(${blocked ? dx * 0.25 : dx}px)`;
   }, { passive: true });
   ui.stage.addEventListener("touchend", (event) => {
     if (!touch) return;
     const t = event.changedTouches[0];
     const dx = t.clientX - touch.x;
-    const dy = t.clientY - touch.y;
+    const sideways = touch.sideways;
     touch = null;
-    if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+    if (!sideways || Math.abs(dx) < 60 || (dx > 0 && current === 0)) { settle(true); return; }
+    settle(false);
     if (dx < 0) next(); else prev();
   });
+  ui.stage.addEventListener("touchcancel", () => { touch = null; settle(true); });
 
   ui.next.addEventListener("click", next);
   ui.prev.addEventListener("click", prev);
@@ -347,6 +400,16 @@
     render();
   });
 
+  // A timer for the step you're on finishes: its card offers to go straight
+  // on to the next step (marking this one done), instead of just "Continue".
+  if (Timers) {
+    Timers.continueTo = (timer) => {
+      if (!dialog.open || openSheet || timer.url !== location.pathname || timer.step - 1 !== current) return null;
+      return { label: current === steps.length - 1 ? "Finish ›" : "Next step ›", go: next };
+    };
+    page.onLeave(() => { Timers.continueTo = null; });
+  }
+
   // While cook mode is open, the timers sit inside it so they stay on top.
   if (Timers) {
     const placeTray = () => (dialog.open ? dialog : document.body).append(Timers.tray);
@@ -362,7 +425,11 @@
   });
 
   cookButton.hidden = false;
-  cookButton.addEventListener("click", () => open());
+  renderCookButton();
+  cookButton.addEventListener("click", () => {
+    const at = reached();
+    open(at > 0 && at < steps.length ? at + 1 : undefined);
+  });
   const deepLink = location.hash.match(COOK_HASH);
   if (deepLink) open(Number(deepLink[1]));
 })();

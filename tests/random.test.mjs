@@ -1,4 +1,4 @@
-// The "Open the gate" random recipe button.
+// The "Surprise me" random recipe button.
 import { BASE, open } from "./lib.mjs";
 
 const { send, ev, go, sleep, check, shot, errors, finish } = await open();
@@ -29,6 +29,6 @@ for (let i = 0; i < 2; i++) {
 }
 // Back button resets the label.
 await send("Runtime.evaluate", { expression: "history.back()" }); await sleep(1500);
-check(`after back, label: ${await ev("document.querySelector('[data-random]').textContent")}`, (await ev("document.querySelector('[data-random]').textContent")) === "Open the gate");
+check(`after back, label: ${await ev("document.querySelector('[data-random]').textContent")}`, (await ev("document.querySelector('[data-random]').textContent")) === "Surprise me");
 check(`JS errors: ${errors.length}`, errors.length === 0);
 finish();
