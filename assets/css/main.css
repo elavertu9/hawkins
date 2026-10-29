@@ -1854,8 +1854,9 @@ body:has(> .timers:not([hidden])) { padding-bottom: 8rem; }
 .cook-start { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.75rem; }
 .button--quiet { padding-inline: 0.75rem; color: var(--text-muted); border-color: transparent; }
 .button--quiet:hover { color: var(--text); border-color: var(--line-strong); box-shadow: none; }
-/* On phones the pair waits at the bottom of the screen (Start over on the
-   left), out of the way of the timer tray when one is running. */
+/* On phones it waits at the bottom of the screen, out of the way of the timer
+   tray when one is running. With Start over, the two share one bar, like a
+   toolbar: Start over as plain text on the left. */
 @media (max-width: 40rem) {
   .cook-start {
     position: fixed;
@@ -1864,12 +1865,23 @@ body:has(> .timers:not([hidden])) { padding-bottom: 8rem; }
     bottom: calc(env(safe-area-inset-bottom, 0px) + 1rem);
     z-index: 50;
     flex-wrap: nowrap;
+    gap: 0.25rem;
+    border-radius: 999px;
   }
   .cook-start .button--cook { flex: 1; justify-content: center; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5); }
-  .cook-start .button--quiet { order: -1; flex: none; background: var(--glass); border-color: var(--line-strong); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+  .cook-start:has(.button--quiet:not([hidden])) {
+    padding: 0.3rem;
+    background: var(--glass);
+    border: 1px solid var(--line-strong);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+  }
+  .cook-start:has(.button--quiet:not([hidden])) .button--cook { box-shadow: none; }
+  .cook-start .button--quiet { order: -1; flex: none; padding-inline: 1rem; }
   body:has(.button--cook:not([hidden])) { padding-bottom: 5rem; }
-  body:has(> .timers:not([hidden])) .cook-start { position: static; }
-  body:has(> .timers:not([hidden])) .cook-start .button--cook { flex: none; box-shadow: none; }
+  body:has(> .timers:not([hidden])) .cook-start { position: static; padding: 0; background: none; border: 0; box-shadow: none; }
+  body:has(> .timers:not([hidden])) .cook-start .button--cook { flex: none; }
 }
 .button--plan[aria-pressed="true"] { background: var(--red); border-color: var(--red); color: #fff; }
 
