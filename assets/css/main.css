@@ -308,6 +308,14 @@ p { margin: 0; }
   color: var(--red-bright);
   text-shadow: 0 0 24px rgba(255, 42, 42, 0.3);
 }
+/* A title with an action beside it (Open the gate on Recipes). */
+.page-head__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+}
 .page-head__lede {
   margin-top: 0.75rem;
   max-width: 38rem;
@@ -401,14 +409,69 @@ p { margin: 0; }
 }
 .chip[aria-pressed="true"] .chip__count { background: rgba(0, 0, 0, 0.25); }
 
-/* Each filter row has a small label: Course (pick one) and Good for (tags). */
-.filter {
-  display: grid;
-  grid-template-columns: 5.5rem minmax(0, 1fr);
-  align-items: baseline;
-  gap: 0.5rem 1rem;
+/* The recipe search holds the picked filters as pills, in front of the text. */
+.search--tokens {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0;
+  border-bottom: 1px solid var(--line-strong);
+  cursor: text;
+  transition: border-color 0.15s, box-shadow 0.15s;
 }
-.filter__label {
+.search--tokens:focus-within {
+  border-bottom-color: var(--red-bright);
+  box-shadow: 0 1px 0 var(--red-bright), 0 10px 18px -14px var(--red-glow);
+}
+.search--tokens .search__prompt { position: static; transform: none; margin-right: 0.1rem; }
+.search--tokens .search__input { flex: 1 1 6rem; width: auto; min-width: 6rem; padding: 0.25rem; border-bottom: 0; }
+.search--tokens .search__input:focus { box-shadow: none; }
+.search__tokens { display: contents; list-style: none; }
+.search__tokens li { display: flex; }
+.token {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 2rem;
+  padding: 0.2rem 0.35rem 0.2rem 0.7rem;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #fff;
+  background: var(--red);
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.token--tag { color: #1a1408; background: var(--amber); }
+.token__x {
+  display: grid;
+  place-items: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  font-size: 1rem;
+  line-height: 1;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.25);
+}
+.token:hover .token__x { background: rgba(0, 0, 0, 0.45); }
+.token:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+
+/* Suggestions open under the search while you're in it. Chips wrap, so
+   there's nothing hidden off to the side however many tags there are. */
+.suggest {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.suggest__group { display: grid; gap: 0.5rem; }
+.suggest__label {
   margin: 0;
   font-family: var(--font-mono);
   font-size: 0.75rem;
@@ -416,6 +479,7 @@ p { margin: 0; }
   text-transform: uppercase;
   color: var(--text-faint);
 }
+.suggest .chip { min-height: 2.5rem; }
 
 /* Tags (like Low Calorie) sit on top of the category: amber instead of red. */
 .chip--tag { border-style: dashed; border-color: rgba(255, 200, 87, 0.45); color: var(--amber); }
@@ -505,25 +569,10 @@ a.tag:hover { border-color: var(--amber); }
 @media (prefers-reduced-motion: reduce) {
   .button--gate.is-opening { animation: none; }
 }
-/* On phones the count drops below the chips instead of sitting between. */
+/* Phones: a tighter finder, with the search full width. */
 @media (max-width: 40rem) {
   .finder { gap: 1rem; }
-  /* Each filter row becomes one line you swipe sideways, edge to edge. */
-  .filter { grid-template-columns: minmax(0, 1fr); gap: 0.4rem; }
-  .filter .chips {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    overscroll-behavior-x: contain;
-    scrollbar-width: none;
-    margin-inline: calc(var(--gutter) * -1);
-    padding: 0.15rem var(--gutter);
-    scroll-padding-inline: var(--gutter);
-  }
-  .filter .chips::-webkit-scrollbar { display: none; }
-  .filter .chip { flex: none; }
-  /* Search and Open the gate share one row. */
-  .finder__row { flex-wrap: nowrap; gap: 0.75rem; }
-  .search { flex: 1 1 auto; min-width: 0; }
+  .search { flex: 1 1 auto; max-width: none; min-width: 0; }
   .button--gate { flex: none; padding-inline: 0.9rem; }
 }
 
@@ -541,6 +590,25 @@ a.tag:hover { border-color: var(--amber); }
   color: var(--text);
 }
 .empty .button { margin-top: 1.25rem; }
+
+/* Recipes grouped by dish, each under its own heading. */
+.dish-group + .dish-group { margin-top: clamp(2rem, 5vw, 3rem); }
+.dish-group__title {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  margin: 0 0 1rem;
+  font-family: var(--font-display);
+  font-size: 1.375rem;
+}
+/* The heading already names the dish, so the cards under it don't repeat it. */
+.dish-group .card__body > .eyebrow { display: none; }
+.dish-group__count {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  font-weight: 400;
+  color: var(--text-faint);
+}
 
 /* ---------- Recipe cards ---------- */
 .card-grid {
