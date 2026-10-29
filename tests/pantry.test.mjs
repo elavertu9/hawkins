@@ -16,10 +16,11 @@ await ev("document.querySelector('[data-plan-pantry-review]').click()"); await s
 const top = await ev("document.querySelector('.pantry').getBoundingClientRect().top");
 console.log("scrollY", await ev("scrollY"), "max", await ev("document.documentElement.scrollHeight - innerHeight"));
 check(`review opens + scrolls: open=${await ev("document.querySelector('.pantry').open")} top=${Math.round(top)}`, (await ev("document.querySelector('.pantry').open")) && top >= 0 && (top < 200 || (await ev("scrollY")) >= (await ev("document.documentElement.scrollHeight - innerHeight")) - 2));
-await send("Runtime.evaluate", { expression: "document.querySelector('[data-plan-copy]').click()", userGesture: true }); await sleep(400);
+await ev("Object.defineProperty(navigator, 'share', { value: undefined, configurable: true })"); // copy instead of the share sheet
+await send("Runtime.evaluate", { expression: "document.querySelector('[data-plan-share]').click()", userGesture: true }); await sleep(400);
 const text = await ev("navigator.clipboard.readText()");
-const last = text.trim().split("\n").pop();
-check(`copy ends with: ${last}`, last.startsWith("Probably have: ") && last.includes("olive oil (¼ cup)"));
+const have = text.split("\n").find((l) => l.startsWith("Probably have: ")) || "";
+check(`shared list ends with: ${have}`, have.includes("olive oil (¼ cup)"));
 // No pantry items -> summary hidden
 await ev("localStorage.setItem('hawkins:pantry', '[]')"); await go("/plan/");
 check("no pantry -> summary hidden", await ev("document.querySelector('[data-plan-pantry-summary]').hidden"));

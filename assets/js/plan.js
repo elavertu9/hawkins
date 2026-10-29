@@ -13,10 +13,9 @@
         recipes: saved.recipes,
         checked: Array.isArray(saved.checked) ? saved.checked : [],
         extras: Array.isArray(saved.extras) ? saved.extras : [],
-        hideChecked: Boolean(saved.hideChecked),
       };
     }
-    return { recipes: [], checked: [], extras: [], hideChecked: false };
+    return { recipes: [], checked: [], extras: [] };
   };
 
   let plan = load();
@@ -44,9 +43,18 @@
 
   const inPlan = (slug) => plan.recipes.some((r) => r.slug === slug);
 
+  // A recipe joins the plan at the servings last picked on its page (recipe.js
+  // saves them with your progress for 12 hours), or as written.
+  const RECIPE_MAX_AGE_MS = 12 * 60 * 60 * 1000;
+  const pickedScale = (slug) => {
+    const saved = store.get(`hawkins:recipe:${slug}`);
+    return saved && Date.now() - saved.at < RECIPE_MAX_AGE_MS && SCALES.includes(saved.scale) ? saved.scale : 1;
+  };
+  const addToPlan = (slug) => plan.recipes.push({ slug, scale: pickedScale(slug) });
+
   const togglePlan = (slug) => {
     if (inPlan(slug)) plan.recipes = plan.recipes.filter((r) => r.slug !== slug);
-    else plan.recipes.push({ slug, scale: 1 });
+    else addToPlan(slug);
     save();
   };
 
@@ -319,12 +327,22 @@
     empty: $("[data-plan-empty]"),
     recipeCount: $("[data-plan-recipe-count]"),
     select: $("[data-plan-select]"),
-    actions: $("[data-plan-actions]"),
+    summary: $("[data-plan-summary]"),
+    summaryCount: $("[data-plan-summary-count]"),
+    summaryNames: $("[data-plan-summary-names]"),
+    summaryDone: $("[data-plan-summary-done]"),
+    recipesBody: $("[data-plan-recipes-body]"),
+    faves: $("[data-plan-faves]"),
+    favesList: $("[data-plan-faves-list]"),
     aisles: $("[data-plan-aisles]"),
+    cart: $("[data-plan-cart]"),
+    cartCount: $("[data-plan-cart-count]"),
+    cartList: $("[data-plan-cart-list]"),
     listTools: $("[data-plan-list-tools]"),
+    menu: $("[data-plan-menu]"),
+    menuToggle: $("[data-plan-menu-toggle]"),
     itemCount: $("[data-plan-item-count]"),
     uncheck: $("[data-plan-uncheck]"),
-    hideChecked: $("[data-plan-hide-checked]"),
     extraForm: $("[data-plan-extra-form]"),
     extraInput: $("[data-plan-extra-input]"),
     pantry: $("[data-plan-pantry]"),
@@ -358,8 +376,36 @@
   const snapshot = () => JSON.parse(JSON.stringify(plan));
   const restore = (saved) => () => { plan = saved; save(); };
 
-  const scaleLabel = (scale) => `${formatNumber(scale)}×`;
+  // How much of each recipe, as servings like the recipe page ("Serves 8"),
+  // or as a multiple for a recipe that doesn't say how many it serves.
+  const servingsOf = (recipe, scale) => {
+    const base = recipe.servings ? split(String(recipe.servings)) : null;
+    return base ? formatRange(base.lo * scale, base.hi * scale) : null;
+  };
+  const amountLabel = (recipe, scale) => {
+    const serves = servingsOf(recipe, scale);
+    return serves ? `serves ${serves}` : `${formatNumber(scale)}×`;
+  };
   let currentRows = [];
+
+  // On a phone the recipes fold into one line once there are some, so the
+  // shopping list is right there in the store. Edit opens them again.
+  const narrow = matchMedia("(max-width: 55.99rem)");
+  let editing = false;
+  const renderFold = () => {
+    const count = plan.recipes.filter((r) => bySlug.has(r.slug)).length;
+    const folded = narrow.matches && count > 0 && !editing;
+    ui.summary.hidden = !folded;
+    ui.summary.setAttribute("aria-expanded", String(!folded));
+    ui.recipesBody.hidden = folded;
+    ui.summaryDone.hidden = !(narrow.matches && count > 0 && editing);
+    ui.summaryCount.textContent = `${count} recipe${count === 1 ? "" : "s"}:`;
+    ui.summaryNames.textContent = plan.recipes.filter((r) => bySlug.has(r.slug)).map((r) => bySlug.get(r.slug).title).join(", ");
+  };
+  ui.summary.addEventListener("click", () => { editing = true; renderFold(); ui.recipesBody.querySelector("h2").scrollIntoView({ block: "nearest" }); });
+  ui.summaryDone.addEventListener("click", () => { editing = false; renderFold(); ui.summary.focus(); });
+  narrow.addEventListener("change", renderFold);
+  HawkinsPage.onLeave(() => narrow.removeEventListener("change", renderFold));
 
   const renderRecipes = () => {
     ui.list.replaceChildren(...plan.recipes.filter((r) => bySlug.has(r.slug)).map(({ slug, scale }) => {
@@ -369,12 +415,15 @@
       li.innerHTML = `
         <div class="plan-item__main">
           <a class="plan-item__title"></a>
-          <span class="plan-item__meta"><span data-serves></span><a class="plan-item__cook">Cook</a></span>
+          <span class="plan-item__meta"><a class="plan-item__cook">Cook</a></span>
         </div>
-        <div class="stepper" role="group">
-          <button type="button" data-step="-1">−</button>
-          <span class="stepper__value" aria-live="polite"></span>
-          <button type="button" data-step="1">+</button>
+        <div class="plan-item__amount">
+          <span class="plan-item__serves" aria-hidden="true"></span>
+          <div class="stepper" role="group">
+            <button type="button" data-step="-1">−</button>
+            <span class="stepper__value" aria-live="polite"></span>
+            <button type="button" data-step="1">+</button>
+          </div>
         </div>
         <button class="plan-item__remove" type="button">&times;</button>`;
       const link = li.querySelector(".plan-item__title");
@@ -383,12 +432,13 @@
       const cook = li.querySelector(".plan-item__cook");
       cook.href = `${recipe.url}#cook`;
       cook.setAttribute("aria-label", `Cook ${recipe.title}`);
-      li.querySelector("[data-serves]").textContent = recipe.servings ? `Serves ${formatNumber(recipe.servings * scale)}` : "";
-      li.querySelector(".stepper").setAttribute("aria-label", `Batches of ${recipe.title}`);
-      li.querySelector(".stepper__value").textContent = scaleLabel(scale);
+      const serves = servingsOf(recipe, scale);
+      li.querySelector(".plan-item__serves").textContent = serves ? "Serves" : "";
+      li.querySelector(".stepper").setAttribute("aria-label", `${recipe.title}: ${amountLabel(recipe, scale)}`);
+      li.querySelector(".stepper__value").textContent = serves || `${formatNumber(scale)}×`;
       const [less, more] = li.querySelectorAll("[data-step]");
-      less.setAttribute("aria-label", `Smaller batch of ${recipe.title}`);
-      more.setAttribute("aria-label", `Bigger batch of ${recipe.title}`);
+      less.setAttribute("aria-label", `Less ${recipe.title}`);
+      more.setAttribute("aria-label", `More ${recipe.title}`);
       less.disabled = scale <= SCALES[0];
       more.disabled = scale >= SCALES[SCALES.length - 1];
       li.querySelectorAll("[data-step]").forEach((button) => button.addEventListener("click", () => {
@@ -411,8 +461,25 @@
     const count = ui.list.children.length;
     ui.recipeCount.textContent = count ? `${count} recipe${count === 1 ? "" : "s"}` : "";
     ui.empty.hidden = count > 0;
-    ui.actions.hidden = count === 0 && plan.extras.length === 0;
     [...ui.select.options].forEach((option) => { if (option.value) option.disabled = inPlan(option.value); });
+
+    // Favorites (hearted on a recipe page) not in the plan yet: one tap adds.
+    const faves = HawkinsPage.favorites.list().filter((slug) => bySlug.has(slug) && !inPlan(slug));
+    ui.faves.hidden = faves.length === 0;
+    ui.favesList.replaceChildren(...faves.map((slug) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "chip";
+      button.textContent = `+ ${bySlug.get(slug).title}`;
+      button.setAttribute("aria-label", `Add ${bySlug.get(slug).title}`);
+      button.addEventListener("click", () => {
+        addToPlan(slug);
+        save();
+        toast(`Added ${bySlug.get(slug).title}`);
+      });
+      return button;
+    }));
+    renderFold();
   };
 
   // One line of the shopping list, with its button on the right:
@@ -473,7 +540,7 @@
         toast(`${name} is back on the list`, () => { pantry.add(row.key); savePantry(); });
       });
     } else {
-      action.textContent = "Pantry";
+      action.textContent = "Have it";
       action.title = "Always have this. Moves it to Probably have, for every plan.";
       action.setAttribute("aria-label", `Always have ${name}: move it to the pantry`);
       action.addEventListener("click", () => {
@@ -496,12 +563,12 @@
     const toBuy = described.filter(({ row }) => !pantry.has(row.key));
     const stocked = described.filter(({ row }) => pantry.has(row.key));
     const byName = (a, b) => a.name.localeCompare(b.name);
-    // Checked items sink to the bottom of their aisle, or hide.
-    const byChecked = (a, b) => checked.has(a.row.key) - checked.has(b.row.key) || byName(a, b);
+    // Checked items leave their aisle for "In the cart", so the list shrinks as you shop.
+    const inCart = toBuy.filter(({ row }) => checked.has(row.key));
 
     const groups = AISLE_ORDER.map((aisle) => [aisle, toBuy
-      .filter(({ row }) => row.aisle === aisle && !(plan.hideChecked && checked.has(row.key)))
-      .sort(byChecked)])
+      .filter(({ row }) => row.aisle === aisle && !checked.has(row.key))
+      .sort(byName)])
       .filter(([, rows]) => rows.length);
 
     ui.aisles.replaceChildren(...groups.map(([aisle, rows]) => {
@@ -517,6 +584,10 @@
       return section;
     }));
 
+    ui.cart.hidden = inCart.length === 0;
+    ui.cartCount.textContent = inCart.length;
+    ui.cartList.replaceChildren(...inCart.sort(byName).map((entry) => renderRow(entry, checked, false)));
+
     ui.pantry.hidden = stocked.length === 0;
     ui.pantrySummary.hidden = stocked.length === 0;
     ui.pantrySummaryText.textContent =
@@ -524,12 +595,10 @@
     ui.pantryCount.textContent = stocked.length;
     ui.pantryList.replaceChildren(...stocked.sort(byName).map((entry) => renderRow(entry, checked, true)));
 
-    const done = toBuy.filter(({ row }) => checked.has(row.key)).length;
-    const hidden = plan.hideChecked && done ? " (hidden)" : "";
-    ui.itemCount.textContent = toBuy.length ? `${toBuy.length} items${done ? ` · ${done} checked${hidden}` : ""}` : "";
+    const left = toBuy.length - inCart.length;
+    ui.itemCount.textContent = !toBuy.length ? "" : left ? `${left} to get${inCart.length ? ` · ${inCart.length} in the cart` : ""}` : "All in the cart";
     ui.listTools.hidden = described.length === 0;
-    ui.uncheck.hidden = done === 0;
-    ui.hideChecked.setAttribute("aria-pressed", String(plan.hideChecked));
+    ui.uncheck.hidden = inCart.length === 0;
   };
 
   renderPage = () => {
@@ -538,14 +607,17 @@
     plan.checked = plan.checked.filter((k) => keys.has(k));
     renderRecipes();
     renderList();
+    // In the store: once something's in the cart, the screen stays on.
+    HawkinsPage.wake.set("shopping", plan.checked.length > 0);
   };
+  HawkinsPage.onLeave(() => HawkinsPage.wake.set("shopping", false));
 
   // ---------- Controls ----------
   ui.select.addEventListener("change", () => {
     const slug = ui.select.value;
     ui.select.value = "";
     if (!slug || inPlan(slug)) return;
-    plan.recipes.push({ slug, scale: 1 });
+    addToPlan(slug);
     save();
     toast(`Added ${bySlug.get(slug).title}`);
   });
@@ -559,9 +631,24 @@
     save();
   });
 
+  // The … menu: Print, Uncheck all, Clear plan.
+  const showMenu = (open) => {
+    ui.menu.hidden = !open;
+    ui.menuToggle.setAttribute("aria-expanded", String(open));
+    if (open) ui.menu.querySelector("button:not([hidden])").focus();
+  };
+  ui.menuToggle.addEventListener("click", () => showMenu(ui.menu.hidden));
+  ui.menu.addEventListener("click", (event) => { if (event.target.closest("button")) showMenu(false); });
+  ui.menu.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") { showMenu(false); ui.menuToggle.focus(); }
+  });
+  HawkinsPage.on(document, "pointerdown", (event) => {
+    if (!ui.menu.hidden && !event.target.closest(".menu")) showMenu(false);
+  });
+
   $("[data-plan-clear]").addEventListener("click", () => {
     const before = snapshot();
-    plan = { recipes: [], checked: [], extras: [], hideChecked: plan.hideChecked };
+    plan = { recipes: [], checked: [], extras: [] };
     save();
     toast("Plan cleared", restore(before));
   });
@@ -577,11 +664,6 @@
     ui.pantry.open = true;
     ui.pantry.scrollIntoView({ block: "start", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
     ui.pantry.querySelector("summary").focus({ preventScroll: true });
-  });
-
-  ui.hideChecked.addEventListener("click", () => {
-    plan.hideChecked = !plan.hideChecked;
-    save();
   });
 
   const copyText = async (text) => {
@@ -613,18 +695,12 @@
     return `${location.origin}${location.pathname}?${params.toString().replace(/%2C/g, ",").replace(/%3A/g, ":")}`;
   };
 
-  $("[data-plan-share]").addEventListener("click", async () => {
-    const url = shareUrl();
-    if (navigator.share && matchMedia("(pointer: coarse)").matches) {
-      try { await navigator.share({ title: "Meal plan", url }); return; } catch (_) { /* cancelled */ return; }
-    }
-    toast(await copyText(url) ? "Link copied" : "Couldn't copy the link");
-  });
-
-  $("[data-plan-copy]").addEventListener("click", async () => {
+  // The list as text, for Share: what's left to get, by aisle, then what
+  // you probably have.
+  const listText = () => {
     const checked = new Set(plan.checked);
     const titles = plan.recipes.filter((r) => bySlug.has(r.slug))
-      .map(({ slug, scale }) => `${bySlug.get(slug).title}${scale === 1 ? "" : ` (${scaleLabel(scale)})`}`);
+      .map(({ slug, scale }) => `${bySlug.get(slug).title}${scale === 1 ? "" : ` (${amountLabel(bySlug.get(slug), scale)})`}`);
     const lines = [titles.length ? `Shopping list for ${titles.join(", ")}` : "Shopping list"];
     AISLE_ORDER.forEach((aisle) => {
       const rows = currentRows.filter((r) => r.aisle === aisle && !checked.has(r.key) && !pantry.has(r.key))
@@ -634,7 +710,19 @@
     });
     const stocked = currentRows.filter((r) => pantry.has(r.key)).map((row) => describe(row));
     if (stocked.length) lines.push("", `Probably have: ${pantryNames(stocked)}`);
-    toast(await copyText(lines.join("\n")) ? "Shopping list copied" : "Couldn't copy the list");
+    return lines.join("\n");
+  };
+
+  // Share sends the list and a link to the plan together: on a phone through
+  // its share sheet (Messages, Notes...), elsewhere by copying both.
+  $("[data-plan-share]").addEventListener("click", async () => {
+    const text = listText();
+    const url = shareUrl();
+    if (navigator.share && matchMedia("(pointer: coarse)").matches) {
+      try { await navigator.share({ title: "Shopping list", text, url }); } catch (_) { /* cancelled */ }
+      return;
+    }
+    toast(await copyText(`${text}\n\nThe plan: ${url}`) ? "Shopping list and plan link copied" : "Couldn't copy the list");
   });
 
   $("[data-plan-print]").addEventListener("click", () => print());
@@ -657,7 +745,7 @@
       shared.every((x) => plan.recipes.some((y) => y.slug === x.slug && y.scale === x.scale));
     const sameExtras = extras.length === plan.extras.length && extras.every((x, i) => x.text === plan.extras[i].text);
     const use = () => {
-      plan = { recipes: shared, checked: [], extras, hideChecked: plan.hideChecked };
+      plan = { recipes: shared, checked: [], extras };
       save();
     };
     if ((!shared.length && !extras.length) || (sameRecipes && sameExtras)) {

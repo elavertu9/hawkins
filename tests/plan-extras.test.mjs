@@ -1,4 +1,4 @@
-// Meal plan extras: pantry items, your own items, hide checked, copy, and undo.
+// Meal plan extras: pantry items, your own items, In the cart, sharing, and undo.
 import { BASE, open } from "./lib.mjs";
 
 const { send, ev, go, sleep, check, shot, errors, finish } = await open();
@@ -41,16 +41,12 @@ await q(`${rowSel("paper towels")}.querySelector('.shopping__action').click()`);
 check("remove extra", (await aisleOf("paper towels")) === null);
 await undo();
 check("undo remove extra", (await aisleOf("paper towels")) !== null);
-// 3. hide checked + sink
+// 3. checked items move to "In the cart", and come back when unchecked
 await q(`${rowSel("broccoli")}.querySelector('input').click()`); await sleep(200);
-const produceOrder = "[...document.querySelector('.aisle').querySelectorAll('.shopping__name')].map(e => e.textContent)";
-const order = await q(produceOrder);
-check(`checked sinks to bottom: ${order.join(', ')}`, order[order.length - 1] === "broccoli");
-await q("document.querySelector('[data-plan-hide-checked]').click()"); await sleep(200);
-check(`hide checked: broccoli gone, count "${await q("document.querySelector('[data-plan-item-count]').textContent")}"`, (await qtyOf("broccoli")) === null && /hidden/.test(await q("document.querySelector('[data-plan-item-count]').textContent")));
-await go("/plan/");
-check("hide checked persists", (await q("document.querySelector('[data-plan-hide-checked]').getAttribute('aria-pressed')")) === "true");
-await q("document.querySelector('[data-plan-hide-checked]').click()"); await sleep(200);
+const cartNames = "[...document.querySelectorAll('[data-plan-cart-list] .shopping__name')].map(e => e.textContent).join(', ')";
+check(`checked -> in the cart: ${await q(cartNames)}, gone from produce`, (await q(cartNames)) === "broccoli" && (await qtyOf("broccoli")) === null);
+await q("[...document.querySelectorAll('[data-plan-cart-list] li')][0].querySelector('input').click()"); await sleep(200);
+check("unchecked -> back in its aisle", (await qtyOf("broccoli")) === "1 pound" && await q("document.querySelector('[data-plan-cart]').hidden"));
 await shot("plan2-mobile");
 // 6. recipe links
 check(`from links: ${await q(`${rowSel("garlic")}.querySelector('.shopping__from a').getAttribute('href')`)}`, (await q(`${rowSel("garlic")}.querySelector('.shopping__from a').getAttribute('href')`)) === "/recipes/beef-and-broccoli/#ingredients-title");
@@ -61,17 +57,17 @@ await q("document.querySelector('[data-plan-clear]').click()"); await sleep(200)
 check(`clear: ${await q("document.querySelectorAll('.plan-item').length")} recipes, toast "${await q(toastText)}"`, (await q("document.querySelectorAll('.plan-item').length")) === 0);
 await undo();
 check(`undo clear: ${await q("document.querySelectorAll('.plan-item').length")} recipes, extras ${await q("document.querySelectorAll('[data-plan-aisles] .shopping__action--remove').length")}`, (await q("document.querySelectorAll('.plan-item').length")) === 2 && (await q("document.querySelectorAll('[data-plan-aisles] .shopping__action--remove').length")) === 3);
-// Share with extras round trip
+// Share: the list and the plan link together, and the link round-trips with extras
+await q("Object.defineProperty(navigator, 'share', { value: undefined, configurable: true })"); // copy instead of the share sheet
 await send("Runtime.evaluate", { expression: "document.querySelector('[data-plan-share]').click()", userGesture: true }); await sleep(400);
-const url = await q("navigator.clipboard.readText()");
+const text = await q("navigator.clipboard.readText()");
+const url = text.match(/^The plan: (\S+)$/m)?.[1];
 console.log("share url:", url);
 await q("localStorage.removeItem('hawkins:plan')");
 await send("Page.navigate", { url }); await sleep(1500);
 check(`shared link loads ${await q("document.querySelectorAll('.plan-item').length")} recipes + extras: ${await q("[...document.querySelectorAll('.shopping__action--remove')].map(b => b.closest('li').querySelector('.shopping__name').textContent).join(', ')")}`,
   (await q("document.querySelectorAll('.plan-item').length")) === 2 && (await q("document.querySelectorAll('.shopping__action--remove').length")) === 3);
-// Copy excludes pantry and checked
-await send("Runtime.evaluate", { expression: "document.querySelector('[data-plan-copy]').click()", userGesture: true }); await sleep(400);
-const text = await q("navigator.clipboard.readText()");
+// The shared text leaves out pantry items, and includes extras
 console.log(text);
 check(`copy lists pantry items under "Probably have", not in the list, and includes extras: salt=${/\bsalt\b(?! )/.test(text) && /- [^\n]*\bsalt$/m.test(text)} paper=${text.includes("paper towels")}`, !/^- [^\n]*\d \w+ salt$/m.test(text.replace(/seasoned salt/g, "")) && !/^- .*(flour|olive oil)/m.test(text) && /^Probably have: .*olive oil/m.test(text) && text.includes("paper towels"));
 // 7. Cook link

@@ -1874,6 +1874,8 @@ body:has(> .timers:not([hidden])) { padding-bottom: 8rem; }
 .button--plan[aria-pressed="true"] { background: var(--red); border-color: var(--red); color: #fff; }
 
 .plan-layout { display: grid; gap: clamp(2rem, 5vw, 3rem); align-items: start; }
+/* Let long lines (the folded recipe summary) shorten instead of widening the page. */
+.plan-layout > * { min-width: 0; }
 
 .plan-list { margin: 0; padding: 0; list-style: none; }
 .plan-item {
@@ -1886,6 +1888,8 @@ body:has(> .timers:not([hidden])) { padding-bottom: 8rem; }
 }
 .plan-item:first-child { border-top: 0; padding-top: 0.25rem; }
 .plan-item__main { display: grid; min-width: 0; }
+.plan-item__amount { display: flex; align-items: center; gap: 0.5rem; }
+.plan-item__serves { font-size: 0.8125rem; color: var(--text-faint); }
 .plan-item__title { font-weight: 600; line-height: 1.35; text-decoration: none; }
 .plan-item__title:hover { color: var(--red-bright); }
 .plan-item__meta {
@@ -1972,7 +1976,60 @@ body:has(> .timers:not([hidden])) { padding-bottom: 8rem; }
 .plan-add select:focus { border-color: var(--red-bright); outline: none; }
 .plan-add option { background: var(--surface); color: var(--text); }
 
-.plan-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
+/* Phones: the recipes folded into one line above the shopping list. */
+.plan-summary {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  padding: 0;
+  font: inherit;
+  text-align: left;
+  color: var(--text-muted);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.plan-summary__text { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.plan-summary__text strong { color: var(--text); }
+.plan-summary__edit { flex: none; font-weight: 600; color: var(--red-bright); }
+.plan-recipes__done { margin-left: auto; }
+.panel:has(> .plan-summary:not([hidden])) { padding-block: 0.9rem; }
+
+/* Favorites to add with one tap. */
+.plan-faves { display: grid; gap: 0.5rem; margin-top: 1rem; }
+.plan-faves .suggest__label { margin: 0; }
+
+/* The … menu next to Share. */
+.menu { position: relative; }
+.menu__toggle { letter-spacing: 0.1em; }
+.menu__list {
+  position: absolute;
+  top: calc(100% + 0.4rem);
+  right: 0;
+  z-index: 40;
+  display: grid;
+  min-width: 11rem;
+  padding: 0.35rem;
+  background: var(--surface-2);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+}
+.menu__list button {
+  padding: 0.6rem 0.75rem;
+  font: inherit;
+  font-weight: 500;
+  text-align: left;
+  color: var(--text);
+  background: none;
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.menu__list button:hover,
+.menu__list button:focus-visible { background: var(--line); outline: none; }
+.menu__list .menu__danger { color: var(--red-bright); }
 
 .plan-shared {
   display: flex;
@@ -2011,19 +2068,21 @@ body:has(> .timers:not([hidden])) { padding-bottom: 8rem; }
 }
 .shopping__row .check { padding-bottom: 0; }
 .shopping__row .shopping__from { grid-column: 1; padding: 0 0 0.6rem 2rem; }
+/* "Have it" (or "Need it", or × on your own items): quiet words, not a button
+   shouting from every row. */
 .shopping__action {
-  margin-top: 0.55rem;
-  padding: 0.2rem 0.55rem;
+  margin-top: 0.45rem;
+  padding: 0.2rem 0.4rem;
   font-family: var(--font-body);
-  font-size: 0.6875rem;
-  font-weight: 600;
+  font-size: 0.75rem;
+  font-weight: 500;
   color: var(--text-faint);
   background: transparent;
-  border: 1px solid var(--line);
+  border: 1px solid transparent;
   border-radius: 999px;
   cursor: pointer;
 }
-.shopping__action:hover { color: var(--text); border-color: var(--red-bright); }
+.shopping__action:hover { color: var(--text); border-color: var(--line-strong); }
 .shopping__action--remove { font-size: 1rem; line-height: 1; padding: 0.15rem 0.5rem; }
 .shopping__from a { color: inherit; text-decoration: none; }
 .shopping__from a:hover { color: var(--red-bright); text-decoration: underline; }
@@ -2052,14 +2111,17 @@ body:has(> .timers:not([hidden])) { padding-bottom: 8rem; }
 }
 .pantry-summary__review::after { content: " ›"; }
 .pantry-summary__review:hover { text-decoration: underline; }
-.pantry {
+/* "In the cart" and "Probably have": folded lists under the shopping list. */
+.pantry,
+.cart {
   scroll-margin-top: calc(var(--header-h) + 1rem);
   margin-top: 1.5rem;
   padding: 0.75rem 1rem;
   border: 1px dashed var(--line-strong);
   border-radius: var(--radius-sm);
 }
-.pantry summary {
+.pantry summary,
+.cart summary {
   font-family: var(--font-mono);
   font-size: 0.875rem;
   font-weight: 700;
@@ -2068,7 +2130,8 @@ body:has(> .timers:not([hidden])) { padding-bottom: 8rem; }
   color: var(--text-muted);
   cursor: pointer;
 }
-.pantry[open] summary { margin-bottom: 0.5rem; }
+.pantry[open] summary,
+.cart[open] summary { margin-bottom: 0.5rem; }
 .pantry__hint { margin: 0 0 0.25rem; font-size: 0.875rem; color: var(--text-faint); }
 .pantry .shopping__name { color: var(--text-muted); }
 .aisle .ingredients__group { margin-top: 1rem; }
@@ -2373,7 +2436,10 @@ body:has(> .timers:not([hidden])) { padding-bottom: 8rem; }
   .plan-page .directions__hint,
   .plan-shared,
   .plan-add,
-  .plan-actions,
+  .plan-summary,
+  .plan-faves,
+  .plan-recipes__done,
+  .cart,
   .plan-extra,
   .classified__bar,
   .pantry-summary__review,
