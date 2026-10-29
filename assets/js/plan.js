@@ -494,7 +494,7 @@
   HawkinsPage.onLeave(() => [...leaving.keys()].forEach(commitCheck));
 
   // One line of the shopping list, with its button on the right:
-  // "Pantry" for recipe items, "Need it" in the pantry, × for your own items.
+  // "Have at home" for recipe items, "Need it" under At home, × for your own items.
   const renderRow = ({ row, amount, name }, checked, inPantry) => {
     const li = document.createElement("li");
     li.className = "shopping__row";
@@ -565,13 +565,13 @@
         toast(`${name} is back on the list`, () => { pantry.add(row.key); savePantry(); });
       });
     } else {
-      action.textContent = "Always have";
-      action.title = "Always have this. Moves it to Probably have, for every plan.";
-      action.setAttribute("aria-label", `Always have ${name}: move it to the pantry`);
+      action.textContent = "Have at home";
+      action.title = "You keep this at home. Moves it to At home, off every plan's list.";
+      action.setAttribute("aria-label", `Have ${name} at home: take it off the list`);
       action.addEventListener("click", () => {
         pantry.add(row.key);
         savePantry();
-        toast(`Moved ${name} to Probably have`, () => { pantry.delete(row.key); savePantry(); });
+        toast(`Moved ${name} to At home`, () => { pantry.delete(row.key); savePantry(); });
       });
     }
     return li;
@@ -616,7 +616,7 @@
     ui.pantry.hidden = stocked.length === 0;
     ui.pantrySummary.hidden = stocked.length === 0;
     ui.pantrySummaryText.textContent =
-      `Skipping ${stocked.length} you probably have: ${pantryNames(stocked)}.`;
+      `Skipping ${stocked.length} you have at home: ${pantryNames(stocked)}.`;
     ui.pantryCount.textContent = stocked.length;
     ui.pantryList.replaceChildren(...stocked.sort(byName).map((entry) => renderRow(entry, checked, true)));
 
@@ -735,7 +735,7 @@
   };
 
   // The list as text, for Share: what's left to get, by aisle, then what
-  // you probably have.
+  // you have at home.
   const listText = () => {
     const checked = new Set(plan.checked);
     const titles = plan.recipes.filter((r) => bySlug.has(r.slug))
@@ -748,7 +748,7 @@
       lines.push("", aisle.toUpperCase(), ...rows.map(({ amount, name }) => `- ${amount ? `${amount} ` : ""}${name}`));
     });
     const stocked = currentRows.filter((r) => pantry.has(r.key)).map((row) => describe(row));
-    if (stocked.length) lines.push("", `Probably have: ${pantryNames(stocked)}`);
+    if (stocked.length) lines.push("", `Have at home: ${pantryNames(stocked)}`);
     return lines.join("\n");
   };
 

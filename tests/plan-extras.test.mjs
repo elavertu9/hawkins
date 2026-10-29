@@ -78,7 +78,7 @@ check(`shared link loads ${await q("document.querySelectorAll('.plan-item').leng
   (await q("document.querySelectorAll('.plan-item').length")) === 2 && (await q("document.querySelectorAll('.shopping__action--remove').length")) === 3);
 // The shared text leaves out pantry items, and includes extras
 console.log(text);
-check(`copy lists pantry items under "Probably have", not in the list, and includes extras: salt=${/\bsalt\b(?! )/.test(text) && /- [^\n]*\bsalt$/m.test(text)} paper=${text.includes("paper towels")}`, !/^- [^\n]*\d \w+ salt$/m.test(text.replace(/seasoned salt/g, "")) && !/^- .*(flour|olive oil)/m.test(text) && /^Probably have: .*olive oil/m.test(text) && text.includes("paper towels"));
+check(`the shared list puts pantry items under "Have at home", not in the list, and includes extras: salt=${/\bsalt\b(?! )/.test(text) && /- [^\n]*\bsalt$/m.test(text)} paper=${text.includes("paper towels")}`, !/^- [^\n]*\d \w+ salt$/m.test(text.replace(/seasoned salt/g, "")) && !/^- .*(flour|olive oil)/m.test(text) && /^Have at home: .*olive oil/m.test(text) && text.includes("paper towels"));
 // 7. Cook link
 await q("document.querySelector('.plan-item__cook').click()"); await sleep(1500);
 check(`cook link -> ${await q("location.pathname")} cook open ${await q("document.querySelector('.cook')?.open")}`, await q("document.querySelector('.cook').open"));

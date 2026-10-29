@@ -2074,7 +2074,7 @@ body:has(> .timers:not([hidden])) { padding-bottom: 8rem; }
 }
 .shopping__row .check { padding-bottom: 0; }
 .shopping__row .shopping__from { grid-column: 1; padding: 0 0 0.6rem 2rem; }
-/* "Always have" (or "Need it", or × on your own items): quiet words, not a button
+/* "Have at home" (or "Need it", or × on your own items): quiet words, not a button
    shouting from every row. The tap area is full size, without an outline
    (which on a phone sticks around after the tap). */
 .shopping__action {
@@ -2129,7 +2129,7 @@ body:has(> .timers:not([hidden])) { padding-bottom: 8rem; }
 }
 .pantry-summary__review::after { content: " ›"; }
 .pantry-summary__review:hover { text-decoration: underline; }
-/* "In the cart" and "Probably have": folded lists under the shopping list. */
+/* "In the cart" and "At home": folded lists under the shopping list. */
 .pantry,
 .cart {
   scroll-margin-top: calc(var(--header-h) + 1rem);
