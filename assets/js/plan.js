@@ -339,8 +339,6 @@
     cartCount: $("[data-plan-cart-count]"),
     cartList: $("[data-plan-cart-list]"),
     listTools: $("[data-plan-list-tools]"),
-    menu: $("[data-plan-menu]"),
-    menuToggle: $("[data-plan-menu-toggle]"),
     itemCount: $("[data-plan-item-count]"),
     uncheck: $("[data-plan-uncheck]"),
     extraForm: $("[data-plan-extra-form]"),
@@ -631,19 +629,33 @@
     save();
   });
 
-  // The … menu: Print, Uncheck all, Clear plan.
-  const showMenu = (open) => {
-    ui.menu.hidden = !open;
-    ui.menuToggle.setAttribute("aria-expanded", String(open));
-    if (open) ui.menu.querySelector("button:not([hidden])").focus();
+  // The Share and … menus. Each opens toward whichever side has room, so on
+  // a phone it never runs off the screen.
+  const menus = [...page.querySelectorAll(".menu")].map((el) => ({
+    el,
+    toggle: el.querySelector("[data-plan-menu-toggle]"),
+    list: el.querySelector("[data-plan-menu]"),
+  }));
+  const showMenu = (menu, open) => {
+    menus.forEach((m) => {
+      const on = m === menu && open;
+      m.list.hidden = !on;
+      m.toggle.setAttribute("aria-expanded", String(on));
+    });
+    if (!menu || !open) return;
+    menu.list.classList.remove("is-start");
+    if (menu.list.getBoundingClientRect().left < 8) menu.list.classList.add("is-start");
+    menu.list.querySelector("button:not([hidden])").focus();
   };
-  ui.menuToggle.addEventListener("click", () => showMenu(ui.menu.hidden));
-  ui.menu.addEventListener("click", (event) => { if (event.target.closest("button")) showMenu(false); });
-  ui.menu.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") { showMenu(false); ui.menuToggle.focus(); }
+  menus.forEach((menu) => {
+    menu.toggle.addEventListener("click", () => showMenu(menu, menu.list.hidden));
+    menu.list.addEventListener("click", (event) => { if (event.target.closest("button")) showMenu(menu, false); });
+    menu.list.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") { showMenu(menu, false); menu.toggle.focus(); }
+    });
   });
   HawkinsPage.on(document, "pointerdown", (event) => {
-    if (!ui.menu.hidden && !event.target.closest(".menu")) showMenu(false);
+    if (!event.target.closest(".menu")) showMenu(null, false);
   });
 
   $("[data-plan-clear]").addEventListener("click", () => {
@@ -713,17 +725,20 @@
     return lines.join("\n");
   };
 
-  // Share sends the list and a link to the plan together: on a phone through
-  // its share sheet (Messages, Notes...), elsewhere by copying both.
-  $("[data-plan-share]").addEventListener("click", async () => {
-    const text = listText();
+  // Share the shopping list (with a link to the plan), or just the link, so
+  // someone can open the plan on their own phone. On a phone through its
+  // share sheet (Messages, Notes...), elsewhere by copying.
+  const share = async (what) => {
     const url = shareUrl();
+    const text = what === "list" ? listText() : "";
     if (navigator.share && matchMedia("(pointer: coarse)").matches) {
-      try { await navigator.share({ title: "Shopping list", text, url }); } catch (_) { /* cancelled */ }
+      try { await navigator.share(text ? { title: "Shopping list", text, url } : { title: "Meal plan", url }); } catch (_) { /* cancelled */ }
       return;
     }
-    toast(await copyText(`${text}\n\nThe plan: ${url}`) ? "Shopping list and plan link copied" : "Couldn't copy the list");
-  });
+    const copied = await copyText(text ? `${text}\n\nThe plan: ${url}` : url);
+    toast(!copied ? "Couldn't copy that" : text ? "Shopping list and plan link copied" : "Plan link copied");
+  };
+  page.querySelectorAll("[data-plan-share]").forEach((button) => button.addEventListener("click", () => share(button.dataset.planShare)));
 
   $("[data-plan-print]").addEventListener("click", () => print());
 

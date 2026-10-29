@@ -55,6 +55,20 @@ check(`remove -> ${await q("document.querySelectorAll('.plan-item').length")}, b
 await q("Object.defineProperty(navigator, 'share', { value: undefined, configurable: true })"); // copy instead of the share sheet
 await q("document.querySelector('[data-plan-share]').click()"); await sleep(300);
 check(`copy toast: ${await q("document.querySelector('[data-plan-toast]').textContent")}`, /copied|Couldn't/.test(await q("document.querySelector('[data-plan-toast]').textContent")));
+// Share and ••• open menus that stay on a phone's screen; Share offers the list or just the link.
+const onScreen = (sel) => q(`(() => { const r = document.querySelector('${sel}').getBoundingClientRect(); return r.width > 0 && r.left >= 0 && r.right <= innerWidth; })()`);
+await q("document.querySelector('[aria-controls=\"plan-share-menu\"]').click()"); await sleep(150);
+check(`Share menu: ${await q("[...document.querySelectorAll('#plan-share-menu button')].map(b => b.firstChild.textContent).join(' / ')")}, on screen`,
+  (await q("document.querySelectorAll('#plan-share-menu button').length")) === 2 && await onScreen("#plan-share-menu"));
+await shot("plan-share-menu");
+await q("document.querySelector('[data-plan-share=\"link\"]').click()"); await sleep(300);
+check(`Just the link: "${await q("document.querySelector('[data-plan-toast-text]').textContent")}", menu closed`,
+  /Plan link copied|Couldn't/.test(await q("document.querySelector('[data-plan-toast-text]').textContent")) && await q("document.querySelector('#plan-share-menu').hidden"));
+await q("document.querySelector('[aria-controls=\"plan-menu\"]').click()"); await sleep(150);
+check("••• menu on screen", await onScreen("#plan-menu"));
+await shot("plan-more-menu");
+await q("document.body.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }))");
+check("tapping elsewhere closes it", await q("document.querySelector('#plan-menu').hidden"));
 // Shared link with an existing plan -> banner
 await go("/plan/?r=banana-bread,whoopie-pies:2,not-a-recipe");
 check(`shared banner: ${await q("document.querySelector('[data-plan-shared]').hidden ? 'hidden' : document.querySelector('[data-plan-shared]').textContent.replace(/\\s+/g,' ').trim()")}`, !(await q("document.querySelector('[data-plan-shared]').hidden")));

@@ -74,9 +74,15 @@ description: Pick a few recipes and get one shopping list, sorted by aisle.
       <div class="section-head">
         <h2 id="shopping-title">Shopping list</h2>
         <span class="section-head__count" data-plan-item-count></span>
-        {%- comment %} One Share button; the rarely used ones wait in the … menu. {% endcomment %}
+        {%- comment %} Share (the list, or just the link); the rarely used ones wait in the … menu. {% endcomment %}
         <div class="section-head__actions" data-plan-list-tools>
-          <button class="toggle" type="button" data-plan-share>Share</button>
+          <div class="menu">
+            <button class="toggle" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="plan-share-menu" data-plan-menu-toggle>Share</button>
+            <div class="menu__list" id="plan-share-menu" data-plan-menu hidden>
+              <button type="button" data-plan-share="list">Shopping list<small>The list, with a link to the plan</small></button>
+              <button type="button" data-plan-share="link">Just the link<small>Opens this plan on their phone</small></button>
+            </div>
+          </div>
           <div class="menu">
             <button class="toggle menu__toggle" type="button" aria-label="More" aria-haspopup="true" aria-expanded="false" aria-controls="plan-menu" data-plan-menu-toggle>•••</button>
             <div class="menu__list" id="plan-menu" data-plan-menu hidden>
