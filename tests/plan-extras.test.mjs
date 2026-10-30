@@ -1,4 +1,4 @@
-// Meal plan extras: pantry items, your own items, In the cart, sharing, and undo.
+// Meal plan extras: pantry items, your own items, checked rows, sharing, and undo.
 import { BASE, open } from "./lib.mjs";
 
 const { send, ev, go, sleep, check, shot, errors, finish } = await open();
@@ -48,17 +48,20 @@ await q(`${rowSel("paper towels")}.querySelector('.shopping__action').click()`);
 check("remove extra", (await aisleOf("paper towels")) === null);
 await undo();
 check("undo remove extra", (await aisleOf("paper towels")) !== null);
-// 3. checked items move to "In the cart", and come back when unchecked
+// 3. a checked item stays in its aisle, struck through, with its buttons; unchecking puts nothing else out of place
+const order = "[...document.querySelectorAll('[data-plan-aisles] .shopping__name')].map(e => e.textContent).join('|')";
+const orderBefore = await q(order);
 await q(`${rowSel("broccoli")}.querySelector('input').click()`); await sleep(200);
-await q(`${rowSel("broccoli")}.querySelector('input').click()`); await sleep(1100);
-check("untick during the strike-through: stays on the list", (await qtyOf("broccoli")) === "1 pound" && await q("document.querySelector('[data-plan-cart]').hidden"));
-await q(`${rowSel("broccoli")}.querySelector('input').click()`); await sleep(1100);
-const cartNames = "[...document.querySelectorAll('[data-plan-cart-list] .shopping__name')].map(e => e.textContent).join(', ')";
-check(`checked -> in the cart: ${await q(cartNames)}, gone from produce`, (await q(cartNames)) === "broccoli" && (await qtyOf("broccoli")) === null);
-check("cart rows: just the ticked box", await q("[...document.querySelectorAll('[data-plan-cart-list] li')].every(li => li.querySelector('input').checked && !li.querySelector('.shopping__action'))"));
-await shot("plan-cart-pantry");
-await q("[...document.querySelectorAll('[data-plan-cart-list] li')][0].querySelector('input').click()"); await sleep(200);
-check("unchecked -> back in its aisle", (await qtyOf("broccoli")) === "1 pound" && await q("document.querySelector('[data-plan-cart]').hidden"));
+check(`checked -> stays in its aisle: ${await aisleOf("broccoli")}`, (await aisleOf("broccoli"))?.startsWith("Produce") && await q(`${rowSel("broccoli")}.querySelector('input').checked`) && (await q(order)) === orderBefore && (await qtyOf("broccoli")) === "1 pound");
+check("no In the cart section", await q("!document.querySelector('[data-plan-cart]') && !document.querySelector('.cart')"));
+check("a checked row keeps its Have at home button", await q(`${rowSel("broccoli")}.querySelector('.shopping__action').textContent === 'Have at home'`));
+await shot("plan-checked-pantry");
+await q(`${rowSel("broccoli")}.querySelector('.shopping__action').click()`); await sleep(200);
+check("a checked row can still go to At home", (await q(pantryNames)).includes("broccoli") && (await qtyOf("broccoli")) === null);
+await undo();
+check("undo puts it back, still checked, in the same place", await q(`${rowSel("broccoli")}.querySelector('input').checked`) && (await q(order)) === orderBefore);
+await q(`${rowSel("broccoli")}.querySelector('input').click()`); await sleep(200);
+check("unchecked -> same place", !(await q(`${rowSel("broccoli")}.querySelector('input').checked`)) && (await q(order)) === orderBefore);
 await shot("plan2-mobile");
 // 6. recipe links
 check(`from links: ${await q(`${rowSel("garlic")}.querySelector('.shopping__from a').getAttribute('href')`)}`, (await q(`${rowSel("garlic")}.querySelector('.shopping__from a').getAttribute('href')`)) === "/recipes/beef-and-broccoli/#ingredients-title");
@@ -71,8 +74,10 @@ await undo();
 check(`undo clear: ${await q("document.querySelectorAll('.plan-item').length")} recipes, extras ${await q("document.querySelectorAll('[data-plan-aisles] .shopping__action--remove').length")}`, (await q("document.querySelectorAll('.plan-item').length")) === 2 && (await q("document.querySelectorAll('[data-plan-aisles] .shopping__action--remove').length")) === 3);
 // Share: the list and the plan link together, and the link round-trips with extras
 await q("Object.defineProperty(navigator, 'share', { value: undefined, configurable: true })"); // copy instead of the share sheet
+await q(`${rowSel("broccoli")}.querySelector('input').click()`); await sleep(200); // checked items are left out of the shared list
 await send("Runtime.evaluate", { expression: "document.querySelector('[data-plan-share]').click()", userGesture: true }); await sleep(400);
 const text = await q("navigator.clipboard.readText()");
+check("the shared list leaves out what's checked, and keeps the rest", !/^- .*broccoli/m.test(text) && /^- .*ground beef/m.test(text));
 const url = text.match(/^The plan: (\S+)$/m)?.[1];
 console.log("share url:", url);
 await q("localStorage.removeItem('hawkins:plan')");

@@ -335,9 +335,6 @@
     faves: $("[data-plan-faves]"),
     favesList: $("[data-plan-faves-list]"),
     aisles: $("[data-plan-aisles]"),
-    cart: $("[data-plan-cart]"),
-    cartCount: $("[data-plan-cart-count]"),
-    cartList: $("[data-plan-cart-list]"),
     listTools: $("[data-plan-list-tools]"),
     itemCount: $("[data-plan-item-count]"),
     uncheck: $("[data-plan-uncheck]"),
@@ -482,21 +479,10 @@
     renderFold();
   };
 
-  const LEAVE_MS = 900;
-  const leaving = new Map(); // key -> timer, for items on their way to the cart
-  const commitCheck = (key) => {
-    clearTimeout(leaving.get(key));
-    leaving.delete(key);
-    plan.checked = [...new Set([...plan.checked, key])];
-    save();
-  };
-  // Leaving the page mid-strike still counts the tick.
-  HawkinsPage.onLeave(() => [...leaving.keys()].forEach(commitCheck));
-
   // One line of the shopping list, with its button on the right:
   // "Have at home" for recipe items, "Need it" under At home, × for your own items.
-  // where: "list" (an aisle), "cart" (In the cart: just the ticked box, to
-  // untick a slip), or "pantry" (At home: nothing to tick, just Need it).
+  // where: "list" (an aisle; a ticked row strikes through and stays put, buttons
+  // and all) or "pantry" (At home: nothing to tick, just Need it).
   const renderRow = ({ row, amount, name }, checked, where) => {
     const li = document.createElement("li");
     li.className = "shopping__row";
@@ -510,26 +496,13 @@
         <span class="check__box" aria-hidden="true"></span>
         ${text}
       </label>
-      ${where === "list" ? `<button class="shopping__action" type="button"></button>` : ""}
+      <button class="shopping__action" type="button"></button>
       <span class="shopping__from"></span>`;
     const box = li.querySelector("input");
     if (box) box.checked = checked.has(row.key);
     box?.addEventListener("change", () => {
-      // Checking an item on the list strikes it through for a moment before
-      // it moves to "In the cart", so you see the tap land (and can untick a
-      // slip before it goes). Unticking in the cart puts it straight back.
-      if (box.checked && !checked.has(row.key)) {
-        li.classList.add("is-leaving");
-        leaving.set(row.key, setTimeout(() => commitCheck(row.key), LEAVE_MS));
-        return;
-      }
-      if (leaving.has(row.key)) {
-        clearTimeout(leaving.get(row.key));
-        leaving.delete(row.key);
-        li.classList.remove("is-leaving");
-        return;
-      }
-      plan.checked = plan.checked.filter((k) => k !== row.key);
+      // A row never moves when you tap it: a ticked one strikes through in its aisle.
+      plan.checked = box.checked ? [...new Set([...plan.checked, row.key])] : plan.checked.filter((k) => k !== row.key);
       save();
     });
     const qty = li.querySelector(".qty");
@@ -552,9 +525,7 @@
     }
 
     const action = li.querySelector(".shopping__action");
-    if (!action) {
-      // In the cart: nothing beside the box.
-    } else if (row.extra) {
+    if (row.extra) {
       action.innerHTML = "&times;";
       action.classList.add("shopping__action--remove");
       action.setAttribute("aria-label", `Remove ${name}`);
@@ -596,11 +567,11 @@
     const toBuy = described.filter(({ row }) => !pantry.has(row.key));
     const stocked = described.filter(({ row }) => pantry.has(row.key));
     const byName = (a, b) => a.name.localeCompare(b.name);
-    // Checked items leave their aisle for "In the cart", so the list shrinks as you shop.
+    // Checked items stay in their aisle, struck through; they only add to the count.
     const inCart = toBuy.filter(({ row }) => checked.has(row.key));
 
     const groups = AISLE_ORDER.map((aisle) => [aisle, toBuy
-      .filter(({ row }) => row.aisle === aisle && !checked.has(row.key))
+      .filter(({ row }) => row.aisle === aisle)
       .sort(byName)])
       .filter(([, rows]) => rows.length);
 
@@ -616,10 +587,6 @@
       section.append(heading, list);
       return section;
     }));
-
-    ui.cart.hidden = inCart.length === 0;
-    ui.cartCount.textContent = inCart.length;
-    ui.cartList.replaceChildren(...inCart.sort(byName).map((entry) => renderRow(entry, checked, "cart")));
 
     ui.pantry.hidden = stocked.length === 0;
     ui.pantrySummary.hidden = stocked.length === 0;

@@ -165,7 +165,8 @@
 
 [hidden] { display: none !important; }
 
-.visually-hidden {
+.visually-hidden,
+.resume:not([hidden]) + .resume .resume__title { /* the trip card under the recipes card shares its heading */
   position: absolute;
   width: 1px;
   height: 1px;
@@ -406,11 +407,18 @@ p { margin: 0; }
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  white-space: nowrap;
   color: var(--text-muted);
   text-decoration: none;
   border-radius: var(--radius-sm);
 }
 .site-nav a:hover { color: var(--text); }
+/* A new group of links (Recipes · Plan │ Packing): a thin line before it. */
+.site-nav .site-nav__group-start {
+  margin-left: 0.25rem;
+  padding-left: 0.25rem;
+  border-left: 1px solid var(--line-strong);
+}
 .site-nav a[aria-current] {
   color: var(--text);
   text-decoration: underline;
@@ -1872,6 +1880,8 @@ body:has(> .timers:not([hidden])) { padding-bottom: 8rem; }
   box-shadow: 0 0 10px var(--red-glow);
 }
 .plan-link__count.is-bumped { animation: plan-bump 0.4s ease; }
+/* Packing's percent is quieter than Plan's count: a progress note, not a to-do. */
+.plan-link__count--quiet { color: var(--text-muted); background: transparent; box-shadow: inset 0 0 0 1px var(--line-strong); }
 
 /* ---------- Cooking: what you've started (cooking.js) ---------- */
 /* In the header, next to Plan: a glowing dot and "Cooking". */
@@ -2082,6 +2092,11 @@ body:has(> .timers:not([hidden])) { padding-bottom: 8rem; }
   border-radius: 1.25rem;
 }
 .home-hero + .container .resume { margin-top: clamp(1.5rem, 4vw, 2.5rem); }
+/* The trip you're packing for sits under the recipes' card, which has the heading. */
+.resume:not([hidden]):has(+ .resume:not([hidden])) { margin-bottom: 0.75rem; }
+.resume:not([hidden]) + .resume { margin-top: 0; }
+/* A trip name can run long: it wraps instead of cutting off. */
+.resume .cooking-row__title { white-space: normal; }
 
 /* On a recipe card: how far you've got. */
 .card__progress {
@@ -2434,13 +2449,6 @@ body:has(> .timers:not([hidden])) { padding-bottom: 8rem; }
 .shopping__from a { color: inherit; text-decoration: none; }
 .shopping__from a:hover { color: var(--red-bright); text-decoration: underline; }
 .shopping__row:has(input:checked) .shopping__from { opacity: 0.6; }
-/* Just checked: struck through for a moment, then off to "In the cart". */
-.shopping__row.is-leaving { animation: leave-row 0.9s ease-in forwards; }
-.shopping__row.is-leaving .check__text { text-decoration: line-through; text-decoration-color: var(--text-faint); }
-@keyframes leave-row { 0%, 60% { opacity: 1; } 100% { opacity: 0.35; } }
-@media (prefers-reduced-motion: reduce) {
-  .shopping__row.is-leaving { animation: none; opacity: 0.6; }
-}
 
 .pantry-summary {
   margin: -0.25rem 0 1.25rem;
@@ -2465,17 +2473,15 @@ body:has(> .timers:not([hidden])) { padding-bottom: 8rem; }
 }
 .pantry-summary__review::after { content: " ›"; }
 .pantry-summary__review:hover { text-decoration: underline; }
-/* "In the cart" and "At home": folded lists under the shopping list. */
-.pantry,
-.cart {
+/* "At home": a folded list under the shopping list. */
+.pantry {
   scroll-margin-top: calc(var(--header-h) + 1rem);
   margin-top: 1.5rem;
   padding: 0.75rem 1rem;
   border: 1px dashed var(--line-strong);
   border-radius: var(--radius-sm);
 }
-.pantry summary,
-.cart summary {
+.pantry summary {
   font-family: var(--font-mono);
   font-size: 0.875rem;
   font-weight: 700;
@@ -2484,8 +2490,7 @@ body:has(> .timers:not([hidden])) { padding-bottom: 8rem; }
   color: var(--text-muted);
   cursor: pointer;
 }
-.pantry[open] summary,
-.cart[open] summary { margin-bottom: 0.5rem; }
+.pantry[open] summary { margin-bottom: 0.5rem; }
 .pantry__hint { margin: 0 0 0.25rem; font-size: 0.875rem; color: var(--text-faint); }
 .pantry .shopping__name { color: var(--text-muted); }
 /* At home rows have nothing to tick: the name lines up with the hint. */
@@ -2529,7 +2534,8 @@ body:has(> .timers:not([hidden])) { padding-bottom: 8rem; }
   transition: opacity 0.2s, transform 0.2s, visibility 0s 0.2s;
 }
 .plan-toast.is-shown { opacity: 1; visibility: visible; transform: translate(-50%, 0); transition: opacity 0.2s, transform 0.2s; }
-.plan-toast [data-plan-toast-text] {
+.plan-toast [data-plan-toast-text],
+.plan-toast [data-pack-toast-text] {
   flex: 1;
   min-width: 0;
   display: -webkit-box;
@@ -2561,11 +2567,231 @@ body:has(> .timers:not([hidden])) { padding-bottom: 8rem; }
   .shopping .section-head__actions { width: 100%; margin-left: 0; }
 }
 @media (max-width: 30rem) {
-  .site-nav a { padding: 0.5rem 0.5rem; letter-spacing: 0.04em; }
-  /* Room for Plan's count and Cooking on a small phone (375px). */
-  .site-header__inner { gap: 0.5rem; }
+  /* Three sections fit a small phone (360px) at 13px. Plan's count, Packing's
+     percent or the Cooking pot need the tighter type, so only then does it shrink. */
+  .site-header:has([data-plan-count]:not([hidden]), [data-packing-count]:not([hidden]), [data-cooking]:not([hidden])) {
+    --nav-pad: 0.15rem; --nav-size: 0.75rem; --nav-track: 0.02em; --brand-size: 0.875rem; --brand-track: 0.04em;
+    --header-gap: 0.375rem; --pot-pad: 0.25rem; --count-min: 1.2rem; --count-pad: 0.3rem; --count-size: 0.6875rem;
+  }
+  .site-nav a { padding: 0.5rem var(--nav-pad, 0.3rem); font-size: var(--nav-size, 0.8125rem); letter-spacing: var(--nav-track, 0.04em); }
+  .brand { font-size: var(--brand-size, 1.25rem); letter-spacing: var(--brand-track, 0.14em); }
+  .site-header__inner { gap: var(--header-gap, 0.5rem); }
   .site-nav ul { gap: 0.125rem; }
-  .plan-link { gap: 0.3rem; }
+  .site-nav .site-nav__group-start { margin-left: 0.125rem; padding-left: 0.125rem; }
+  .plan-link { gap: 0.25rem; }
+  .plan-link__count { min-width: var(--count-min, 1.35rem); padding-inline: var(--count-pad, 0.35rem); font-size: var(--count-size, 0.75rem); }
+  .cooking-link { padding-inline: var(--pot-pad, 0.4rem); }
+}
+
+/* ---------- Packing lists (see packing.js) ---------- */
+.pack-layout { display: grid; gap: clamp(2rem, 5vw, 3rem); align-items: start; }
+/* Let long lines (the folded trip summary) shorten instead of widening the page. */
+.pack-layout > * { min-width: 0; }
+.pack-setup__done { margin-left: auto; }
+.pack-setup .section-head { margin-bottom: 1rem; }
+.pack-setup .suggest__label { margin: 1.25rem 0 0.5rem; }
+.pack-setup .pack-setup__presets-label { margin-top: 0; }
+/* Quick start: a row per trip (they're links, so they don't look like the
+   kit toggles), then a dashed rule: "or build your own". */
+.pack-quick { display: grid; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+.pack-quick__trip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-height: 2.75rem;
+  padding: 0.5rem 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+  text-decoration: none;
+}
+.pack-quick__trip + .pack-quick__trip { border-top: 1px dashed var(--line); }
+.pack-quick__trip .chip__count { font-weight: 400; color: var(--text-muted); background: none; }
+.pack-quick__trip .chip__count::after { content: " ›"; color: var(--text-faint); }
+.pack-quick__trip:hover { color: var(--hover-ink); background: var(--surface-2); }
+.pack-quick__trip:hover .chip__count::after { color: var(--red-bright); }
+.pack-quick__trip:focus-visible { outline: 2px solid var(--red-bright); outline-offset: -2px; }
+.pack-setup__or { display: flex; align-items: center; gap: 0.75rem; margin: 1.25rem 0; font-size: 0.8125rem; color: var(--text-faint); }
+.pack-setup__or::before,
+.pack-setup__or::after { content: ""; flex: 1; border-top: 1px dashed var(--line-strong); }
+.pack-setup__hint { margin: 1.25rem 0 0; font-size: 0.875rem; color: var(--text-muted); }
+/* Getting there / Weather / Plans: a small heading over each row of kits. */
+.pack-groups { display: grid; gap: 0.9rem; margin-top: 0.75rem; }
+.pack-setup .pack-group__label { margin: 0 0 0.45rem; font-size: 0.6875rem; }
+/* Start a new trip: quiet words. */
+.pack-setup__tools { margin-top: 0.75rem; }
+.pack-setup__new {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  padding: 0 0.2rem;
+  font: inherit;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.pack-setup__new:hover { color: var(--red-bright); text-decoration: underline; }
+.pack-setup__new:focus-visible { outline: 2px solid var(--red-bright); border-radius: 6px; }
+
+/* How long: "3 days" between a − and a +. */
+.pack-days { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.75rem; }
+.pack-days__label { font-weight: 600; color: var(--text-muted); }
+.pack-days .stepper button { width: 2.75rem; height: 2.75rem; }
+.pack-days .stepper__value { min-width: 4.75rem; font-size: 1rem; }
+
+/* How much is packed: a thin bar under the heading. */
+.pack-bar {
+  height: 6px;
+  margin: -0.5rem 0 1.25rem;
+  overflow: hidden;
+  background: var(--line-strong);
+  border-radius: 3px;
+}
+.pack-bar__fill {
+  display: block;
+  height: 100%;
+  background: var(--red-bright);
+  border-radius: 3px;
+  box-shadow: 0 0 10px var(--red-glow);
+  transition: width 0.3s ease;
+}
+/* The progress line sits on its own line, so "· 6 skipped" appearing never
+   makes it wrap and push the checklist down. */
+.pack-list .section-head__count { flex-basis: 100%; margin-top: -0.25rem; }
+
+/* One card per kit: its name, how many are packed, and the list. A kit that's
+   all packed when the page opens is folded down to its name with a ✓; tap the
+   name to open it. */
+.pack-kits { display: grid; gap: 0.75rem; }
+.pack-kit {
+  padding: 0 1rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.pack-kit__title { margin: 0; }
+.pack-kit__head {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  min-height: 3rem;
+  padding: 0.5rem 0;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-align: left;
+  text-transform: uppercase;
+  color: var(--red-bright);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.pack-kit__head:focus-visible { outline: 2px solid var(--red-bright); outline-offset: 2px; border-radius: 6px; }
+.pack-kit__name { flex: 1; min-width: 0; }
+.pack-kit__count { font-weight: 400; letter-spacing: 0.04em; color: var(--text-faint); }
+.pack-kit__tick { display: none; color: var(--amber); }
+.pack-kit__caret { flex: none; color: var(--text-faint); transition: transform 0.15s; }
+.pack-kit__head[aria-expanded="false"] .pack-kit__caret { transform: rotate(-90deg); }
+.pack-kit.is-complete .pack-kit__tick { display: inline; }
+.pack-kit.is-complete .pack-kit__head { color: var(--text-muted); }
+.pack-kit__list { padding-bottom: 0.5rem; }
+/* A kit's tips (Flying: TSA rules), folded under its list. */
+.pack-tips { margin: 0 0 0.75rem; padding-top: 0.6rem; border-top: 1px dashed var(--line); font-size: 0.875rem; color: var(--text-muted); }
+.pack-tips summary { font-family: var(--font-mono); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-faint); cursor: pointer; }
+.pack-tips summary:hover { color: var(--text-muted); }
+.pack-tips ul { margin: 0.5rem 0 0; padding-left: 1.1rem; }
+.pack-tips li + li { margin-top: 0.3rem; }
+.pack-tips__links { margin: 0.6rem 0 0; color: var(--text-faint); }
+.pack-tips__links a { color: var(--red-bright); }
+/* A kit you just added glows for a moment (packing.js adds and removes is-new). */
+.pack-kit.is-new { animation: pack-kit-glow 1.5s ease-out; }
+@keyframes pack-kit-glow {
+  0%, 35% { border-color: var(--red-bright); box-shadow: 0 0 0 1px var(--red-bright), 0 0 22px var(--red-glow); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pack-kit.is-new { animation: none; }
+}
+
+/* Rows are full-width tap targets. A row's state is in its box and its text,
+   never in an extra word, so nothing can wrap or move when it changes:
+   packed is the red ✓ and a line through the text; skipped (not taking it) is
+   a slashed circle and faded text. */
+.pack-row .check { align-items: center; min-height: 2.75rem; padding: 0.4rem 0; }
+.pack-row .check__box { margin-top: 0; }
+.pack-row .shopping__action { align-self: center; margin-top: 0; }
+/* Bring and Skip take the same room, so the name never wraps differently. */
+.pack-row__skip { min-width: 3.25rem; text-align: right; }
+.pack-row.is-skipped .check__box {
+  position: relative;
+  overflow: hidden;
+  border-color: var(--text-faint);
+  border-style: solid;
+  border-radius: 50%;
+}
+.pack-row.is-skipped .check__box::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom right, transparent calc(50% - 0.75px), var(--text-faint) calc(50% - 0.75px), var(--text-faint) calc(50% + 0.75px), transparent calc(50% + 0.75px));
+}
+.pack-row.is-skipped .check:hover .check__box { border-color: var(--red-bright); }
+.pack-row.is-skipped .pack-row__name,
+.pack-row.is-skipped .qty { color: var(--text-faint); }
+
+/* Extras' last row: "+ Add an item…", typed straight into the list. */
+.pack-add {
+  display: grid;
+  grid-template-columns: 1.25rem minmax(0, 1fr);
+  gap: 0.75rem;
+  align-items: center;
+  min-height: 2.75rem;
+  padding: 0.4rem 0;
+}
+.pack-add__plus {
+  font-family: var(--font-mono);
+  font-size: 1.125rem;
+  font-weight: 700;
+  line-height: 1;
+  text-align: center;
+  color: var(--text-faint);
+}
+.pack-add:focus-within .pack-add__plus { color: var(--red-bright); }
+.pack-add__input {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  min-width: 0;
+  padding: 0.2rem 0;
+  font-family: var(--font-body);
+  font-size: 1rem; /* 16px keeps iOS from zooming in on focus */
+  color: var(--text);
+  caret-color: var(--red-bright);
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+}
+.pack-add__input::placeholder { color: var(--text-faint); }
+.pack-add__input:focus-visible { outline: 2px solid var(--red-bright); outline-offset: 2px; border-radius: 6px; }
+
+.pack-credit { margin: 1.5rem 0 0; font-size: 0.8125rem; color: var(--text-faint); }
+.pack-credit a { color: inherit; }
+.pack-credit a:hover { color: var(--red-bright); }
+
+@media (min-width: 56rem) {
+  .pack-layout { grid-template-columns: minmax(18rem, 24rem) minmax(0, 1fr); }
+  /* The setup stays in view beside the checklist; if it's taller than the
+     window it scrolls inside itself instead of being cut off. */
+  .pack-setup {
+    position: sticky;
+    top: calc(var(--header-h) + env(safe-area-inset-top, 0px) + 1.5rem);
+    max-height: calc(100vh - var(--header-h) - env(safe-area-inset-top, 0px) - 3rem);
+    overflow-y: auto;
+    scrollbar-width: thin;
+  }
 }
 
 /* ---------- Classified recipes (see classified.js) ---------- */
@@ -2813,7 +3039,6 @@ body:has(> .timers:not([hidden])) { padding-bottom: 8rem; }
   .plan-summary,
   .plan-faves,
   .plan-recipes__done,
-  .cart,
   .plan-extra,
   .classified__bar,
   .pantry-summary__review,

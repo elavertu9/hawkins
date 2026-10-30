@@ -109,12 +109,6 @@ description: Pick a few recipes and get one shopping list, sorted by aisle.
 
       <div class="shopping__aisles" data-plan-aisles></div>
 
-      {%- comment %} Checked items leave their aisle and wait here, like Reminders' Completed. {% endcomment %}
-      <details class="cart" data-plan-cart hidden>
-        <summary>In the cart <span class="chip__count" data-plan-cart-count></span></summary>
-        <ul class="checklist" data-plan-cart-list></ul>
-      </details>
-
       <details class="pantry" data-plan-pantry hidden>
         <summary>At home <span class="chip__count" data-plan-pantry-count></span></summary>
         <p class="pantry__hint">Left off your list because you have them. Running low? Tap <strong>Need it</strong>.</p>

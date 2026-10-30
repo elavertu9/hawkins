@@ -16,7 +16,9 @@ automatically on every push to `main`. There is no build step to run yourself.
 | `_includes/` | Shared pieces: head, header, footer, recipe card, recipe image, ingredient list, duration formatter. |
 | `assets/css/main.css` | All styles, including colors and fonts as variables at the top. |
 | `plan/index.html` | The meal plan page: pick recipes, get one shopping list sorted by aisle. |
-| `assets/js/` | `recipe.js` for checklists and Keep screen on; `cook.js` for cook mode; `timers.js` for kitchen timers, which follow you to every page; `plan.js` for the meal plan and shopping list; `lights.js` for the home page lights; `upside-down.js` for the easter egg; `page.js` (page changes, plus shared storage and screen-on helpers) and `lib/turbo.min.js` for in-place page changes (see below). |
+| `_data/packing.yml` | The packing lists: kits and their items, and the preset trips. See "Packing lists" below. |
+| `packing/index.html` | The packing page: trip setup and the checklist. |
+| `assets/js/` | `recipe.js` for checklists and Keep screen on; `cook.js` for cook mode; `timers.js` for kitchen timers, which follow you to every page; `plan.js` for the meal plan and shopping list; `packing.js` for the packing lists (only loaded on `/packing/`); `packing-status.js` for the Packing badge in the header and the trip on the home page (every page); `lights.js` for the home page lights; `upside-down.js` for the easter egg; `page.js` (page changes, plus shared storage and screen-on helpers) and `lib/turbo.min.js` for in-place page changes (see below). |
 | `assets/images/recipes/` | Recipe photos. |
 | `tests/` | Browser tests for the site's features. `tests/run.sh` runs them. |
 | `scripts/` | Tools: `add-photo.sh` for recipe photos, `classified.rb` (run by `./classified.sh`), and `hooks/pre-commit`. |
@@ -121,14 +123,38 @@ Photos get a light grade and vignette in the stylesheet (`.is-photo` in `main.cs
 so they sit in the dark theme. Recipes without an `image:` show the "Missing"
 placeholder.
 
-## Add a new section (e.g. packing lists)
+## Packing lists
 
-1. In `_data/sections.yml`, the `packing` entry is already there with `status: soon`.
+Everything is in `_data/packing.yml`: edit it and the page follows. It has `kits:`
+(core kits are always on; the rest are trip kits you toggle) and `presets:` (links
+like `/packing/?d=7&k=flying,warm,swim`). The file's header comment lists the item fields:
+
+- `qty: { per_day, plus, per_week, max }` shows "x5" next to the item: `min(max, max(1, ceil(days * per_day) + plus + per_week * floor(days / 7)))`.
+  Underwear and socks are a pair a day, one spare, and one more spare a week. `{ plus: 2 }` alone is a fixed 2 (Extra socks).
+- `task: true` makes it a to-do, not a thing to pack.
+- `when: "cold+dressy"` shows it only when all of those kits are on.
+- An item can be in several kits with the same `id` (sunscreen); it shows once, under the first kit that's on.
+- A kit can have `tips: { title, items, links }`: a short note, folded under its list (Flying has the TSA rules).
+- Each trip kit has a `group:` (Getting there, Weather, Plans): the heading its button sits under in the setup.
+
+The trip is saved in the browser under `hawkins:packing` and never expires; "Start a new
+trip" clears it, with Undo. Each
+item is to pack, packed, or skipped ("not taking it"), so the saved trip has `checked` and `skipped` (an item is in at most one), `extras`
+(your own items, the Extras kit at the end), and `setupFolded` (the setup stays open until
+you tap Hide). `packing.js` also saves `progress: { packed, skipped, total }` each time it
+draws the list; `packing-status.js` shows it on other pages as a percentage on the Packing
+link and as "Pick up where you left off" on the home page, until everything is decided.
+
+## Add a new section (e.g. a watchlist)
+
+1. In `_data/sections.yml`, the section's entry is already there with `status: soon`.
    That shows it on the home page as "Coming soon".
-2. When it's ready, add a `packing` collection in `_config.yml` the same way
-   `recipes` is set up, create `_packing/` with items and a `packing/index.html`
-   listing page, and add a layout for packing items.
+2. When it's ready, create its page (like `plan/index.html` and `packing/index.html`), or
+   add a collection in `_config.yml` the same way `recipes` is set up, with a layout for its items.
 3. Change its status to `live`. It then appears in the header nav and links from the home page.
+   If the title is long, add `nav:` with a shorter name for the header (Packing Lists shows as "Packing").
+   The header puts the Plan link after the section marked `group_with_plan: true` (Recipes), and
+   each live section after the first starts a new group, set off by a thin divider.
 
 ## Scripts and page changes (Turbo)
 

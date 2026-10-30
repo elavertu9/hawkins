@@ -1,0 +1,234 @@
+# Packing lists (see packing/index.html and assets/js/packing.js).
+# Adapted from SmarterTravel's "Ultimate Packing List",
+# https://www.smartertravel.com/the-ultimate-packing-list/, trimmed to what we pack.
+#
+# kits: in this order on the page. A core kit is always on; the others are
+#   trip kits that get toggled. An item with the same `id` can be in several kits:
+#   it shows once, under the first active kit in file order, and its checked state
+#   is keyed by id (so keep the `item` text the same), and so is whether it's skipped.
+# Item fields:
+#   qty:  { per_day, plus, per_week, max }
+#         how many: min(max, max(1, ceil(days * per_day) + plus + per_week * floor(days / 7)))
+#   task: true                     a to-do, not a thing to pack
+#   when: "cold+dressy"            shows only when ALL of these kits are on
+# Kit fields:
+#   group: Weather                 which heading a trip kit's button sits under in the setup
+#   tips: { title, items, links }  a short folded note under the kit's list (TSA rules)
+
+kits:
+  # ---------- Core kits ----------
+  - id: clothes
+    name: Clothes
+    core: true
+    items:
+      - { id: underwear, item: Underwear, qty: { per_day: 1, plus: 1, per_week: 1 } }
+      - { id: socks, item: Socks, qty: { per_day: 1, plus: 1, per_week: 1 } }
+      - { id: t-shirts, item: T-shirts, qty: { per_day: 1, plus: 1 } }
+      - { id: pants, item: Pants / jeans, qty: { per_day: 0.34 } }
+      - { id: sweatshirt, item: Sweatshirt }
+      - { id: sleepwear, item: Sleepwear }
+      - { id: sneakers, item: Sneakers }
+      - { id: belt, item: Belt }
+      - { id: laundry-bag, item: Laundry bag }
+
+  - id: toiletries
+    name: Toiletries
+    core: true
+    items:
+      - { id: toothbrush, item: Toothbrush }
+      - { id: toothpaste, item: Toothpaste }
+      - { id: floss, item: Floss }
+      - { id: deodorant, item: Deodorant }
+      - { id: body-wash, item: Body wash }
+      - { id: shampoo, item: Shampoo }
+      - { id: conditioner, item: Conditioner }
+      - { id: hairbrush, item: Hairbrush }
+      - { id: face-wash, item: Face wash }
+      - { id: moisturizer, item: Moisturizer }
+      - { id: lip-balm, item: Lip balm }
+      - { id: shaving-kit, item: Shaving kit }
+      - { id: nail-clippers, item: Nail clippers }
+      - { id: tweezers, item: Tweezers }
+      - { id: hand-sanitizer, item: Hand sanitizer }
+      - { id: bandages, item: Bandages }
+      - { id: medications, item: Medications }
+      - { id: glasses, item: Glasses & case }
+
+  - id: tech
+    name: Tech
+    core: true
+    items:
+      - { id: phone, item: Phone }
+      - { id: phone-charger, item: Phone charger }
+      - { id: power-bank, item: Power bank }
+      - { id: headphones, item: Headphones }
+      - { id: laptop, item: Laptop / tablet }
+      - { id: laptop-charger, item: Laptop charger }
+
+  - id: wallet
+    name: Wallet & keys
+    core: true
+    items:
+      - { id: wallet, item: Wallet & ID }
+      - { id: credit-cards, item: Credit cards }
+      - { id: cash, item: Cash }
+      - { id: insurance-card, item: Insurance card }
+      - { id: sunglasses, item: Sunglasses }
+      - { id: house-keys, item: House keys }
+
+  - id: before
+    name: Before you go
+    core: true
+    items:
+      - { id: thermostat, item: Set the thermostat, task: true }
+      - { id: take-out-trash, item: Take out the trash, task: true }
+      - { id: toss-food, item: Toss food that'll spoil, task: true }
+      - { id: lock-up, item: Lock doors & windows, task: true }
+
+  # ---------- Trip kits ----------
+  - id: flying
+    name: Flying
+    core: false
+    group: Getting there
+    items:
+      - { id: boarding-pass, item: Boarding pass / itinerary }
+      - { id: travel-pillow, item: Travel pillow }
+      - { id: eye-mask, item: Eye mask }
+      - { id: earplugs, item: Earplugs }
+      - { id: empty-water-bottle, item: Empty water bottle }
+      - { id: snacks, item: Snacks }
+      - { id: gum, item: Gum }
+      - { id: book, item: Book / e-reader }
+      - { id: disinfecting-wipes, item: Disinfecting wipes }
+      - { id: tissues, item: Tissues }
+      - { id: carry-on-clothes, item: Change of clothes }
+      - { id: check-in-online, item: Check in online, task: true }
+    # Checked against tsa.gov, October 2026. The links are the source of truth.
+    tips:
+      title: TSA rules, briefly
+      items:
+        - "Liquids in your carry-on: 3.4 oz (100 ml) or less each, all in one quart-size clear bag, one bag per person (the 3-1-1 rule). Anything bigger goes in a checked bag."
+        - "Medications and baby formula or food can be bigger. Tell the officer at screening."
+        - "Power banks and spare lithium batteries go in your carry-on, never a checked bag."
+        - "Domestic flights need a REAL ID or a passport."
+        - "Keep the liquids bag where you can grab it: screening goes faster with it out."
+      links:
+        - { text: TSA liquids rule, url: "https://www.tsa.gov/travel/security-screening/liquids-aerosols-gels-rule" }
+        - { text: "TSA: What can I bring?", url: "https://www.tsa.gov/travel/security-screening/whatcanibring/all" }
+
+  - id: car
+    name: Car
+    core: false
+    group: Getting there
+    items:
+      - { id: car-charger, item: Car charger & cable }
+      - { id: snacks, item: Snacks }
+      - { id: water, item: Water }
+      - { id: offline-maps, item: Download offline maps, task: true }
+
+  - id: international
+    name: International
+    core: false
+    group: Getting there
+    items:
+      - { id: passport, item: Passport }
+      - { id: passport-copy, item: Passport copy }
+      - { id: plug-adapter, item: Plug adapter }
+      - { id: money-belt, item: Money belt }
+      - { id: passport-valid, item: Check passport valid 6+ months out, task: true }
+      - { id: tell-bank, item: Tell your bank you're traveling, task: true }
+
+  - id: warm
+    name: Warm
+    core: false
+    group: Weather
+    items:
+      - { id: shorts, item: Shorts, qty: { per_day: 0.5 } }
+      - { id: sandals, item: Sandals }
+      - { id: sunscreen, item: Sunscreen }
+      - { id: hat, item: Hat }
+
+  # A swimsuit for the beach OR the pool.
+  - id: swim
+    name: Beach / Pool
+    core: false
+    group: Plans
+    items:
+      - { id: swimsuit, item: Swimsuit }
+      - { id: cover-up, item: Cover-up }
+      - { id: sandals, item: Sandals }
+      - { id: beach-tote, item: Collapsible tote }
+      - { id: sunscreen, item: Sunscreen }
+      - { id: insect-repellent, item: Insect repellent }
+      - { id: extra-socks, item: Extra socks, qty: { plus: 2 } }
+
+  - id: cold
+    name: Cold
+    core: false
+    group: Weather
+    items:
+      - { id: coat, item: Coat }
+      - { id: gloves, item: Gloves }
+      - { id: scarf, item: Scarf }
+      - { id: winter-hat, item: Winter hat }
+      - { id: sweaters, item: Sweaters }
+      - { id: overcoat, item: Overcoat, when: "cold+dressy" }
+
+  - id: snow
+    name: Snow
+    core: false
+    group: Weather
+    items:
+      - { id: snow-boots, item: Snow boots }
+      - { id: hand-warmers, item: Hand warmers }
+      - { id: extra-socks, item: Extra socks, qty: { plus: 2 } }
+      - { id: sunscreen, item: Sunscreen }
+
+  - id: hiking
+    name: Hiking
+    core: false
+    group: Plans
+    items:
+      - { id: hiking-boots, item: Hiking boots }
+      - { id: extra-socks, item: Extra socks, qty: { plus: 2 } }
+      - { id: daypack, item: Daypack }
+      - { id: water-bottle, item: Water bottle }
+      - { id: insect-repellent, item: Insect repellent }
+      - { id: first-aid-ointment, item: First aid ointment }
+      - { id: sunscreen, item: Sunscreen }
+
+  - id: dressy
+    name: Dressy
+    core: false
+    group: Plans
+    items:
+      - { id: suit, item: Suit / blazer }
+      - { id: dress-shirts, item: Dress shirts }
+      - { id: undershirts, item: Undershirts }
+      - { id: dress-pants, item: Dress pants }
+      - { id: tie, item: Tie }
+      - { id: dress-shoes, item: Dress shoes }
+
+  - id: rain
+    name: Rain
+    core: false
+    group: Weather
+    items:
+      - { id: umbrella, item: Umbrella }
+      - { id: rain-jacket, item: Rain jacket }
+      - { id: extra-socks, item: Extra socks, qty: { plus: 2 } }
+
+  - id: laundry
+    name: Laundry
+    core: false
+    group: Plans
+    items:
+      - { id: laundry-kit, item: "Laundry kit (detergent pods, stain stick)" }
+
+# Links on the page: a trip already set up. Each is /packing/?d=<days>&k=<kits>.
+presets:
+  - { id: weekend-drive, name: Weekend drive, days: 2, kits: [car] }
+  - { id: beach-week, name: Beach week, days: 7, kits: [flying, warm, swim] }
+  - { id: international, name: International, days: 7, kits: [flying, international] }
+  - { id: ski-trip, name: Ski trip, days: 5, kits: [car, cold, snow] }
+  - { id: work-trip, name: Work trip, days: 3, kits: [flying, dressy] }

@@ -5,6 +5,7 @@ const { send, ev, go, sleep, check, shot, errors, finish } = await open();
 const q = ev;
 const badge = "(() => { const b = document.querySelector('[data-plan-count]'); return b.hidden ? 'hidden' : b.textContent; })()";
 const row = (name) => `(() => { const li = [...document.querySelectorAll('.aisle li')].find(li => li.querySelector('.shopping__name').textContent === ${JSON.stringify(name)}); return li ? li.querySelector('.qty').textContent : null; })()`;
+const order = "[...document.querySelectorAll('.aisle li .shopping__name')].map(e => e.textContent).join('|')";
 const fits = "document.documentElement.scrollWidth <= document.documentElement.clientWidth";
 await send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
 await go("/recipes/"); await q("localStorage.clear()"); await go("/recipes/");
@@ -28,13 +29,16 @@ await q("document.querySelectorAll('.plan-item')[0].querySelector('[data-step=\"
 check(`+: serves ${await q("document.querySelector('.stepper__value').textContent")}, broccoli ${await q(row("broccoli"))}`,
   (await q(row("broccoli"))) === "2 pounds" && (await q("document.querySelector('.stepper__value').textContent")) === "8");
 check(`ground beef (goulash 1x + none): ${await q(row("ground beef"))}`, true);
+const orderBefore = await q(order);
+await q("window.__wake = []; const set = HawkinsPage.wake.set; HawkinsPage.wake.set = (n, on) => { window.__wake.push(n + ':' + on); return set.call(HawkinsPage.wake, n, on); }");
 await q("[...document.querySelectorAll('.aisle li')].find(li => li.querySelector('.shopping__name').textContent === 'broccoli').querySelector('input').click()"); await sleep(200);
-check("checked: struck through in its aisle for a moment", await q("[...document.querySelectorAll('.aisle li')].find(li => li.querySelector('.shopping__name').textContent === 'broccoli')?.classList.contains('is-leaving')"));
-await sleep(1000);
-check(`checked -> "In the cart": ${await q("document.querySelector('[data-plan-item-count]').textContent")}`, /1 in the cart/.test(await q("document.querySelector('[data-plan-item-count]').textContent"))
-  && (await q(row("broccoli"))) === null && !(await q("document.querySelector('[data-plan-cart]').hidden")));
+const broccoli = "[...document.querySelectorAll('.aisle li')].find(li => li.querySelector('.shopping__name').textContent === 'broccoli')";
+check(`checked: struck through in its aisle, nothing moves: ${await q("document.querySelector('[data-plan-item-count]').textContent")}`, /1 in the cart/.test(await q("document.querySelector('[data-plan-item-count]').textContent"))
+  && await q(`${broccoli}.querySelector('input').checked`) && (await q(row("broccoli"))) === "2 pounds" && (await q(order)) === orderBefore);
+check("no 'In the cart' section", await q("!document.querySelector('[data-plan-cart]') && !document.querySelector('.cart') && ![...document.querySelectorAll('summary')].some(s => /in the cart/i.test(s.textContent))"));
+check(`the screen stays on once something is checked: ${await q("window.__wake.join()")}`, (await q("window.__wake.join()")).includes("shopping:true"));
 await go("/plan/");
-check("check persists after reload", await q("[...document.querySelectorAll('[data-plan-cart-list] li')].find(li => li.querySelector('.shopping__name').textContent === 'broccoli').querySelector('input').checked"));
+check("check and order persist after reload", await q(`${broccoli}.querySelector('input').checked`) && (await q(order)) === orderBefore);
 // On a phone the recipes fold into one line above the list.
 const summary = "document.querySelector('[data-plan-summary]')";
 check(`folded: "${await q(summary + ".textContent.replace(/\\s+/g, ' ').trim()")}"`, await q(`!${summary}.hidden && document.querySelector('[data-plan-recipes-body]').hidden`));
@@ -46,7 +50,7 @@ check(`folded summary fits: Edit at ${await q("Math.round(document.querySelector
 check("plan page fits", await q(fits));
 await shot("plan-mobile");
 await q("document.querySelector('[data-plan-uncheck]').click()"); await sleep(200);
-check("uncheck all (from the … menu)", !(await q("document.querySelector('[data-plan-item-count]').textContent")).includes("cart") && (await q(row("broccoli"))) === "2 pounds");
+check("uncheck all (from the … menu)", !(await q("document.querySelector('[data-plan-item-count]').textContent")).includes("cart") && (await q(row("broccoli"))) === "2 pounds" && (await q(order)) === orderBefore);
 // Add via select
 await q("(() => { const s = document.querySelector('[data-plan-select]'); s.value = 'banana-bread'; s.dispatchEvent(new Event('change')); })()"); await sleep(200);
 check(`select add -> ${await q("document.querySelectorAll('.plan-item').length")} recipes, option disabled ${await q("document.querySelector('option[value=\"banana-bread\"]').disabled")}`, (await q("document.querySelectorAll('.plan-item').length")) === 3);

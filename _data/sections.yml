@@ -1,19 +1,24 @@
 # Top-level sections of the site, in display order.
 # Live sections appear in the header nav and as links on the home page.
 # Sections marked "soon" show on the home page as "Coming soon" with no link.
+# nav: a shorter name for the header, where a long title wouldn't fit on a phone.
+# group_with_plan: the Plan link follows this section in the header, as part of its group.
+#   Each live section after the first starts a new group, set off by a thin divider.
 - id: recipes
   title: Recipes
   file: "001"
   url: /recipes/
   blurb: Dinners, desserts, and family favorites, written out step by step.
   status: live
+  group_with_plan: true
 
 - id: packing
   title: Packing Lists
+  nav: Packing
   file: "002"
   url: /packing/
   blurb: What to bring, so nothing gets left behind in the Upside Down.
-  status: soon
+  status: live
 
 - id: watchlist
   title: Watchlist

@@ -1,0 +1,103 @@
+---
+layout: default
+title: Packing Lists
+description: Pick the days and the kind of trip, and get one checklist that remembers what's packed.
+---
+{%- assign packing = site.data.packing -%}
+
+<div class="container pack-page" data-pack-page>
+  <header class="page-head">
+    <p class="eyebrow">File 002 · Field kit</p>
+    <h1 class="page-title">Packing Lists</h1>
+    <p class="page-head__lede">{{ page.description }}</p>
+  </header>
+
+  <noscript>
+    <p class="empty">The packing list needs JavaScript turned on.</p>
+  </noscript>
+
+  <div class="plan-shared" data-pack-shared hidden>
+    <p><strong>Someone shared a trip with you</strong> <span data-pack-shared-summary></span></p>
+    <div class="plan-shared__actions">
+      <button class="button" type="button" data-pack-shared-use>Use shared trip</button>
+      <button class="toggle" type="button" data-pack-shared-keep>Keep mine</button>
+    </div>
+  </div>
+
+  <div class="pack-layout" data-pack-ui hidden>
+    <section class="pack-setup" aria-labelledby="pack-setup-title">
+      <div class="panel">
+        {%- comment %} Tap Done and the setup folds into one line above the checklist; Edit opens it. {% endcomment %}
+        <button class="plan-summary" type="button" aria-expanded="false" aria-controls="pack-setup-body" data-pack-summary hidden>
+          <span class="plan-summary__text" data-pack-summary-text></span>
+          <span class="plan-summary__edit">Edit <span aria-hidden="true">▸</span></span>
+        </button>
+        <div id="pack-setup-body" data-pack-setup-body>
+          <div class="section-head">
+            <h2 id="pack-setup-title">Your trip</h2>
+            <button class="toggle pack-setup__done" type="button" data-pack-summary-done hidden>Hide</button>
+          </div>
+
+          {%- comment %} Presets are for starting out: once there's a trip, "Start a new trip" clears it and brings them back. {% endcomment %}
+          <div data-pack-presets-block>
+            <p class="suggest__label pack-setup__presets-label">Quick start</p>
+            {%- comment %} Links, not toggles: a row each, with how long it is. {% endcomment %}
+            <div class="pack-quick" data-pack-presets>
+              {%- for preset in packing.presets %}
+              <a class="pack-quick__trip" href="{{ '/packing/' | relative_url }}?d={{ preset.days }}&amp;k={{ preset.kits | join: ',' }}"><span class="chip__name">{{ preset.name }}</span><span class="chip__count">{{ preset.days }} {% if preset.days == 1 %}day{% else %}days{% endif %}</span></a>
+              {%- endfor %}
+            </div>
+            <p class="pack-setup__or">or build your own</p>
+          </div>
+
+          <div class="pack-days">
+            <span class="pack-days__label" id="pack-days-label">How long</span>
+            <div class="stepper" role="group" aria-labelledby="pack-days-label">
+              <button type="button" data-pack-days="-1" aria-label="One fewer day">−</button>
+              <span class="stepper__value" aria-live="polite" data-pack-days-value></span>
+              <button type="button" data-pack-days="1" aria-label="One more day">+</button>
+            </div>
+          </div>
+
+          {%- comment %} The trip kits, under their `group:` headings (packing.js). {% endcomment %}
+          <p class="pack-setup__hint">Pick all that apply</p>
+          <div class="pack-groups" data-pack-kit-chips></div>
+          <div class="pack-setup__tools" data-pack-trip-tools hidden>
+            <button class="pack-setup__new" type="button" data-pack-new>Start a new trip</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="pack-list" aria-labelledby="pack-list-title">
+      <div class="section-head">
+        <h2 id="pack-list-title">Checklist</h2>
+        {%- comment %} Share: the list, or just the link (the same menu as the shopping list). {% endcomment %}
+        <div class="section-head__actions">
+          <div class="menu">
+            <button class="toggle" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="pack-share-menu" data-pack-menu-toggle>Share</button>
+            <div class="menu__list" id="pack-share-menu" data-pack-menu hidden>
+              <button type="button" data-pack-share="list">Packing list<small>The list, with a link to the trip</small></button>
+              <button type="button" data-pack-share="link">Just the link<small>Opens this trip on their phone</small></button>
+            </div>
+          </div>
+        </div>
+        <span class="section-head__count" data-pack-count></span>
+      </div>
+      <div class="pack-bar" role="progressbar" aria-labelledby="pack-list-title" aria-valuemin="0" aria-valuemax="100" data-pack-bar><span class="pack-bar__fill" data-pack-bar-fill></span></div>
+
+      <div class="pack-kits" data-pack-kits></div>
+
+      <p class="pack-credit">Adapted from SmarterTravel's <a href="https://www.smartertravel.com/the-ultimate-packing-list/" rel="noopener">Ultimate Packing List</a>.</p>
+    </section>
+  </div>
+
+  <div class="plan-toast" role="status" data-pack-toast>
+    <span data-pack-toast-text></span>
+    <button class="plan-toast__undo" type="button" data-pack-toast-action hidden>Undo</button>
+  </div>
+</div>
+
+{%- comment -%} Every kit and item, for building the checklist. {%- endcomment -%}
+<script type="application/json" id="pack-data">{{ packing | jsonify }}</script>
+<script src="{{ '/assets/js/packing.js' | relative_url }}?v={{ site.time | date: '%s' }}" defer></script>

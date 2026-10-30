@@ -4,22 +4,39 @@
     <a class="brand" href="{{ '/' | relative_url }}" {% if page.url == "/" %}aria-current="page"{% endif %}>{{ site.title }}</a>
     <nav class="site-nav" aria-label="Main">
       <ul>
-        {%- for section in site.data.sections %}
-          {%- if section.status == "live" %}
-            {%- assign prefix = page.url | slice: 0, section.url.size %}
-            <li>
-              <a href="{{ section.url | relative_url }}"
-                {%- if page.url == section.url %} aria-current="page"{% elsif prefix == section.url %} aria-current="true"{% endif %}>
-                {{- section.title -}}
-              </a>
-            </li>
-          {%- endif %}
-        {%- endfor %}
+        {%- comment %} Meal plan belongs to the section marked group_with_plan (Recipes), so it follows it. {% endcomment %}
+        {%- capture plan_item %}
         <li>
           <a class="plan-link" href="{{ '/plan/' | relative_url }}" {% if page.url == "/plan/" %}aria-current="page"{% endif %}>
             <span class="plan-link__label">Plan</span><span class="plan-link__count" data-plan-count hidden></span>
           </a>
         </li>
+        {%- endcapture %}
+        {%- assign groups = 0 %}
+        {%- assign plan_placed = false %}
+        {%- for section in site.data.sections %}
+          {%- if section.status == "live" %}
+            {%- assign prefix = page.url | slice: 0, section.url.size %}
+            {%- comment %} Each section after the first starts a group, with a divider before it. {% endcomment %}
+            <li{% if groups > 0 %} class="site-nav__group-start"{% endif %}>
+              {%- comment %} Packing shows how much of the trip is decided (packing-status.js). {% endcomment %}
+              <a{% if section.id == "packing" %} class="plan-link"{% endif %} href="{{ section.url | relative_url }}"
+                {%- if page.url == section.url %} aria-current="page"{% elsif prefix == section.url %} aria-current="true"{% endif %}>
+                {%- if section.id == "packing" -%}
+                  <span class="plan-link__label">{{ section.nav | default: section.title }}</span><span class="plan-link__count plan-link__count--quiet" data-packing-count hidden></span>
+                {%- else -%}
+                  {{- section.nav | default: section.title -}}
+                {%- endif -%}
+              </a>
+            </li>
+            {%- assign groups = groups | plus: 1 %}
+            {%- if section.group_with_plan %}
+              {{- plan_item }}
+              {%- assign plan_placed = true %}
+            {%- endif %}
+          {%- endif %}
+        {%- endfor %}
+        {%- unless plan_placed %}{{ plan_item }}{% endunless %}
         {%- comment %} What you're cooking, while you're cooking something (cooking.js). {% endcomment %}
         <li class="cooking-nav" data-cooking hidden>
           <button class="cooking-link" type="button" aria-expanded="false" aria-controls="cooking-menu" data-cooking-toggle>
