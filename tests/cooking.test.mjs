@@ -35,7 +35,7 @@ check("no pot hint on the recipe itself", await q("!document.querySelector('[dat
 
 // Recipes page: pick up where you left off, and the card says how far.
 await go("/recipes/");
-check(`Pick up where you left off: ${await q(rows("[data-resume]"))}`, !(await q(`${resume}.hidden`)) && (await q(rows("[data-resume]"))).startsWith(`Banana Bread Step 3 of ${total}`));
+check(`Pick up where you left off: ${await q(rows("[data-resume]"))}`, !(await q(`${resume}.hidden`)) && (await q(rows("[data-resume]"))).startsWith(`Banana Bread On step 3 of ${total}`));
 check(`photo: ${await q(`${resume}.querySelector('.cooking-row__art img')?.getAttribute('src')`)}`, /banana-bread-480\.webp$/.test(await q(`${resume}.querySelector('.cooking-row__art img')?.getAttribute('src')`)));
 check(`its card: "${await q("document.querySelector('.card[data-slug=\"banana-bread\"] .card__progress')?.textContent")}"`,
   (await q("document.querySelector('.card[data-slug=\"banana-bread\"] .card__progress').textContent")) === `Step 3 of ${total}`);
@@ -77,12 +77,25 @@ await go("/plan/");
 await q("HawkinsTimers.start({ key: 'baked-ziti:1', seconds: 300, recipe: 'Baked Ziti', url: '/recipes/baked-ziti/', step: 1, title: '', time: '5 min' })"); await sleep(1300);
 check(`a timer: the header still says "${await q(label)}"`, (await q(label)) === "Cooking");
 await tap("[data-cooking-toggle]");
-check(`and the menu says so: ${await q(rows("[data-cooking-menu]"))}`, /Baked Ziti Getting ingredients · ⏱︎ [45]:\d\d/.test(await q(rows("[data-cooking-menu]"))));
+check(`and the menu says which step it's for: ${await q(rows("[data-cooking-menu]"))}`, /Baked Ziti Getting ingredients Done ⏱︎ [45]:\d\d · Step 1 ›/.test(await q(rows("[data-cooking-menu]"))));
+// Tapping the timer line goes to its step, like the tray.
+await q("document.querySelector('[data-cooking-menu] .cooking-row__timer').click()"); await sleep(1500);
+check(`timer line -> ${await q("location.pathname + location.hash")}, cook mode at ${await q("document.querySelector('[data-cook-count]')?.textContent")}`,
+  (await q("location.pathname")) === "/recipes/baked-ziti/" && await q("document.querySelector('.cook').open") && (await q("document.querySelector('[data-cook-count]').textContent")).startsWith("Step 1 of"));
+await q("document.querySelector('[data-cook-close]').click()"); await sleep(300);
+await go("/plan/");
+await tap("[data-cooking-toggle]");
 check("the timer keeps its own pill at the bottom", await q("[...document.querySelectorAll('.timer')].filter(t => !t.hidden).length === 1"));
 check(`fits, with the count: ${await q("document.documentElement.scrollWidth")}px`, (await q("document.documentElement.scrollWidth")) <= 390);
+// With the Plan count showing too, nothing gets squeezed together.
+await q(`localStorage.setItem('hawkins:plan', JSON.stringify({ recipes: [{ slug: 'goulash', scale: 1 }], checked: [] }))`);
+const planGap = "(() => { const l = document.querySelector('.plan-link__label').getBoundingClientRect(), c = document.querySelector('[data-plan-count]').getBoundingClientRect(); return Math.round(c.left - l.right); })()";
+await go("/recipes/");
+check(`Plan's count keeps its space: ${await q(planGap)}px`, (await q(planGap)) >= 4 && (await q("document.documentElement.scrollWidth")) <= 390);
 await send("Emulation.setDeviceMetricsOverride", { width: 375, height: 667, deviceScaleFactor: 2, mobile: true });
 await go("/plan/");
-check(`a small iPhone (375px) too: ${await q("document.documentElement.scrollWidth")}px`, (await q("document.documentElement.scrollWidth")) <= 375);
+check(`a small iPhone (375px) too: ${await q("document.documentElement.scrollWidth")}px, Plan's count ${await q(planGap)}px away`, (await q("document.documentElement.scrollWidth")) <= 375 && (await q(planGap)) >= 4);
+await q("localStorage.removeItem('hawkins:plan')");
 await send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
 await go("/plan/");
 await tap("[data-cooking-toggle]");
@@ -98,6 +111,19 @@ await sleep(5400);
 check(`after a moment it's gone: ${await q(rows("[data-cooking-menu]"))}`, !(await q(rows("[data-cooking-menu]"))).includes("Ziti"));
 check(`servings kept: ${await q("JSON.parse(localStorage.getItem('hawkins:recipe:baked-ziti')).scale")}`, (await q("JSON.parse(localStorage.getItem('hawkins:recipe:baked-ziti')).scale")) === 1);
 await q("localStorage.removeItem('hawkins:timers')");
+
+// Done on the recipe you're looking at: its ticks clear on the page, the menu
+// stays open, and Undo puts them back (no reload).
+await go("/recipes/banana-bread/");
+await q("window.__samePage = 1");
+await tap("[data-cooking-toggle]");
+await tap('[data-cooking-menu] .cooking-row[data-slug="banana-bread"] .cooking-row__done');
+check(`Done here: menu open ${!(await q(`${menu}.hidden`))}, steps ticked ${await q("document.querySelectorAll('.step.is-done').length")}, Start over ${await q("document.querySelector('[data-reset]').hidden ? 'hidden' : 'shown'")}`,
+  !(await q(`${menu}.hidden`)) && (await q("document.querySelectorAll('.step.is-done').length")) === 0 && await q("document.querySelector('[data-reset]').hidden"));
+await tap("[data-cooking-menu] .cooking-row__undo");
+check(`Undo here: ${await q("document.querySelectorAll('.step.is-done').length")} steps back, menu open, same page`,
+  (await q("document.querySelectorAll('.step.is-done').length")) === 2 && !(await q(`${menu}.hidden`)) && (await q("window.__samePage")) === 1);
+await tap("h1");
 
 // Only ingredients ticked lasts 2 hours; a step done lasts 12.
 await q("(() => { const k = 'hawkins:recipe:goulash'; localStorage.setItem(k, JSON.stringify({ ingredients: ['1-1'], steps: [], scale: 1, at: Date.now() - 2.5 * 3600e3, title: 'Easy Goulash', url: '/recipes/goulash/', total: 5 })); })()");

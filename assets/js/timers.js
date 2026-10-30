@@ -11,14 +11,16 @@
 // cook.js uses window.HawkinsTimers:
 //   start({ key, seconds, recipe, url, step, title, time })
 //   isRunning(key), keys(), list(), secondsLeft(key), formatClock(seconds),
+//   open(timer) (go to its step, as tapping it does),
 //   onChange(fn) -> unsubscribe, tray (the element, so cook mode can hold it)
 //   continueTo: set by cook mode while it's open. Given a finished timer, it
 //   returns { label, go } to offer one tap to the next step instead of
 //   "Continue recipe", or null.
 //
-// A finished timer stays up, with "Stop alarm" and "Continue recipe" buttons,
-// until it's dismissed with its ×, or you go back to its recipe. Stopping only
-// silences it, so you can finish what you're reading first.
+// A finished timer stays up, saying which step it was for ("Step 2 timer is
+// done"), with "Stop alarm" and "Go to step 2" buttons, until it's dismissed
+// with its ×, or you go back to its recipe. Stopping only silences it, so you
+// can finish what you're reading first (or carry on with the step you're on).
 (() => {
   const KEY = "hawkins:timers";
   const MAX_AGE_MS = 12 * 60 * 60 * 1000;
@@ -109,7 +111,7 @@
       '<span class="timer__time"></span><button class="timer__cancel" type="button">&times;</button>' +
       '<div class="timer__actions" hidden>' +
       '<button class="button timer__stop" type="button">Stop alarm</button>' +
-      '<button class="button timer__continue" type="button">Continue recipe ›</button>' +
+      '<button class="button timer__continue" type="button"></button>' +
       '</div>';
     const label = `Step ${timer.step}${timer.title ? `: ${timer.title}` : ""}`;
     el.querySelector(".timer__step").textContent = label;
@@ -124,14 +126,16 @@
     stopButton.setAttribute("aria-label", `Stop the ${label} alarm`);
     stopButton.addEventListener("click", () => stop(timer.key));
     const continueButton = el.querySelector(".timer__continue");
-    const continueLabel = `Continue ${timer.recipe} at step ${timer.step}`;
+    const continueText = `Go to step ${timer.step} ›`;
+    continueButton.textContent = continueText;
+    const continueLabel = `Go to step ${timer.step} of ${timer.recipe}`;
     continueButton.setAttribute("aria-label", continueLabel);
     continueButton.addEventListener("click", () => {
       const next = api.continueTo && api.continueTo(timer);
       remove(timer.key);
       if (next) next.go(); else goTo(timer);
     });
-    return { el, time: el.querySelector(".timer__time"), cancel, actions: el.querySelector(".timer__actions"), stopButton, continueButton, continueLabel, label, done: false, lastBeep: 0 };
+    return { el, timer, time: el.querySelector(".timer__time"), cancel, actions: el.querySelector(".timer__actions"), stopButton, continueButton, continueText, continueLabel, label, done: false, lastBeep: 0 };
   };
 
   let tick = null;
@@ -148,6 +152,10 @@
         view.done = true;
         view.el.classList.add("is-done");
         view.actions.hidden = false;
+        // Say which step it was for, so going off while you're on another
+        // step (or page) makes sense: "Step 2 timer is done".
+        view.el.querySelector(".timer__step").textContent = `Step ${timer.step} timer is done`;
+        view.el.querySelector(".timer__meta").textContent = [timer.title, timer.recipe].filter(Boolean).join(" · ");
         view.cancel.setAttribute("aria-label", `Dismiss ${view.label} timer`);
         if (navigator.vibrate && -left < 60 && !timer.stopped) navigator.vibrate([300, 150, 300, 150, 300]);
       }
@@ -156,10 +164,10 @@
       view.stopButton.hidden = !!timer.stopped || now - timer.end >= BEEP_FOR_MS;
       // Finished while you were away: say how long ago.
       const ago = Math.floor(-left / 60);
-      view.time.textContent = ago >= 1 ? `Done ${ago} min ago` : "Done";
+      view.time.textContent = ago >= 1 ? `${ago} min ago` : "Just now";
       // In cook mode on this timer's step, offer to move straight on.
       const next = api.continueTo && api.continueTo(timer);
-      view.continueButton.textContent = next ? next.label : "Continue recipe ›";
+      view.continueButton.textContent = next ? next.label : view.continueText;
       view.continueButton.setAttribute("aria-label", next ? `Step ${timer.step} done: ${next.label.replace(/ ›$/, "")}` : view.continueLabel);
       // Beep every few seconds for a minute, or until dismissed. Only the
       // tab you're looking at beeps, so two open tabs don't both go off.
@@ -241,6 +249,7 @@
       return timer ? Math.max(0, (timer.end - Date.now()) / 1000) : null;
     },
     formatClock,
+    open: goTo,
     continueTo: null,
     onChange: (fn) => {
       listeners.push(fn);

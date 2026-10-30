@@ -96,9 +96,11 @@ check("dismissed timer forgotten", await q("localStorage.getItem('hawkins:timers
 const finished = "localStorage.setItem('hawkins:timers', JSON.stringify([{ key: 'x:0-0', recipe: 'Beef and Broccoli', url: '/recipes/beef-and-broccoli/', step: 1, title: 'Get ready', time: '30 minutes', end: Date.now() - 8 * 60 * 1000 }]))"; // this page's clock still runs 250 s fast
 await q(finished);
 await go("/recipes/");
-check(`finished while away: ${await q("document.querySelector('.timer__time').textContent")}`, /^Done [34] min ago$/.test(await q("document.querySelector('.timer__time').textContent")));
+check(`finished while away: ${await q("document.querySelector('.timer__time').textContent")}`, /^[34] min ago$/.test(await q("document.querySelector('.timer__time').textContent")));
+check(`it says which step: "${await q("document.querySelector('.timer__step').textContent")}" / "${await q("document.querySelector('.timer__meta').textContent")}", button "${await q("document.querySelector('.timer__continue').textContent")}"`,
+  (await q("document.querySelector('.timer__step').textContent")) === "Step 1 timer is done" && (await q("document.querySelector('.timer__meta').textContent")) === "Get ready · Beef and Broccoli" && (await q("document.querySelector('.timer__continue').textContent")) === "Go to step 1 ›");
 await q("document.querySelector('.timer__continue').click()"); await sleep(1500);
-check(`Continue recipe -> ${await q("location.pathname")} at ${await q(count)}, timer gone`, (await q("location.pathname")) === "/recipes/beef-and-broccoli/" && (await q(count)) === "Step 1 of 5" && await q("!document.querySelector('.timer')"));
+check(`Go to step 1 -> ${await q("location.pathname")} at ${await q(count)}, timer gone`, (await q("location.pathname")) === "/recipes/beef-and-broccoli/" && (await q(count)) === "Step 1 of 5" && await q("!document.querySelector('.timer')"));
 await q("document.querySelector('[data-cook-close]').click()"); await sleep(300);
 // Going back to the recipe by yourself also clears its finished timer.
 await q(finished.replace("8 * 60", "6 * 60"));

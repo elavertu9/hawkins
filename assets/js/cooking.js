@@ -2,8 +2,9 @@
 // ticked, saved by recipe.js), so you can find your way back to them. They show
 // in three places:
 //
-//   - The header: "Cooking" next to Plan. Tap it for a menu of each recipe,
-//     its step, and its timer, with Done to clear it. (Countdowns themselves
+//   - The header: "Cooking" next to Plan. Tap it for a menu of each recipe:
+//     the step you're on (tap to carry on there), each of its timers with the
+//     step it's for (tap to go to that step, as the timer tray does), and Done. (Countdowns themselves
 //     live in the timer tray at the bottom, not here as well.)
 //   - "Pick up where you left off" at the top of the home and Recipes pages
 //     ([data-resume]).
@@ -54,17 +55,10 @@
     return found.sort((a, b) => b.at - a.at);
   };
 
-  // A recipe's timer: the next one to go off, or one that already has.
-  const timerFor = (r) => {
-    if (!Timers) return null;
-    const mine = Timers.list().filter((t) => pathOf(t.url) === pathOf(r.url)).sort((a, b) => a.end - b.end);
-    return mine.find((t) => t.end <= Date.now()) || mine[0] || null;
-  };
-  const timerText = (t) => (t.end <= Date.now() ? "Timer done" : `⏱︎ ${Timers.formatClock((t.end - Date.now()) / 1000)}`);
-  const metaText = (r) => {
-    const t = timerFor(r);
-    return t ? `${progressLabel(r)} · ${timerText(t)}` : progressLabel(r);
-  };
+  // A recipe's timers, soonest first.
+  const timersFor = (r) => (Timers ? Timers.list().filter((t) => pathOf(t.url) === pathOf(r.url)).sort((a, b) => a.end - b.end) : []);
+  // Where you are, said so it can't be mistaken for a timer's step.
+  const rowLabel = (r) => (r.steps.length ? `On step ${r.next} of ${r.total}` : "Getting ingredients");
 
   // ---------- A recipe's row (the header menu and Pick up where you left off) ----------
   const FORK = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3v8M5 3v5a2 2 0 0 0 4 0V3M7 11v10M17 21V3c-2 1.5-3 4-3 7v3h3"/></svg>';
@@ -75,7 +69,8 @@
     li.innerHTML =
       '<a class="cooking-row__open"><span class="cooking-row__art"></span>' +
       '<span class="cooking-row__text"><span class="cooking-row__title"></span><span class="cooking-row__meta"></span></span></a>' +
-      '<button class="cooking-row__done" type="button">Done</button>';
+      '<button class="cooking-row__done" type="button">Done</button>' +
+      '<div class="cooking-row__timers"></div>';
     li.querySelector("a").href = r.url;
     const art = li.querySelector(".cooking-row__art");
     if (r.image) {
@@ -88,9 +83,34 @@
       art.innerHTML = FORK;
     }
     li.querySelector(".cooking-row__title").textContent = r.title;
-    li.querySelector(".cooking-row__meta").textContent = metaText(r);
+    li.querySelector(".cooking-row__meta").textContent = rowLabel(r);
+    fillTimers(li, r);
     li.querySelector(".cooking-row__done").setAttribute("aria-label", `Done cooking ${r.title}: clear its progress`);
     return li;
+  };
+
+  // Each timer, with the step it's for: "⏱ 4:59 · Step 2 ›", or "Step 2 timer
+  // done ›". Tapping one goes to its step, the same as tapping it in the tray.
+  const fillTimers = (li, r) => {
+    const box = li.querySelector(".cooking-row__timers");
+    const list = timersFor(r);
+    box.hidden = list.length === 0;
+    [...box.children].forEach((b) => { if (!list.some((t) => t.key === b.dataset.key)) b.remove(); });
+    list.forEach((t) => {
+      let line = [...box.children].find((b) => b.dataset.key === t.key);
+      if (!line) {
+        line = document.createElement("button");
+        line.type = "button";
+        line.className = "cooking-row__timer";
+        line.dataset.key = t.key;
+        line.addEventListener("click", () => Timers.open(t));
+        box.append(line);
+      }
+      const left = (t.end - Date.now()) / 1000;
+      line.classList.toggle("is-done", left <= 0);
+      line.textContent = left > 0 ? `⏱\uFE0E ${Timers.formatClock(left)} · Step ${t.step} ›` : `Step ${t.step} timer done ›`;
+      line.setAttribute("aria-label", left > 0 ? `Step ${t.step} timer, ${Timers.formatClock(left)} left. Go to step ${t.step}.` : `Step ${t.step} timer is done. Go to step ${t.step}.`);
+    });
   };
 
   // Done: clears the ticks (the servings you picked stay), with a moment to undo.
@@ -98,21 +118,22 @@
   const done = (r) => {
     const saved = store.get(r.key);
     if (!saved) return;
-    // On that recipe's own page, Start over clears what's on screen too.
-    const here = pathOf(r.url) === location.pathname && document.querySelector("[data-reset]");
-    if (here) here.click();
-    else store.set(r.key, { ...saved, ingredients: [], steps: [], at: Date.now() });
-    cleared.set(r.key, { saved, here: !!here, timer: setTimeout(() => { cleared.delete(r.key); render(); }, UNDO_MS) });
+    save(r.key, { ...saved, ingredients: [], steps: [], at: Date.now() });
+    cleared.set(r.key, { saved, timer: setTimeout(() => { cleared.delete(r.key); render(); }, UNDO_MS) });
     render();
+  };
+  // If that recipe is the page you're on, it shows the change straight away
+  // (recipe.js listens), and the menu stays open.
+  const save = (key, value) => {
+    store.set(key, value);
+    document.dispatchEvent(new CustomEvent("hawkins:progress-changed", { detail: key }));
   };
   const undo = (key) => {
     const c = cleared.get(key);
     if (!c) return;
     clearTimeout(c.timer);
     cleared.delete(key);
-    store.set(key, c.saved);
-    // The recipe on screen has to read its ticks back in.
-    if (c.here) HawkinsPage.visit(location.pathname + location.search);
+    save(key, c.saved);
     render();
   };
   const buildCleared = (key, title) => {
@@ -176,7 +197,7 @@
     renderHint();
 
     // Countdowns tick while a timer for one of them is running.
-    const timing = Timers && current.some((r) => timerFor(r));
+    const timing = current.some((r) => timersFor(r).length);
     if (timing && !tick) tick = setInterval(renderTimes, 1000);
     if (!timing && tick) { clearInterval(tick); tick = null; }
   };
@@ -197,7 +218,7 @@
     const bySlug = new Map(current.map((r) => [r.slug, r]));
     document.querySelectorAll(".cooking-row[data-slug]").forEach((li) => {
       const r = bySlug.get(li.dataset.slug);
-      if (r) li.querySelector(".cooking-row__meta").textContent = metaText(r);
+      if (r) fillTimers(li, r);
     });
   };
 
@@ -246,7 +267,7 @@
     if (path.includes(item.querySelector("[data-cooking-toggle]"))) {
       hintSeen(); // found it
       setMenu(menu.hidden);
-    } else if (!path.some((el) => el.matches && el.matches("[data-cooking-menu]")) || event.target.closest("a")) {
+    } else if (!path.some((el) => el.matches && el.matches("[data-cooking-menu]")) || path.some((el) => el.matches && el.matches("a, .cooking-row__timer"))) {
       setMenu(false);
     }
   });

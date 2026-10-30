@@ -113,6 +113,21 @@
   });
   resetButton.hidden = state.ingredients.length === 0 && state.steps.length === 0;
 
+  // Done (or its Undo) in the header's Cooking menu changes this recipe's saved
+  // progress while you're on it (cooking.js): show what's saved now.
+  page.on(document, "hawkins:progress-changed", (event) => {
+    if (event.detail !== STORAGE_KEY) return;
+    const saved = load();
+    state.ingredients = saved.ingredients;
+    state.steps = saved.steps;
+    boxes.forEach((b) => { b.checked = state.ingredients.includes(b.dataset.key); });
+    syncMirrors();
+    steps.forEach((s, i) => setStep(s, state.steps.includes(i)));
+    resetButton.hidden = state.ingredients.length === 0 && state.steps.length === 0;
+    syncWake();
+    recipe.dispatchEvent(new Event("hawkins:steps"));
+  });
+
   // Servings: the stepper scales every amount, here and in cook mode, by the
   // same multiples the meal plan uses (see qty.js). Amounts mentioned in the
   // steps stay as written, and a note says so.

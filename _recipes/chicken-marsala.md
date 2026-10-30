@@ -6,8 +6,8 @@ summary: >-
 category: Dinner
 tags: [Quick]
 added: 2026-10-24
-# image: /assets/images/recipes/chicken-marsala.jpg
-# image_alt: Chicken Marsala with mushrooms in a skillet
+image: /assets/images/recipes/chicken-marsala.jpg
+image_alt: Chicken cutlets and mushrooms in Marsala sauce in an electric skillet
 time:
   prep: 10
   cook: 20

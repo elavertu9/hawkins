@@ -1,6 +1,17 @@
 // Recipes page layout: sorting, the results bar, the phone list, the + Plan
 // button on mouse and touch screens, and the home page.
 import { open } from "./lib.mjs";
+import { readFileSync } from "node:fs";
+
+// The stylesheet's braces balance: a stray } makes the browser drop the rule
+// after it, without any error.
+{
+  let depth = 0, at = 0;
+  readFileSync(new URL("../assets/css/main.css", import.meta.url), "utf8").replace(/\/\*[\s\S]*?\*\//g, "").split("\n").forEach((line, i) => {
+    for (const ch of line) { depth += ch === "{" ? 1 : ch === "}" ? -1 : 0; if (depth < 0 && !at) at = i + 1; }
+  });
+  var cssBalanced = [depth, at];
+}
 
 const { send, ev, go, sleep, check, shot, errors, finish } = await open();
 const titles = (n = 4) => ev(`[...document.querySelectorAll('.card:not([hidden]) .card__title')].slice(0, ${n}).map(e => e.textContent.trim()).join(' | ')`);
@@ -8,6 +19,7 @@ const sortBy = (value) => ev(`(() => { const s = document.querySelector('[data-s
 const planOpacity = "getComputedStyle(document.querySelector('.card__plan')).opacity";
 const fits = "document.documentElement.scrollWidth <= document.documentElement.clientWidth";
 
+check(`main.css braces balance (depth ${cssBalanced[0]}${cssBalanced[1] ? `, stray } near line ${cssBalanced[1]}` : ""})`, cssBalanced[0] === 0 && !cssBalanced[1]);
 // Desktop, with a mouse.
 await send("Emulation.setDeviceMetricsOverride", { width: 1280, height: 900, deviceScaleFactor: 1, mobile: false });
 await go("/recipes/"); await ev("localStorage.clear()"); await go("/recipes/");

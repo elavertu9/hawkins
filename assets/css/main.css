@@ -25,6 +25,32 @@
   --amber-fill: #ffc857; /* behind dark text; the same in both themes */
   --glass: rgba(6, 6, 8, 0.85); /* see-through bars over the page */
 
+  /* Neon on black. Light mode swaps these for ink on paper, where glows read
+     as smudges: no halos, darker lines, buttons outlined in ink. */
+  --hover-ink: #fff; /* text on hover */
+  --button-line: var(--red-bright); /* outlined buttons */
+  --page-glow: rgba(255, 30, 30, 0.12); /* the red haze at the top of the page */
+  --neon-halo: rgba(255, 20, 20, 0.45); /* around neon lettering */
+  --title-glow: rgba(255, 42, 42, 0.3); /* around page titles */
+  --red-glow-soft: rgba(255, 42, 42, 0.25);
+  --red-glow-inset: rgba(255, 42, 42, 0.15);
+  --lift: rgba(255, 30, 30, 0.14); /* the shadow under a card you point at */
+  --red-line-strong: rgba(255, 64, 64, 0.55);
+  --red-line: rgba(255, 64, 64, 0.45);
+  --red-line-soft: rgba(255, 64, 64, 0.3);
+  --red-line-faint: rgba(255, 64, 64, 0.2);
+  --seg-hover: rgba(255, 42, 42, 0.45); /* cook mode's step bar */
+  --seg-done: rgba(227, 36, 43, 0.5);
+  --amber-line: rgba(255, 200, 87, 0.45);
+  --amber-line-strong: rgba(255, 200, 87, 0.6);
+  --amber-wash: rgba(255, 200, 87, 0.1);
+  --amber-wash-strong: rgba(255, 200, 87, 0.2);
+  --amber-glow: rgba(255, 200, 87, 0.35);
+  --amber-ring: rgba(255, 200, 87, 0.25);
+  --photo-glow: rgba(255, 20, 20, 0.12); /* under the recipe photo */
+  --wall-letter: #cfc6b6; /* Joyce's alphabet wall, on the home page */
+  --bulb-off: 0.18;
+
   --font-display: "Libre Baskerville", Georgia, "Times New Roman", serif;
   --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-mono: "Courier Prime", "Courier New", ui-monospace, monospace;
@@ -57,10 +83,34 @@
 
     --red: #c8151c;
     --red-bright: #b3121a;
-    --red-glow: rgba(200, 20, 28, 0.2);
     --red-wash: rgba(200, 20, 28, 0.06);
-    --amber: #8a5a00;
     --glass: rgba(243, 237, 225, 0.88);
+
+    --amber: #8f4a00;
+    --hover-ink: var(--text);
+    --button-line: var(--line-strong);
+    --red-glow: transparent;
+    --page-glow: transparent;
+    --neon-halo: transparent;
+    --title-glow: transparent;
+    --red-glow-soft: transparent;
+    --red-glow-inset: transparent;
+    --lift: rgba(40, 25, 10, 0.12);
+    --red-line-strong: rgba(179, 18, 26, 0.5);
+    --red-line: rgba(179, 18, 26, 0.4);
+    --red-line-soft: rgba(179, 18, 26, 0.28);
+    --red-line-faint: rgba(179, 18, 26, 0.2);
+    --seg-hover: rgba(200, 21, 28, 0.45);
+    --seg-done: rgba(200, 21, 28, 0.75);
+    --amber-line: rgba(143, 74, 0, 0.4);
+    --amber-line-strong: rgba(143, 74, 0, 0.55);
+    --amber-wash: rgba(143, 74, 0, 0.07);
+    --amber-wash-strong: rgba(143, 74, 0, 0.14);
+    --amber-glow: transparent;
+    --amber-ring: rgba(143, 74, 0, 0.25);
+    --photo-glow: rgba(40, 25, 10, 0.16);
+    --wall-letter: #3a3029;
+    --bulb-off: 0.45;
   }
 }
 :root[data-theme="light"] {
@@ -78,10 +128,34 @@
 
   --red: #c8151c;
   --red-bright: #b3121a;
-  --red-glow: rgba(200, 20, 28, 0.2);
   --red-wash: rgba(200, 20, 28, 0.06);
-  --amber: #8a5a00;
   --glass: rgba(243, 237, 225, 0.88);
+
+  --amber: #8f4a00;
+  --hover-ink: var(--text);
+  --button-line: var(--line-strong);
+  --red-glow: transparent;
+  --page-glow: transparent;
+  --neon-halo: transparent;
+  --title-glow: transparent;
+  --red-glow-soft: transparent;
+  --red-glow-inset: transparent;
+  --lift: rgba(40, 25, 10, 0.12);
+  --red-line-strong: rgba(179, 18, 26, 0.5);
+  --red-line: rgba(179, 18, 26, 0.4);
+  --red-line-soft: rgba(179, 18, 26, 0.28);
+  --red-line-faint: rgba(179, 18, 26, 0.2);
+  --seg-hover: rgba(200, 21, 28, 0.45);
+  --seg-done: rgba(200, 21, 28, 0.75);
+  --amber-line: rgba(143, 74, 0, 0.4);
+  --amber-line-strong: rgba(143, 74, 0, 0.55);
+  --amber-wash: rgba(143, 74, 0, 0.07);
+  --amber-wash-strong: rgba(143, 74, 0, 0.14);
+  --amber-glow: transparent;
+  --amber-ring: rgba(143, 74, 0, 0.25);
+  --photo-glow: rgba(40, 25, 10, 0.16);
+  --wall-letter: #3a3029;
+  --bulb-off: 0.45;
 }
 
 /* ---------- Base ---------- */
@@ -112,7 +186,7 @@ body {
   display: flex;
   flex-direction: column;
   background:
-    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(255, 30, 30, 0.12), transparent 70%),
+    radial-gradient(ellipse 80% 50% at 50% -10%, var(--page-glow), transparent 70%),
     var(--bg);
   background-attachment: fixed;
   color: var(--text);
@@ -126,7 +200,7 @@ body {
 img { display: block; max-width: 100%; height: auto; }
 
 a { color: inherit; text-decoration-color: var(--red-bright); text-underline-offset: 0.2em; }
-a:hover { color: #fff; }
+a:hover { color: var(--hover-ink); }
 
 h1, h2, h3 { margin: 0; line-height: 1.2; font-weight: 700; }
 p { margin: 0; }
@@ -233,7 +307,7 @@ p { margin: 0; }
   text-decoration: none;
   transition: border-color 0.15s, color 0.15s, background-color 0.15s, box-shadow 0.15s;
 }
-.button { padding: 0.75rem 1.5rem; font-size: 0.9375rem; border-color: var(--red-bright); }
+.button { padding: 0.75rem 1.5rem; font-size: 0.9375rem; border-color: var(--button-line); }
 .toggle,
 .chip { padding: 0.4rem 0.9rem; font-size: 0.8125rem; }
 /* Filter chips come in long rows, so they're a little tighter than buttons. */
@@ -241,7 +315,7 @@ p { margin: 0; }
 .button:hover,
 .toggle:hover,
 .chip:hover {
-  color: #fff;
+  color: var(--hover-ink);
   border-color: var(--red-bright);
   box-shadow: 0 0 16px var(--red-glow);
 }
@@ -260,7 +334,7 @@ p { margin: 0; }
   text-transform: uppercase;
   line-height: 1;
   color: var(--red-bright);
-  text-shadow: 0 0 12px var(--red-glow), 0 0 42px rgba(255, 20, 20, 0.45);
+  text-shadow: 0 0 12px var(--red-glow), 0 0 42px var(--neon-halo);
   animation: flicker 7s infinite;
 }
 @supports (-webkit-text-stroke: 1px red) {
@@ -390,7 +464,7 @@ p { margin: 0; }
   font-family: var(--font-display);
   font-size: clamp(2.25rem, 6vw, 3.5rem);
   color: var(--red-bright);
-  text-shadow: 0 0 24px rgba(255, 42, 42, 0.3);
+  text-shadow: 0 0 24px var(--title-glow);
 }
 /* A title with an action beside it (Open the gate on Recipes). */
 .page-head__row {
@@ -526,7 +600,7 @@ p { margin: 0; }
 }
 .token--tag { color: #1a1408; background: var(--amber-fill); }
 .token--fave::before { content: "♥\FE0E"; }
-.chip--fave { color: var(--red-bright); border-color: var(--red-glow); }
+.chip--fave { color: var(--red-bright); border-color: var(--red-line); }
 .chip--fave .fave-icon { fill: currentColor; stroke: none; }
 .token__x {
   display: grid;
@@ -563,8 +637,8 @@ p { margin: 0; }
 .suggest .chip { min-height: 2.5rem; }
 
 /* Tags (like Low Calorie) sit on top of the category: amber instead of red. */
-.chip--tag { border-style: dashed; border-color: rgba(255, 200, 87, 0.45); color: var(--amber); }
-.chip--tag:hover { border-color: var(--amber); box-shadow: 0 0 16px rgba(255, 200, 87, 0.3); color: var(--amber); }
+.chip--tag { border-style: dashed; border-color: var(--amber-line); color: var(--amber); }
+.chip--tag:hover { border-color: var(--amber); box-shadow: 0 0 16px var(--amber-glow); color: var(--amber); }
 .chip--tag[aria-pressed="true"] { background: var(--amber-fill); border-color: var(--amber-fill); border-style: solid; color: #1a1408; }
 .tag {
   display: inline-block;
@@ -579,7 +653,7 @@ p { margin: 0; }
   color: var(--amber);
   text-decoration: none;
   vertical-align: 0.1em;
-  border: 1px solid rgba(255, 200, 87, 0.45);
+  border: 1px solid var(--amber-line);
   border-radius: 999px;
 }
 /* A category with several tags wraps into neat rows instead of indenting. */
@@ -714,8 +788,8 @@ a.tag:hover { border-color: var(--amber); }
 .card:hover,
 .card:focus-within {
   transform: translateY(-3px);
-  border-color: rgba(255, 64, 64, 0.55);
-  box-shadow: 0 0 0 1px rgba(255, 64, 64, 0.25), 0 10px 32px rgba(255, 30, 30, 0.14);
+  border-color: var(--red-line-strong);
+  box-shadow: 0 0 0 1px var(--red-glow-soft), 0 10px 32px var(--lift);
 }
 
 .card__media {
@@ -851,7 +925,7 @@ a.tag:hover { border-color: var(--amber); }
   height: 1.35rem;
   border-radius: 50% 50% 46% 46% / 40% 40% 60% 60%;
   background: var(--c);
-  opacity: 0.18;
+  opacity: var(--bulb-off);
   transition: opacity 0.12s, box-shadow 0.12s;
 }
 .bulb.is-on .bulb__glass {
@@ -863,7 +937,7 @@ a.tag:hover { border-color: var(--amber); }
   font-family: var(--font-display);
   font-size: 1.25rem;
   line-height: 1;
-  color: #cfc6b6;
+  color: var(--wall-letter);
 }
 .bulb--space { width: 0.75rem; }
 
@@ -893,8 +967,8 @@ a.tag:hover { border-color: var(--amber); }
 }
 .file:not(.is-soon):hover,
 .file:focus-within {
-  border-color: rgba(255, 64, 64, 0.55);
-  box-shadow: 0 10px 32px rgba(255, 30, 30, 0.14);
+  border-color: var(--red-line-strong);
+  box-shadow: 0 10px 32px var(--lift);
 }
 .file__title { font-family: var(--font-display); font-size: 1.5rem; }
 .file__link { text-decoration: none; }
@@ -953,7 +1027,7 @@ a.tag:hover { border-color: var(--amber); }
   font-family: var(--font-display);
   font-size: clamp(2.125rem, 5.5vw, 3.25rem);
   color: var(--red-bright);
-  text-shadow: 0 0 24px rgba(255, 42, 42, 0.3);
+  text-shadow: 0 0 24px var(--title-glow);
   text-wrap: balance;
 }
 .recipe-hero__summary {
@@ -968,7 +1042,7 @@ a.tag:hover { border-color: var(--amber); }
   border-radius: var(--radius);
   overflow: hidden;
   background: var(--surface-2);
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.4), 0 20px 60px rgba(255, 20, 20, 0.12);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.4), 0 20px 60px var(--photo-glow);
 }
 .recipe-hero__media img { width: 100%; height: 100%; object-fit: cover; }
 
@@ -1012,10 +1086,10 @@ a.tag:hover { border-color: var(--amber); }
 }
 .stat dd { margin: 0.15rem 0 0; font-weight: 600; }
 .stat--wide { grid-column: span 2; }
-.stat--total { border-color: rgba(255, 64, 64, 0.45); }
+.stat--total { border-color: var(--red-line); }
 .stat--total dd { color: var(--amber); }
 /* Calories we estimated ourselves, because the source didn't list them */
-.stat--estimated { border-style: dashed; border-color: rgba(255, 200, 87, 0.45); }
+.stat--estimated { border-style: dashed; border-color: var(--amber-line); }
 .stat__flag {
   margin-left: 0.25rem;
   padding: 0 0.3rem;
@@ -1108,11 +1182,11 @@ a.tag:hover { border-color: var(--amber); }
   background: transparent;
   border: 1.5px solid var(--red-bright);
   border-radius: 50%;
-  box-shadow: 0 0 12px rgba(255, 42, 42, 0.25), inset 0 0 8px rgba(255, 42, 42, 0.15);
+  box-shadow: 0 0 12px var(--red-glow-soft), inset 0 0 8px var(--red-glow-inset);
   cursor: pointer;
   transition: background-color 0.15s, color 0.15s, box-shadow 0.15s;
 }
-.step__num:hover { box-shadow: 0 0 18px var(--red-glow), inset 0 0 8px rgba(255, 42, 42, 0.25); }
+.step__num:hover { box-shadow: 0 0 18px var(--red-glow), inset 0 0 8px var(--red-glow-soft); }
 .step__body { cursor: pointer; padding-top: 0.45rem; }
 .step__title { font-size: 1.0625rem; font-weight: 600; }
 .step__text { margin-top: 0.35rem; }
@@ -1131,7 +1205,7 @@ a.tag:hover { border-color: var(--amber); }
   margin-top: 2rem;
   padding: 1.25rem 1.5rem;
   background: var(--red-wash);
-  border: 1px solid rgba(255, 64, 64, 0.2);
+  border: 1px solid var(--red-line-faint);
   border-left: 3px solid var(--red-bright);
   border-radius: var(--radius-sm);
 }
@@ -1174,7 +1248,7 @@ a.tag:hover { border-color: var(--amber); }
   text-decoration: none;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
-.pager__link:hover { border-color: rgba(255, 64, 64, 0.55); box-shadow: 0 10px 32px rgba(255, 30, 30, 0.14); }
+.pager__link:hover { border-color: var(--red-line-strong); box-shadow: 0 10px 32px var(--lift); }
 .pager__link--next { text-align: right; }
 .pager__title { font-family: var(--font-display); font-size: 1.125rem; }
 
@@ -1192,7 +1266,7 @@ a.tag:hover { border-color: var(--amber); }
   font-size: clamp(5rem, 22vw, 10rem);
   line-height: 1;
   color: var(--red-bright);
-  text-shadow: 0 0 16px var(--red-glow), 0 0 48px rgba(255, 20, 20, 0.4);
+  text-shadow: 0 0 16px var(--red-glow), 0 0 48px var(--neon-halo);
   transform: rotate(180deg);
   animation: flicker 5s infinite;
 }
@@ -1234,7 +1308,7 @@ a.tag:hover { border-color: var(--amber); }
   padding: 0;
   color: var(--text);
   background:
-    radial-gradient(ellipse 90% 60% at 50% 0%, rgba(255, 30, 30, 0.14), transparent 70%),
+    radial-gradient(ellipse 90% 60% at 50% 0%, var(--page-glow), transparent 70%),
     var(--bg);
   border: 0;
 }
@@ -1273,7 +1347,7 @@ a.tag:hover { border-color: var(--amber); }
   font-weight: 600;
   color: var(--red-bright);
   background: transparent;
-  border: 1px solid rgba(255, 42, 42, 0.35);
+  border: 1px solid var(--red-line-soft);
   border-radius: 999px;
   cursor: pointer;
 }
@@ -1325,8 +1399,8 @@ a.tag:hover { border-color: var(--amber); }
   border-radius: 2px;
   transition: background 0.2s ease, height 0.2s ease, margin 0.2s ease, box-shadow 0.2s ease;
 }
-.cook__seg:hover::before { background: rgba(255, 42, 42, 0.45); }
-.cook__seg.is-done::before { background: rgba(227, 36, 43, 0.5); }
+.cook__seg:hover::before { background: var(--seg-hover); }
+.cook__seg.is-done::before { background: var(--seg-done); }
 .cook__seg.is-current::before {
   height: 8px;
   margin-top: -4px;
@@ -1360,7 +1434,7 @@ a.tag:hover { border-color: var(--amber); }
   margin: -3px 0 0 -3px;
   background: var(--amber-fill);
   border-radius: 50%;
-  box-shadow: 0 0 0 2px var(--bg), 0 0 8px rgba(255, 200, 87, 0.6);
+  box-shadow: 0 0 0 2px var(--bg), 0 0 8px var(--amber-glow);
 }
 
 .cook__stage {
@@ -1413,8 +1487,8 @@ a.tag:hover { border-color: var(--amber); }
   font: inherit;
   font-weight: 600;
   color: var(--amber);
-  background: rgba(255, 200, 87, 0.1);
-  border: 1px dashed rgba(255, 200, 87, 0.6);
+  background: var(--amber-wash);
+  border: 1px dashed var(--amber-line-strong);
   border-radius: 6px;
   cursor: pointer;
   -webkit-box-decoration-break: clone;
@@ -1434,14 +1508,14 @@ a.tag:hover { border-color: var(--amber); }
   background: var(--amber-fill);
   border-radius: 4px;
 }
-.timer-start:hover { background: rgba(255, 200, 87, 0.2); }
-.timer-start.is-running { border-style: solid; background: rgba(255, 200, 87, 0.2); }
+.timer-start:hover { background: var(--amber-wash-strong); }
+.timer-start.is-running { border-style: solid; background: var(--amber-wash-strong); }
 /* Running, it counts down in place of Start (cook.js keeps data-left current). */
 .timer-start.is-running::after { content: attr(data-left); color: var(--amber); background: transparent; box-shadow: inset 0 0 0 1px var(--amber); }
 .timer-start.is-finished::after { content: "\2713\FE0E  Done"; color: #1a1408; background: var(--amber-fill); box-shadow: none; }
 /* Until the first timer is started: a gentle pulse and a one-line hint. */
 .timer-start.is-new { animation: timer-pulse 2s ease-in-out 3; }
-@keyframes timer-pulse { 50% { box-shadow: 0 0 0 4px rgba(255, 200, 87, 0.25), 0 0 18px rgba(255, 200, 87, 0.35); } }
+@keyframes timer-pulse { 50% { box-shadow: 0 0 0 4px var(--amber-ring), 0 0 18px var(--amber-glow); } }
 .cook__text .cook__hint {
   margin-top: 1.25rem;
   font-family: var(--font-mono);
@@ -1457,9 +1531,9 @@ a.tag:hover { border-color: var(--amber); }
   font-size: 0.875rem;
   color: var(--amber);
   border-color: var(--amber);
-  background: rgba(255, 200, 87, 0.1);
+  background: var(--amber-wash);
 }
-.cook__ingredients-toggle:hover { color: var(--amber); border-color: var(--amber); box-shadow: 0 0 16px rgba(255, 200, 87, 0.35); }
+.cook__ingredients-toggle:hover { color: var(--amber); border-color: var(--amber); box-shadow: 0 0 16px var(--amber-glow); }
 
 .cook__sheet {
   position: absolute;
@@ -1607,7 +1681,7 @@ a.tag:hover { border-color: var(--amber); }
 .cook__pick.is-done .cook__pick-num { color: var(--red); -webkit-text-stroke: 0; }
 .cook__pick.has-timer .cook__pick-state { color: var(--amber); }
 .cook__pick[aria-current] {
-  background: rgba(255, 42, 42, 0.08);
+  background: var(--red-wash);
   border-color: var(--red-bright);
   box-shadow: inset 4px 0 0 var(--red-bright);
 }
@@ -1775,7 +1849,6 @@ body:has(> .timers:not([hidden])) { padding-bottom: 8rem; }
   .timer.is-done,
   .timers.is-in { animation: none; }
 }
-}
 
 /* ---------- Meal plan (see plan.js) ---------- */
 .plan-link { display: inline-flex !important; align-items: center; gap: 0.4rem; }
@@ -1834,7 +1907,7 @@ body:has(> .timers:not([hidden])) { padding-bottom: 8rem; }
 @keyframes cooking-glow { 50% { opacity: 0.45; box-shadow: 0 0 2px var(--amber); } }
 .cooking-link__icon { display: none; }
 /* Its count is amber, like the rest of it, so it isn't mistaken for Plan's. */
-.cooking-link .plan-link__count { color: #1a1408; background: var(--amber-fill); box-shadow: 0 0 10px rgba(255, 200, 87, 0.35); }
+.cooking-link .plan-link__count { color: #1a1408; background: var(--amber-fill); box-shadow: 0 0 10px var(--amber-glow); }
 /* Phones: no room for the word, so a glowing pot (the count, when there's
    more than one, on its corner). The label stays for screen readers. */
 @media (max-width: 40rem) {
@@ -1923,7 +1996,7 @@ body:has(> .timers:not([hidden])) { padding-bottom: 8rem; }
 
 /* A recipe's row: its photo, name and step (and timer), and Done. */
 .cooking-list { margin: 0; padding: 0; list-style: none; }
-.cooking-row { display: flex; align-items: center; min-height: 3.5rem; }
+.cooking-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; min-height: 3.5rem; }
 .cooking-row + .cooking-row { border-top: 1px solid var(--line); }
 .cooking-row__open {
   display: flex;
@@ -1974,7 +2047,27 @@ body:has(> .timers:not([hidden])) { padding-bottom: 8rem; }
 .cooking-row__undo { color: var(--red-bright); }
 .cooking-row__done:focus-visible,
 .cooking-row__undo:focus-visible { outline: 2px solid var(--red-bright); outline-offset: -4px; }
-.cooking-row--cleared { justify-content: space-between; padding-left: 1rem; }
+.cooking-row--cleared { padding-left: 1rem; }
+/* Its timers, under the name: each goes to the step it's for. */
+.cooking-row__timers { grid-column: 1 / -1; display: grid; justify-items: start; padding: 0 0.75rem 0.45rem 4rem; margin-top: -0.3rem; }
+.cooking-row__timers[hidden] { display: none; }
+.cooking-row__timer {
+  min-height: 2.25rem;
+  padding: 0 0.6rem;
+  margin-left: -0.6rem;
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--amber);
+  background: none;
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.cooking-row__timer:hover { text-decoration: underline; }
+.cooking-row__timer.is-done { color: var(--red-bright); }
+.cooking-row__timer:focus-visible { outline: 2px solid var(--red-bright); outline-offset: -2px; }
 .cooking-row__note { font-size: 0.875rem; color: var(--text-muted); }
 
 /* Pick up where you left off: at the top of the home and Recipes pages. */
@@ -2289,7 +2382,7 @@ body:has(> .timers:not([hidden])) { padding-bottom: 8rem; }
   margin-bottom: 2rem;
   padding: 1rem 1.25rem;
   background: var(--red-wash);
-  border: 1px solid rgba(255, 64, 64, 0.3);
+  border: 1px solid var(--red-line-soft);
   border-left: 3px solid var(--red-bright);
   border-radius: var(--radius-sm);
 }
@@ -2469,6 +2562,10 @@ body:has(> .timers:not([hidden])) { padding-bottom: 8rem; }
 }
 @media (max-width: 30rem) {
   .site-nav a { padding: 0.5rem 0.5rem; letter-spacing: 0.04em; }
+  /* Room for Plan's count and Cooking on a small phone (375px). */
+  .site-header__inner { gap: 0.5rem; }
+  .site-nav ul { gap: 0.125rem; }
+  .plan-link { gap: 0.3rem; }
 }
 
 /* ---------- Classified recipes (see classified.js) ---------- */
@@ -2482,7 +2579,7 @@ body:has(> .timers:not([hidden])) { padding-bottom: 8rem; }
   background:
     repeating-linear-gradient(-45deg, transparent 0 14px, rgba(255, 42, 42, 0.035) 14px 28px),
     var(--surface);
-  border: 1px solid rgba(255, 64, 64, 0.35);
+  border: 1px solid var(--red-line-soft);
   border-radius: var(--radius);
   box-shadow: 0 0 40px rgba(255, 30, 30, 0.08);
 }
@@ -2499,7 +2596,7 @@ body:has(> .timers:not([hidden])) { padding-bottom: 8rem; }
   border-radius: 4px;
   transform: rotate(-4deg);
   text-shadow: 0 0 12px var(--red-glow);
-  box-shadow: 0 0 14px rgba(255, 42, 42, 0.25), inset 0 0 10px rgba(255, 42, 42, 0.15);
+  box-shadow: 0 0 14px var(--red-glow-soft), inset 0 0 10px var(--red-glow-inset);
 }
 .classified__text { margin: 0; color: var(--text-muted); }
 .classified__form {
@@ -2548,7 +2645,7 @@ body:has(> .timers:not([hidden])) { padding-bottom: 8rem; }
   cursor: pointer;
 }
 .classified__bar button:hover { color: var(--text); border-color: var(--red-bright); }
-.tag--classified { color: var(--red-bright); border-color: rgba(255, 64, 64, 0.5); }
+.tag--classified { color: var(--red-bright); border-color: var(--red-line); }
 .card--classified .card__media {
   position: relative;
   display: grid;
@@ -2582,7 +2679,7 @@ body:has(> .timers:not([hidden])) { padding-bottom: 8rem; }
   border-radius: 4px;
   transform: rotate(-8deg);
   text-shadow: 0 0 12px var(--red-glow);
-  box-shadow: 0 0 14px rgba(255, 42, 42, 0.25), inset 0 0 10px rgba(255, 42, 42, 0.15);
+  box-shadow: 0 0 14px var(--red-glow-soft), inset 0 0 10px var(--red-glow-inset);
 }
 [data-clearance="granted"] .card__stamp,
 [data-clearance="granted"] .card--classified .card__media::after { display: none; }
