@@ -48,7 +48,8 @@ layout: default
           <div class="stat"><dt>Serves</dt><dd data-serves-stat>{{ page.servings }}</dd></div>
           {%- if page.calories %}
           {%- if page.calories_estimated %}
-          <div class="stat stat--estimated" title="Estimated from the ingredients. The original recipe doesn't list calories.">
+          {%- comment %} calories_note: a recipe's own explanation, when "the original doesn't list them" isn't the story. {% endcomment %}
+          <div class="stat stat--estimated" title="{{ page.calories_note | default: "Estimated from the ingredients. The original recipe doesn't list calories." | escape }}">
             <dt>Calories <span class="stat__flag">Est.</span></dt>
             <dd>~{{ page.calories }}<span class="visually-hidden"> per serving, estimated</span></dd>
           </div>
@@ -133,7 +134,7 @@ layout: default
           <h2 id="notes-title" class="notes__title">Cook's notes</h2>
           <ul>
             {%- if page.calories_estimated %}
-            <li>Calories (about {{ page.calories }} per serving) are estimated from the ingredients. The original recipe doesn't list them.</li>
+            <li>{% if page.calories_note %}{{ page.calories_note }}{% else %}Calories (about {{ page.calories }} per serving) are estimated from the ingredients. The original recipe doesn't list them.{% endif %}</li>
             {%- endif %}
             {%- for note in page.notes %}
             <li>{{ note | markdownify | remove: "<p>" | remove: "</p>" | strip }}</li>
