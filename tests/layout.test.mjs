@@ -6,7 +6,7 @@ const { send, ev, go, sleep, check, shot, errors, finish } = await open();
 const titles = (n = 4) => ev(`[...document.querySelectorAll('.card:not([hidden]) .card__title')].slice(0, ${n}).map(e => e.textContent.trim()).join(' | ')`);
 const sortBy = (value) => ev(`(() => { const s = document.querySelector('[data-sort]'); s.value = '${value}'; s.dispatchEvent(new Event('change')); })()`);
 const planOpacity = "getComputedStyle(document.querySelector('.card__plan')).opacity";
-const fits = "document.documentElement.scrollWidth <= innerWidth";
+const fits = "document.documentElement.scrollWidth <= document.documentElement.clientWidth";
 
 // Desktop, with a mouse.
 await send("Emulation.setDeviceMetricsOverride", { width: 1280, height: 900, deviceScaleFactor: 1, mobile: false });

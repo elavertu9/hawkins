@@ -9,7 +9,7 @@ summary: Contents redacted. Level 4 clearance required to open this file.
 image: "/assets/images/recipes/famous-chocolate-cake.jpg"
 image_alt: Sheet cake with fluffy white icing and blue, green and black sprinkles
   in a glass baking dish
-built_from: 578997c5303b
+built_from: 56279e6c93a6
 cipher:
   iterations: 310000
   salt: tpR+y7VXsQPI1KKjlrIV1Q==

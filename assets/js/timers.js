@@ -10,7 +10,7 @@
 //
 // cook.js uses window.HawkinsTimers:
 //   start({ key, seconds, recipe, url, step, title, time })
-//   isRunning(key), keys(), secondsLeft(key), formatClock(seconds),
+//   isRunning(key), keys(), list(), secondsLeft(key), formatClock(seconds),
 //   onChange(fn) -> unsubscribe, tray (the element, so cook mode can hold it)
 //   continueTo: set by cook mode while it's open. Given a finished timer, it
 //   returns { label, go } to offer one tap to the next step instead of
@@ -46,11 +46,14 @@
   tray.className = "timers";
   tray.setAttribute("aria-label", "Timers");
   tray.hidden = true;
-  tray.innerHTML = '<button class="timers__sound" type="button" hidden>🔊 Tap for sound</button>';
+  tray.innerHTML = '<button class="timers__sound" type="button" hidden>' +
+    '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5zM22 9l-6 6M16 9l6 6"/></svg>' +
+    'Sound is off. Tap to turn it on</button>';
   document.body.append(tray);
   // Turbo swaps in a new <body> on each page; take the tray along.
   document.addEventListener("turbo:before-render", (event) => event.detail.newBody.append(tray));
   const soundButton = tray.querySelector(".timers__sound");
+  tray.addEventListener("animationend", (event) => { if (event.target === tray) tray.classList.remove("is-in"); });
 
   // ---------- Sound ----------
   // Browsers only allow sound after a tap on the page, so any tap unlocks it.
@@ -179,6 +182,7 @@
         tray.append(view.el);
       }
     });
+    if (tray.hidden && list.length) tray.classList.add("is-in"); // slide in when it first appears
     tray.hidden = list.length === 0;
     if (list.length && !tick) tick = setInterval(update, 250);
     if (!list.length && tick) { clearInterval(tick); tick = null; }
@@ -231,6 +235,7 @@
     start,
     isRunning: (key) => list.some((t) => t.key === key),
     keys: () => list.map((t) => t.key),
+    list: () => list.map((t) => ({ ...t })),
     secondsLeft: (key) => {
       const timer = list.find((t) => t.key === key);
       return timer ? Math.max(0, (timer.end - Date.now()) / 1000) : null;

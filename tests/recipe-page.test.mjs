@@ -92,7 +92,7 @@ await send("Emulation.setEmulatedMedia", { features: [{ name: "prefers-color-sch
 await go("/recipes/banana-bread/");
 const bg = await q("getComputedStyle(document.body).backgroundColor");
 check(`light theme background ${bg}, text ${await q("getComputedStyle(document.body).color")}`, bg === "rgb(243, 237, 225)" && (await q("getComputedStyle(document.body).color")) === "rgb(31, 26, 20)");
-check("fits", await q("document.documentElement.scrollWidth <= innerWidth"));
+check("fits", await q("document.documentElement.scrollWidth <= document.documentElement.clientWidth"));
 await shot("light-recipe-mobile");
 await go("/recipes/");
 await shot("light-recipes-mobile");

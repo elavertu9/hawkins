@@ -15,20 +15,34 @@
   const STORAGE_KEY = `hawkins:recipe:${recipe.dataset.recipeId}`;
   const MAX_AGE_MS = 12 * 60 * 60 * 1000;
 
+  // With only ingredients ticked, progress lasts 2 hours, not 12, so a stray
+  // tap doesn't hang around (cooking.js uses the same rule).
   const load = () => {
     const saved = page.store.get(STORAGE_KEY);
-    if (saved && Date.now() - saved.at < MAX_AGE_MS) return saved;
+    const maxAge = saved && Array.isArray(saved.steps) && saved.steps.length ? MAX_AGE_MS : MAX_AGE_MS / 6;
+    if (saved && Date.now() - saved.at < maxAge) return saved;
     return { ingredients: [], steps: [] };
   };
 
   const state = load();
 
   const syncWake = () => page.wake.set("progress", state.ingredients.length > 0 || state.steps.length > 0);
+  // The title, link, photo and step count go along with the progress, for the
+  // header's Cooking menu, Pick up where you left off, and the "Step 3 of 8" on
+  // cards (cooking.js).
   const save = () => {
     state.at = Date.now();
+    state.title = recipe.querySelector(".recipe-hero__title").textContent.trim();
+    state.url = location.pathname;
+    state.total = steps.length;
+    // The smallest copy of the photo, for the bar's thumbnail.
+    const photo = recipe.querySelector(".recipe-hero__media.is-photo");
+    const small = photo && photo.querySelector("source");
+    state.image = small ? small.srcset.split(",")[0].trim().split(" ")[0] : photo ? photo.querySelector("img").getAttribute("src") : null;
     page.store.set(STORAGE_KEY, state);
     resetButton.hidden = state.ingredients.length === 0 && state.steps.length === 0;
     syncWake();
+    document.dispatchEvent(new Event("hawkins:progress"));
   };
 
   const boxes = [...recipe.querySelectorAll(".ingredients .checklist input[type=checkbox]")];

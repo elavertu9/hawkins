@@ -88,7 +88,7 @@ check(`calories: ${await ev("[...document.querySelectorAll('.stat')].map(s => s.
 await shot("bagels-mobile");
 await ev("document.querySelector('.recipe-hero .tag').click()"); await sleep(1300);
 check(`tag link -> ${await ev("location.pathname + location.search")}: ${await ev(visible)}`, (await ev(visible)).join() === "Cottage Cheese Bagels");
-check("fits", await ev("document.documentElement.scrollWidth <= innerWidth"));
+check("fits", await ev("document.documentElement.scrollWidth <= document.documentElement.clientWidth"));
 
 await send("Emulation.setDeviceMetricsOverride", { width: 1280, height: 900, deviceScaleFactor: 1, mobile: false });
 await go("/recipes/");

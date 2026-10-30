@@ -1626,46 +1626,65 @@ a.tag:hover { border-color: var(--amber); }
 .cook__next:hover { background: var(--red-bright); }
 .cook__prev:disabled { opacity: 0.35; cursor: default; box-shadow: none; color: var(--text); border-color: var(--line-strong); }
 
-/* Running timers. They float at the bottom of the page, and sit just above
-   the Back / Next buttons while cook mode is open. */
+/* Running timers: one frosted panel at the bottom of the page, a row each
+   (like a Live Activity). It sits just above the Back / Next buttons while
+   cook mode is open. */
 .timers {
   position: fixed;
   right: var(--gutter);
   bottom: calc(env(safe-area-inset-bottom, 0px) + 1rem);
   z-index: 60;
   display: grid;
-  gap: 0.5rem;
   width: min(20rem, calc(100% - 2 * var(--gutter)));
+  overflow: hidden;
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  backdrop-filter: blur(20px) saturate(1.4);
+  border: 1px solid var(--line-strong);
+  border-radius: 1.4rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+.timers[hidden] { display: none; }
+.timers.is-in { animation: tray-in 0.3s ease-out; } /* appearing, not on every page */
+/* Phones: the full width of the page, like the other bars at the bottom. */
+@media (max-width: 40rem) {
+  .timers { left: var(--gutter); width: auto; }
 }
 .cook .timers { bottom: calc(env(safe-area-inset-bottom, 0px) + 5.5rem); }
 .cook:has(.timers:not([hidden])) .cook__stage { padding-bottom: 8rem; }
-.timer {
-  display: grid;
-  grid-template-columns: 1fr auto auto;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.5rem 0.5rem 0.5rem 1rem;
-  background: var(--surface-2);
-  border: 1px solid var(--line-strong);
-  border-radius: 999px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-}
+/* A thin line between rows. */
+.timers > :not([hidden]) ~ :not([hidden]) { border-top: 1px solid var(--line); }
+@keyframes tray-in { from { opacity: 0; transform: translateY(0.5rem); } }
+
+/* Sound can't start until you tap: a quiet row, not a shout. */
 .timers__sound {
-  justify-self: end;
-  padding: 0.6rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  padding: 0 1rem;
   font: inherit;
-  font-size: 0.9375rem;
-  font-weight: 700;
-  color: #1a1408;
-  background: var(--amber-fill);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-align: left;
+  color: var(--amber);
+  background: none;
   border: 0;
-  border-radius: 999px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
   cursor: pointer;
 }
-/* Room at the bottom of the page so the tray never hides the end of it. */
-body:has(> .timers:not([hidden])) { padding-bottom: 8rem; }
-/* Tap the name to go back to that step. */
+.timers__sound[hidden] { display: none; }
+.timers__sound:hover { text-decoration: underline; }
+
+/* A timer: tap the name to go back to that step. */
+.timer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 0.25rem 0.5rem;
+  min-height: 3.5rem;
+  padding: 0.35rem 0.25rem 0.35rem 1rem;
+}
+.timer[hidden] { display: none; }
 .timer__open {
   display: grid;
   min-width: 0;
@@ -1695,35 +1714,38 @@ body:has(> .timers:not([hidden])) { padding-bottom: 8rem; }
   font-variant-numeric: tabular-nums;
   color: var(--amber);
 }
+/* × as a plain glyph, with a full-size tap area. */
 .timer__cancel {
-  min-width: 2.25rem;
-  height: 2.25rem;
-  padding: 0 0.5rem;
-  font-family: var(--font-mono);
-  font-weight: 700;
-  font-size: 1.125rem;
-  color: var(--text);
-  background: transparent;
-  border: 1px solid var(--line-strong);
+  min-width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  font-size: 1.375rem;
+  line-height: 1;
+  color: var(--text-muted);
+  background: none;
+  border: 0;
   border-radius: 999px;
   cursor: pointer;
 }
+.timer__cancel:hover { color: var(--text); }
+.timer__cancel:focus-visible { outline: 2px solid var(--red-bright); outline-offset: -4px; }
+.timer__cancel[hidden] { display: none; }
+/* Gone off: the row turns red, with its buttons right there. */
 .timer.is-done {
-  border-color: var(--red-bright);
-  box-shadow: 0 0 24px var(--red-glow);
+  padding-bottom: 0.75rem;
+  background: rgba(255, 64, 64, 0.14);
   animation: timer-alarm 1s steps(2) infinite;
 }
-.timer.is-done .timer__time { color: var(--red-bright); }
-.timer.is-done { border-radius: 1.25rem; }
-.timer.is-done .timer__time { font-size: 0.875rem; white-space: nowrap; }
-.timer.is-done.is-stopped { animation: none; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); border-color: var(--line-strong); }
-/* Finished: stop the alarm, or go back to the step. */
+.timer.is-done .timer__time { font-size: 0.875rem; white-space: nowrap; color: var(--red-bright); }
+.timer.is-done.is-stopped { animation: none; background: none; }
+.timer.is-done.is-stopped .timer__time { color: var(--text-muted); }
 .timer__actions {
   display: grid;
   grid-column: 1 / -1;
   grid-auto-flow: column;
   grid-auto-columns: minmax(0, 1fr);
   gap: 0.5rem;
+  padding-right: 0.75rem;
 }
 .timer__actions[hidden] { display: none; }
 .timer__actions:has(.timer__stop:not([hidden])) { grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr); }
@@ -1741,13 +1763,18 @@ body:has(> .timers:not([hidden])) { padding-bottom: 8rem; }
   border-color: var(--red);
 }
 .timer__continue:hover { background: var(--red-bright); }
-@keyframes timer-alarm { 50% { background: #3a0d10; } } /* opaque, so the page doesn't show through */
+@keyframes timer-alarm { 50% { background: rgba(255, 64, 64, 0.32); } }
+
+/* Room at the bottom of the page so the tray never hides the end of it. */
+body:has(> .timers:not([hidden])) { padding-bottom: 8rem; }
 
 @media (prefers-reduced-motion: reduce) {
   .cook__step.is-enter-next,
   .cook__step.is-enter-prev,
   .timer-start.is-new,
-  .timer.is-done { animation: none; }
+  .timer.is-done,
+  .timers.is-in { animation: none; }
+}
 }
 
 /* ---------- Meal plan (see plan.js) ---------- */
@@ -1772,6 +1799,210 @@ body:has(> .timers:not([hidden])) { padding-bottom: 8rem; }
   box-shadow: 0 0 10px var(--red-glow);
 }
 .plan-link__count.is-bumped { animation: plan-bump 0.4s ease; }
+
+/* ---------- Cooking: what you've started (cooking.js) ---------- */
+/* In the header, next to Plan: a glowing dot and "Cooking". */
+.cooking-nav { display: flex; }
+.cooking-nav[hidden] { display: none; }
+.cooking-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--amber);
+  background: none;
+  border: 0;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+.cooking-link:hover,
+.cooking-link[aria-expanded="true"] { color: var(--text); }
+.cooking-link__dot {
+  flex: none;
+  width: 0.5rem;
+  height: 0.5rem;
+  background: var(--amber);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--amber);
+  animation: cooking-glow 2.4s ease-in-out infinite;
+}
+@keyframes cooking-glow { 50% { opacity: 0.45; box-shadow: 0 0 2px var(--amber); } }
+.cooking-link__icon { display: none; }
+/* Its count is amber, like the rest of it, so it isn't mistaken for Plan's. */
+.cooking-link .plan-link__count { color: #1a1408; background: var(--amber-fill); box-shadow: 0 0 10px rgba(255, 200, 87, 0.35); }
+/* Phones: no room for the word, so a glowing pot (the count, when there's
+   more than one, on its corner). The label stays for screen readers. */
+@media (max-width: 40rem) {
+  .cooking-link { position: relative; padding: 0.5rem 0.4rem; }
+  .cooking-link__icon { display: block; }
+  .cooking-link__label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .cooking-link__dot { position: absolute; top: 0.4rem; right: 0.2rem; width: 0.45rem; height: 0.45rem; }
+  .cooking-link .plan-link__count { position: absolute; top: 0; right: -0.35rem; min-width: 1.1rem; padding: 0 0.25rem; font-size: 0.6875rem; letter-spacing: 0; }
+  .cooking-link:has(.plan-link__count:not([hidden])) .cooking-link__dot { display: none; }
+}
+/* The menu: drops down under the header. */
+.cooking-menu {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + var(--header-h) + 0.35rem);
+  right: var(--gutter);
+  z-index: 70;
+  width: min(22rem, calc(100% - 2 * var(--gutter)));
+  overflow: hidden;
+  background: var(--surface); /* solid: it's read over a busy page */
+  border: 1px solid var(--line-strong);
+  border-radius: 1.25rem;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+  animation: cooking-menu-in 0.18s ease-out;
+}
+.cooking-menu[hidden] { display: none; }
+.cooking-menu__title {
+  margin: 0;
+  padding: 0.75rem 1rem 0.35rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-faint);
+}
+@keyframes cooking-menu-in { from { opacity: 0; transform: translateY(-0.35rem); } }
+
+/* The first time on a phone: a note pointing up at the pot. */
+.cooking-hint {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + var(--header-h) + 0.6rem);
+  right: var(--gutter);
+  z-index: 65;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  max-width: min(19rem, calc(100% - 2 * var(--gutter)));
+  padding: 0.6rem 0.4rem 0.6rem 1rem;
+  color: #1a1408;
+  background: var(--amber-fill);
+  border-radius: 1rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  animation: cooking-menu-in 0.25s ease-out;
+}
+.cooking-hint::before {
+  content: "";
+  position: absolute;
+  top: -0.4rem;
+  right: 0.85rem;
+  width: 0.9rem;
+  height: 0.9rem;
+  background: inherit;
+  border-radius: 0.15rem;
+  transform: rotate(45deg);
+}
+.cooking-hint__text { position: relative; margin: 0; font-size: 0.875rem; line-height: 1.35; }
+.cooking-hint__ok {
+  position: relative;
+  flex: none;
+  min-height: 2.75rem;
+  padding: 0 0.75rem;
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: inherit;
+  background: none;
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.cooking-hint__ok:focus-visible { outline: 2px solid #1a1408; outline-offset: -4px; }
+
+/* A recipe's row: its photo, name and step (and timer), and Done. */
+.cooking-list { margin: 0; padding: 0; list-style: none; }
+.cooking-row { display: flex; align-items: center; min-height: 3.5rem; }
+.cooking-row + .cooking-row { border-top: 1px solid var(--line); }
+.cooking-row__open {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+  padding: 0.45rem 0.5rem 0.45rem 0.75rem;
+  line-height: 1.3;
+  color: inherit;
+  text-decoration: none;
+}
+.cooking-row__open:focus-visible { outline: 2px solid var(--red-bright); outline-offset: -2px; border-radius: 0.75rem; }
+.cooking-row__art {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 2.5rem;
+  height: 2.5rem;
+  overflow: hidden;
+  color: var(--text-faint);
+  background: var(--surface-2);
+  border-radius: 0.6rem;
+}
+.cooking-row__art img { width: 100%; height: 100%; object-fit: cover; }
+.cooking-row__text { display: grid; min-width: 0; }
+.cooking-row__title,
+.cooking-row__meta { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.cooking-row__title { font-size: 0.9375rem; font-weight: 600; color: var(--text); }
+.cooking-row__title::after { content: " ›"; color: var(--red-bright); }
+.cooking-row__open:hover .cooking-row__title { text-decoration: underline; }
+.cooking-row__meta { font-size: 0.8125rem; font-variant-numeric: tabular-nums; color: var(--text-muted); }
+.cooking-row__done,
+.cooking-row__undo {
+  flex: none;
+  min-height: 2.75rem;
+  padding: 0 1rem;
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: none;
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.cooking-row__done:hover { color: var(--text); text-decoration: underline; }
+.cooking-row__undo { color: var(--red-bright); }
+.cooking-row__done:focus-visible,
+.cooking-row__undo:focus-visible { outline: 2px solid var(--red-bright); outline-offset: -4px; }
+.cooking-row--cleared { justify-content: space-between; padding-left: 1rem; }
+.cooking-row__note { font-size: 0.875rem; color: var(--text-muted); }
+
+/* Pick up where you left off: at the top of the home and Recipes pages. */
+.resume { margin: 0 0 clamp(1.5rem, 4vw, 2.5rem); }
+.resume[hidden] { display: none; }
+.resume__title { margin: 0 0 0.75rem; font-size: 1.25rem; }
+.resume .cooking-list {
+  max-width: 34rem;
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: 1.25rem;
+}
+.home-hero + .container .resume { margin-top: clamp(1.5rem, 4vw, 2.5rem); }
+
+/* On a recipe card: how far you've got. */
+.card__progress {
+  margin: 0.15rem 0 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--amber);
+}
+.card__progress::before { content: "● "; font-size: 0.6em; vertical-align: 0.2em; }
+@media (prefers-reduced-motion: reduce) {
+  .cooking-link__dot,
+  .cooking-menu,
+  .cooking-hint { animation: none; }
+}
 @keyframes plan-bump { 40% { transform: scale(1.35); } }
 
 /* "+ Plan" on recipe cards, over the photo. */

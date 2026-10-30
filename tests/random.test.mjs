@@ -7,7 +7,7 @@ for (const [w, h, mobile, label] of [[1280, 900, false, "desktop"], [390, 844, t
   await send("Emulation.setDeviceMetricsOverride", { width: w, height: h, deviceScaleFactor: 1, mobile });
   await go("/recipes/");
   check(`${label}: button visible`, await ev("document.querySelector('[data-random]').offsetParent !== null"));
-  check(`${label}: no overflow`, await ev("document.documentElement.scrollWidth <= innerWidth"));
+  check(`${label}: no overflow`, await ev("document.documentElement.scrollWidth <= document.documentElement.clientWidth"));
   await shot(`gate-${label}`);
 }
 const seen = new Set();

@@ -6,7 +6,7 @@ for (const [w, h, mobile, label] of [[1280, 1000, false, "desktop"], [390, 844, 
   await send("Emulation.setDeviceMetricsOverride", { width: w, height: h, deviceScaleFactor: 1, mobile });
   await go("/");
   await ev("document.querySelector('.files').scrollIntoView()"); await sleep(300);
-  check(`${label}: no overflow`, await ev("document.documentElement.scrollWidth <= innerWidth"));
+  check(`${label}: no overflow`, await ev("document.documentElement.scrollWidth <= document.documentElement.clientWidth"));
   await shot(`files-${label}`);
 }
 check(`JS errors: ${errors.length}`, errors.length === 0);

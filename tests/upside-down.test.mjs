@@ -58,7 +58,7 @@ await sleep(600);
 for (let n = 0; n < 3; n++) await touch(tap[0], tap[1], tap[0], tap[1]);
 await sleep(1200);
 check("touch gesture flips", await ev(flipped));
-check("no horizontal overflow", await ev("document.documentElement.scrollWidth <= innerWidth"));
+check("no horizontal overflow", await ev("document.documentElement.scrollWidth <= document.documentElement.clientWidth"));
 await sleep(400); await shot("ud-index-mobile");
 check("no JS errors " + JSON.stringify(errors), errors.length === 0);
 finish();

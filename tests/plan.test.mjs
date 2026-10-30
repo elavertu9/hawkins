@@ -5,7 +5,7 @@ const { send, ev, go, sleep, check, shot, errors, finish } = await open();
 const q = ev;
 const badge = "(() => { const b = document.querySelector('[data-plan-count]'); return b.hidden ? 'hidden' : b.textContent; })()";
 const row = (name) => `(() => { const li = [...document.querySelectorAll('.aisle li')].find(li => li.querySelector('.shopping__name').textContent === ${JSON.stringify(name)}); return li ? li.querySelector('.qty').textContent : null; })()`;
-const fits = "document.documentElement.scrollWidth <= innerWidth";
+const fits = "document.documentElement.scrollWidth <= document.documentElement.clientWidth";
 await send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
 await go("/recipes/"); await q("localStorage.clear()"); await go("/recipes/");
 check(`badge starts ${await q(badge)}`, (await q(badge)) === "hidden");
@@ -42,7 +42,7 @@ await q(summary + ".click()"); await sleep(200);
 check("Edit opens the recipes", await q("!document.querySelector('[data-plan-recipes-body]').hidden && !document.querySelector('[data-plan-summary-done]').hidden"));
 await q("document.querySelector('[data-plan-summary-done]').click()"); await sleep(200);
 check("Done folds them again", await q("document.querySelector('[data-plan-recipes-body]').hidden"));
-check(`folded summary fits: Edit at ${await q("Math.round(document.querySelector('.plan-summary__edit').getBoundingClientRect().right)")}`, await q("document.querySelector('.plan-summary__edit').getBoundingClientRect().right <= innerWidth && document.querySelector('.shopping').getBoundingClientRect().right <= innerWidth"));
+check(`folded summary fits: Edit at ${await q("Math.round(document.querySelector('.plan-summary__edit').getBoundingClientRect().right)")}`, await q("document.querySelector('.plan-summary__edit').getBoundingClientRect().right <= document.documentElement.clientWidth && document.querySelector('.shopping').getBoundingClientRect().right <= document.documentElement.clientWidth"));
 check("plan page fits", await q(fits));
 await shot("plan-mobile");
 await q("document.querySelector('[data-plan-uncheck]').click()"); await sleep(200);
@@ -58,7 +58,7 @@ await q("Object.defineProperty(navigator, 'share', { value: undefined, configura
 await q("document.querySelector('[data-plan-share]').click()"); await sleep(300);
 check(`copy toast: ${await q("document.querySelector('[data-plan-toast]').textContent")}`, /copied|Couldn't/.test(await q("document.querySelector('[data-plan-toast]').textContent")));
 // Share and ••• open menus that stay on a phone's screen; Share offers the list or just the link.
-const onScreen = (sel) => q(`(() => { const r = document.querySelector('${sel}').getBoundingClientRect(); return r.width > 0 && r.left >= 0 && r.right <= innerWidth; })()`);
+const onScreen = (sel) => q(`(() => { const r = document.querySelector('${sel}').getBoundingClientRect(); return r.width > 0 && r.left >= 0 && r.right <= document.documentElement.clientWidth; })()`);
 await q("document.querySelector('[aria-controls=\"plan-share-menu\"]').click()"); await sleep(150);
 check(`Share menu: ${await q("[...document.querySelectorAll('#plan-share-menu button')].map(b => b.firstChild.textContent).join(' / ')")}, on screen`,
   (await q("document.querySelectorAll('#plan-share-menu button').length")) === 2 && await onScreen("#plan-share-menu"));

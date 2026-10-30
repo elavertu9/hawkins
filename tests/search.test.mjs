@@ -32,7 +32,7 @@ await ev(`document.querySelector('.chip[data-category="soup"]').click()`); await
 await go("/recipes/zuppa-toscana/");
 await go("/recipes/?q=beef&category=soup");
 check(`URL restores: input='${await ev("document.querySelector('#recipe-search').value")}', ${await ev(status)}`, await ev(visible) > 0 && await ev(`[...document.querySelectorAll('.card')].filter(c => !c.hidden).every(c => c.dataset.category === "soup" && c.dataset.search.includes("beef"))`) && await ev(`document.querySelector('.token[data-kind="category"]')?.dataset.value`) === "soup");
-check("no overflow at 390px", await ev("document.documentElement.scrollWidth <= innerWidth"));
+check("no overflow at 390px", await ev("document.documentElement.scrollWidth <= document.documentElement.clientWidth"));
 await go("/recipes/"); await type("chicken"); await shot("search-mobile");
 await send("Emulation.setDeviceMetricsOverride", { width: 1280, height: 900, deviceScaleFactor: 1, mobile: false });
 await go("/recipes/"); await shot("search-desktop");

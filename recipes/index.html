@@ -24,6 +24,12 @@ description: Dinners, desserts, and family favorites, written out step by step.
     <p class="page-head__lede">{{ page.description }}</p>
   </header>
 
+  {%- comment %} The recipes you've started, while there are any (cooking.js). {% endcomment %}
+  <section class="resume" data-resume hidden aria-labelledby="resume-title">
+    <h2 class="resume__title" id="resume-title">Pick up where you left off</h2>
+    <ul class="cooking-list"></ul>
+  </section>
+
   <div class="finder" data-finder hidden>
     <div class="finder__row">
       <div class="search search--tokens" data-search>

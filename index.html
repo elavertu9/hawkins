@@ -16,6 +16,14 @@ body_class: page-home
   </div>
 </section>
 
+<div class="container">
+  {%- comment %} The recipes you've started, while there are any (cooking.js). {% endcomment %}
+  <section class="resume" data-resume hidden aria-labelledby="resume-title">
+    <h2 class="resume__title" id="resume-title">Pick up where you left off</h2>
+    <ul class="cooking-list"></ul>
+  </section>
+</div>
+
 <section class="container home-section" aria-labelledby="files-title">
   <div class="section-head">
     <h2 id="files-title">Case files</h2>

@@ -30,7 +30,7 @@ check("undo pantry move", (await qtyOf("broccoli")) === "1 pound");
 // A long name wraps inside the toast instead of spilling out of it.
 const longName = await q("[...document.querySelectorAll('[data-plan-aisles] .shopping__name')].map(e => e.textContent).sort((a, b) => b.length - a.length)[0]");
 await q(`${rowSel(longName)}.querySelector('.shopping__action').click()`); await sleep(300);
-check(`toast holds "${longName}"`, await q(`(() => { const t = document.querySelector('[data-plan-toast]').getBoundingClientRect(), x = document.querySelector('[data-plan-toast-text]').getBoundingClientRect(), u = document.querySelector('[data-plan-toast-action]').getBoundingClientRect(); return x.left >= t.left && x.right <= u.left && u.right <= t.right && x.bottom <= t.bottom && t.left >= 0 && t.right <= innerWidth; })()`));
+check(`toast holds "${longName}"`, await q(`(() => { const t = document.querySelector('[data-plan-toast]').getBoundingClientRect(), x = document.querySelector('[data-plan-toast-text]').getBoundingClientRect(), u = document.querySelector('[data-plan-toast-action]').getBoundingClientRect(); return x.left >= t.left && x.right <= u.left && u.right <= t.right && x.bottom <= t.bottom && t.left >= 0 && t.right <= document.documentElement.clientWidth; })()`));
 await shot("plan-toast-long");
 await undo();
 await q(`[...document.querySelectorAll('[data-plan-pantry-list] li')].find(li => li.querySelector('.shopping__name').textContent === 'black pepper').querySelector('.shopping__action').click()`); await sleep(200);
@@ -87,7 +87,7 @@ await q("document.querySelector('.plan-item__cook').click()"); await sleep(1500)
 check(`cook link -> ${await q("location.pathname")} cook open ${await q("document.querySelector('.cook')?.open")}`, await q("document.querySelector('.cook').open"));
 await send("Emulation.setDeviceMetricsOverride", { width: 1280, height: 900, deviceScaleFactor: 1, mobile: false });
 await go("/plan/");
-check("desktop fits", await q("document.documentElement.scrollWidth <= innerWidth"));
+check("desktop fits", await q("document.documentElement.scrollWidth <= document.documentElement.clientWidth"));
 await q("document.querySelector('.pantry').open = true"); await sleep(100);
 await shot("plan2-desktop");
 await q("document.querySelector('.pantry').scrollIntoView()"); await sleep(100);
