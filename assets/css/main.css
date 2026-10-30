@@ -819,7 +819,7 @@ a.tag:hover { border-color: var(--amber); }
   width: 1.6rem;
   height: 1.6rem;
   color: var(--red-bright);
-  background: rgba(6, 6, 8, 0.7);
+  background: var(--glass); /* dark or cream, with the theme */
   border-radius: 50%;
 }
 .card__fave .fave-icon { fill: currentColor; }
@@ -2109,7 +2109,7 @@ body:has(> .timers:not([hidden])) { padding-bottom: 8rem; }
   font-size: 0.75rem;
   font-weight: 600;
   color: var(--text);
-  background: rgba(6, 6, 8, 0.78);
+  background: var(--glass); /* dark or cream, with the theme */
   border: 1px solid var(--line-strong);
   border-radius: 999px;
   cursor: pointer;
