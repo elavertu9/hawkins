@@ -1,0 +1,55 @@
+---
+layout: default
+title: Caffeine
+description: Our favorite energy drink flavor combos, each with its own Hawkins name, and how to order it at Dutch Bros or Aroma Joe's.
+---
+{%- assign shops = site.data.drinks.shops -%}
+
+<div class="container">
+  <header class="page-head">
+    <p class="eyebrow">File 006 · Fuel</p>
+    <h1 class="page-title">Caffeine</h1>
+    <p class="page-head__lede">{{ page.description }}</p>
+  </header>
+
+  <div class="drink-grid">
+    {%- for drink in site.data.drinks.drinks %}
+    <article class="drink" id="{{ drink.id }}">
+      <div class="drink__media{% if drink.photo %} is-photo{% endif %}">
+        {%- if drink.photo %}
+        {%- comment %} The WebP copies sit next to the JPG (scripts/add-drink-photo.sh makes them). {% endcomment %}
+        {%- assign base = drink.photo | split: "." | pop | join: "." %}
+        <picture>
+          <source type="image/webp" srcset="{{ base | append: '-480.webp' | relative_url }} 480w, {{ base | append: '-800.webp' | relative_url }} 800w, {{ base | append: '.webp' | relative_url }} 960w" sizes="(min-width: 64rem) 22rem, (min-width: 40rem) 45vw, 100vw">
+          <img src="{{ drink.photo | relative_url }}" alt="{{ drink.photo_alt | default: drink.name | escape }}" width="960" height="1200" decoding="async"{% unless forloop.first %} loading="lazy"{% endunless %}>
+        </picture>
+        {%- else %}
+        <img src="{{ '/assets/images/drink-placeholder.svg' | relative_url }}" alt="" width="960" height="1200" decoding="async"{% unless forloop.first %} loading="lazy"{% endunless %}>
+        {%- endif %}
+      </div>
+      <div class="drink__body">
+        <h2 class="drink__name"><a href="#{{ drink.id }}">{{ drink.name }}</a></h2>
+        <p class="drink__flavors">{{ drink.flavors | join: " · " }}</p>
+        <p class="drink__style">{{ drink.style | capitalize }}{% if drink.sugar_free %} · Sugar-free{% endif %}</p>
+        <dl class="drink__orders">
+          {%- for shop in shops %}
+          <div class="drink__order">
+            <dt>{{ shop.name }}</dt>
+            {%- assign special = drink.shop_names[shop.id] %}
+            <dd>{% if special %}“{{ special }}”{% else %}{{ shop.base }} with {{ drink.flavors | join: ", " | downcase }}{% endif %}</dd>
+            {%- comment %} Anything about this shop sits under its own line: the foam top in its word, and a tip. {% endcomment %}
+            {%- if drink.top %}
+            <dd class="drink__extra">Also good with a {{ shop.top }}</dd>
+            {%- endif %}
+            {%- assign tip = drink.shop_notes[shop.id] %}
+            {%- if tip %}
+            <dd class="drink__extra">{{ tip }}</dd>
+            {%- endif %}
+          </div>
+          {%- endfor %}
+        </dl>
+      </div>
+    </article>
+    {%- endfor %}
+  </div>
+</div>

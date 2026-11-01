@@ -427,6 +427,158 @@ p { margin: 0; }
   text-underline-offset: 0.45em;
 }
 
+/* Phones: the section links don't fit beside Plan and the pot, so they move
+   into a Menu button's dropdown (nav.js). Wider screens never see either. */
+.nav-menu,
+.nav-menu__list { display: none; }
+.nav-menu__toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  background: none;
+  border: 0;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+.nav-menu__toggle:hover,
+.nav-menu__toggle[aria-expanded="true"] { color: var(--text); }
+/* Packing is in progress: a small red dot, as the Cooking pot has. */
+.nav-menu__dot {
+  display: none;
+  flex: none;
+  width: 0.45rem;
+  height: 0.45rem;
+  background: var(--red-bright);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--red-glow);
+}
+.nav-menu__toggle[data-badge] { padding-right: 1rem; }
+.nav-menu__toggle[data-badge] .nav-menu__dot { display: block; position: absolute; top: 0.45rem; right: 0.25rem; }
+/* The dropdown: under the header, like the Cooking menu. */
+.nav-menu__list {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + var(--header-h) + 0.35rem);
+  right: var(--gutter);
+  z-index: 70;
+  width: min(16rem, calc(100% - 2 * var(--gutter)));
+  padding: 0.35rem;
+  background: var(--surface-2);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+  animation: cooking-menu-in 0.18s ease-out;
+}
+.nav-menu__list a {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 2.75rem;
+  padding: 0.5rem 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  text-decoration: none;
+  border-left: 2px solid transparent;
+  border-radius: 6px;
+}
+.nav-menu__list a:hover,
+.nav-menu__list a:focus-visible { color: var(--text); background: var(--line); outline: none; }
+.nav-menu__list a[aria-current] { color: var(--red-bright); border-left-color: var(--red-bright); }
+.nav-menu__file { font-weight: 400; letter-spacing: 0.04em; color: var(--text-faint); }
+/* The pot's first-time note sits over the same spot: it waits while Menu is open. */
+body:has(.nav-menu__toggle[aria-expanded="true"]) .cooking-hint { display: none; }
+@media (max-width: 52rem) {
+  .site-nav__section { display: none; }
+  .nav-menu { display: flex; }
+  .nav-menu__list:not([hidden]) { display: grid; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nav-menu__list { animation: none; }
+}
+
+/* ---------- Caffeine (see caffeine/index.html and _data/drinks.yml) ---------- */
+.drink-grid {
+  display: grid;
+  gap: clamp(1rem, 2.5vw, 1.5rem);
+}
+@media (min-width: 40rem) {
+  .drink-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (min-width: 64rem) {
+  .drink-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+.drink {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+/* Every drink photo is 4:5 (tall, like a cup). */
+.drink__media {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--line);
+}
+.drink__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.drink__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+  padding: 1.125rem 1.25rem 1.25rem;
+}
+.drink__name {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  line-height: 1.3;
+}
+.drink__name a { text-decoration: none; }
+.drink__name a:hover { color: var(--red-bright); }
+.drink__flavors { color: var(--text); }
+.drink__style {
+  font-size: 0.9375rem;
+  color: var(--text-muted);
+}
+/* How to order it: a small shop label over each order line. */
+.drink__orders {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0.5rem 0 0;
+  padding-top: 0.75rem;
+  border-top: 1px dashed var(--line-strong);
+}
+.drink__orders dt {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+.drink__orders dd { margin: 0.1rem 0 0; }
+.drink__orders .drink__extra {
+  margin-top: 0.2rem;
+  font-size: 0.875rem;
+  color: var(--text-faint);
+}
+
 /* ---------- Footer ---------- */
 .site-footer {
   border-top: 1px solid var(--line);
@@ -1920,7 +2072,7 @@ body:has(> .timers:not([hidden])) { padding-bottom: 8rem; }
 .cooking-link .plan-link__count { color: #1a1408; background: var(--amber-fill); box-shadow: 0 0 10px var(--amber-glow); }
 /* Phones: no room for the word, so a glowing pot (the count, when there's
    more than one, on its corner). The label stays for screen readers. */
-@media (max-width: 40rem) {
+@media (max-width: 52rem) {
   .cooking-link { position: relative; padding: 0.5rem 0.4rem; }
   .cooking-link__icon { display: block; }
   .cooking-link__label {
@@ -2567,9 +2719,9 @@ body:has(> .timers:not([hidden])) { padding-bottom: 8rem; }
   .shopping .section-head__actions { width: 100%; margin-left: 0; }
 }
 @media (max-width: 30rem) {
-  /* Three sections fit a small phone (360px) at 13px. Plan's count, Packing's
-     percent or the Cooking pot need the tighter type, so only then does it shrink. */
-  .site-header:has([data-plan-count]:not([hidden]), [data-packing-count]:not([hidden]), [data-cooking]:not([hidden])) {
+  /* Brand, Plan, the pot and Menu fit a small phone (320px) at full size.
+     Plan's count or the Cooking pot need the tighter type, so only then does it shrink. */
+  .site-header:has([data-plan-count]:not([hidden]), [data-cooking]:not([hidden])) {
     --nav-pad: 0.15rem; --nav-size: 0.75rem; --nav-track: 0.02em; --brand-size: 0.875rem; --brand-track: 0.04em;
     --header-gap: 0.375rem; --pot-pad: 0.25rem; --count-min: 1.2rem; --count-pad: 0.3rem; --count-size: 0.6875rem;
   }
@@ -2577,10 +2729,10 @@ body:has(> .timers:not([hidden])) { padding-bottom: 8rem; }
   .brand { font-size: var(--brand-size, 1.25rem); letter-spacing: var(--brand-track, 0.14em); }
   .site-header__inner { gap: var(--header-gap, 0.5rem); }
   .site-nav ul { gap: 0.125rem; }
-  .site-nav .site-nav__group-start { margin-left: 0.125rem; padding-left: 0.125rem; }
   .plan-link { gap: 0.25rem; }
   .plan-link__count { min-width: var(--count-min, 1.35rem); padding-inline: var(--count-pad, 0.35rem); font-size: var(--count-size, 0.75rem); }
   .cooking-link { padding-inline: var(--pot-pad, 0.4rem); }
+  .nav-menu__toggle { padding-inline: var(--pot-pad, 0.4rem); }
 }
 
 /* ---------- Packing lists (see packing.js) ---------- */

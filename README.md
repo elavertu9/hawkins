@@ -18,10 +18,13 @@ automatically on every push to `main`. There is no build step to run yourself.
 | `plan/index.html` | The meal plan page: pick recipes, get one shopping list sorted by aisle. |
 | `_data/packing.yml` | The packing lists: kits and their items, and the preset trips. See "Packing lists" below. |
 | `packing/index.html` | The packing page: trip setup and the checklist. |
-| `assets/js/` | `recipe.js` for checklists and Keep screen on; `cook.js` for cook mode; `timers.js` for kitchen timers, which follow you to every page; `plan.js` for the meal plan and shopping list; `packing.js` for the packing lists (only loaded on `/packing/`); `packing-status.js` for the Packing badge in the header and the trip on the home page (every page); `lights.js` for the home page lights; `upside-down.js` for the easter egg; `page.js` (page changes, plus shared storage and screen-on helpers) and `lib/turbo.min.js` for in-place page changes (see below). |
+| `_data/drinks.yml` | The Caffeine drinks and the shops' names for things. See "Caffeine" below. |
+| `caffeine/index.html` | The Caffeine page: a card per drink, made entirely by Liquid. |
+| `assets/js/` | `nav.js` for the phone Menu button in the header (every page); `recipe.js` for checklists and Keep screen on; `cook.js` for cook mode; `timers.js` for kitchen timers, which follow you to every page; `plan.js` for the meal plan and shopping list; `packing.js` for the packing lists (only loaded on `/packing/`); `packing-status.js` for the Packing badge in the header and the trip on the home page (every page); `lights.js` for the home page lights; `upside-down.js` for the easter egg; `page.js` (page changes, plus shared storage and screen-on helpers) and `lib/turbo.min.js` for in-place page changes (see below). |
 | `assets/images/recipes/` | Recipe photos. |
+| `assets/images/drinks/` | Drink photos (4:5). |
 | `tests/` | Browser tests for the site's features. `tests/run.sh` runs them. |
-| `scripts/` | Tools: `add-photo.sh` for recipe photos, `classified.rb` (run by `./classified.sh`), and `hooks/pre-commit`. |
+| `scripts/` | Tools: `add-photo.sh` for recipe photos, `add-drink-photo.sh` for drink photos, `classified.rb` (run by `./classified.sh`), and `hooks/pre-commit`. |
 | `.github/workflows/test.yml` | Runs the checks and tests on GitHub after every push. |
 
 ## Add a recipe
@@ -145,6 +148,37 @@ you tap Hide). `packing.js` also saves `progress: { packed, skipped, total }` ea
 draws the list; `packing-status.js` shows it on other pages as a percentage on the Packing
 link and as "Pick up where you left off" on the home page, until everything is decided.
 
+## Caffeine
+
+Our favorite energy drink combos from Dutch Bros and Aroma Joe's, at `/caffeine/`. Everything is in
+`_data/drinks.yml` (its header comment lists the fields): edit it and the page follows. A drink is:
+
+- `id` (the card's link, `/caffeine/#hawkins`), `name` (its Hawkins name), `flavors`, and `style` (`iced` or `blended`).
+- `sugar_free: true` (optional) adds "Sugar-free" to the style line.
+- `top: true` (optional) means "has been good with a foam top". Each shop's row adds "Also good with a Soft Top"
+  (or Cloud Top, in that shop's word). It's never part of the drink.
+- `shop_notes` (optional): a tip for one shop, shown under that shop's order line, e.g. `{ dutch-bros: Sour shots make it sweeter. }`.
+- `shop_names` (optional): a shop's own menu name for it, by shop id, e.g. `{ dutch-bros: Galaxy Fish }`.
+- `photo` and `photo_alt` (optional). Without a photo the card shows a "Missing" placeholder.
+
+The two chains call the same things differently, so `shops:` is a small translation list: each
+shop has an `id`, a `name`, its energy drink `base` (Rebel at Dutch Bros, Rush at Aroma Joe's) and
+its foam `top` (Soft Top, Cloud Top). Each card has an order line per shop, in `shops` order:
+
+- If the drink has a `shop_names` entry for that shop, the line is that name in curly quotes: "Galaxy Fish".
+- Otherwise it's built from the shop's base and the flavors: "Rush with passion fruit, strawberry, lime".
+
+Photos are 4:5 (tall, like a cup). Make them with the script, then paste the two lines it prints into
+the drink:
+
+```sh
+scripts/add-drink-photo.sh hawkins ~/Downloads/IMG_1234.HEIC 40 "Deep red iced drink in a cup"
+```
+
+That's the drink's id, the photo (straight from a phone is fine), where to crop (0-100, as for recipe
+photos) and alt text. It saves a JPG and WebP copies in `assets/images/drinks/`, with all metadata
+(location, camera) stripped. It needs macOS and `brew install webp`.
+
 ## Add a new section (e.g. a watchlist)
 
 1. In `_data/sections.yml`, the section's entry is already there with `status: soon`.
@@ -153,6 +187,8 @@ link and as "Pick up where you left off" on the home page, until everything is d
    add a collection in `_config.yml` the same way `recipes` is set up, with a layout for its items.
 3. Change its status to `live`. It then appears in the header nav and links from the home page.
    If the title is long, add `nav:` with a shorter name for the header (Packing Lists shows as "Packing").
+   On phones the header has no room for the section links, so they move into a Menu button's
+   dropdown (`nav.js`); it lists the same live sections, in the same order.
    The header puts the Plan link after the section marked `group_with_plan: true` (Recipes), and
    each live section after the first starts a new group, set off by a thin divider.
 

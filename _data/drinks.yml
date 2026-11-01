@@ -1,0 +1,60 @@
+# Favorite energy drink combos (see caffeine/index.html).
+# Each combo has its own Hawkins name; the page shows how to order it at each shop.
+#
+# shops: in this order on every card. The two chains call the same things differently.
+#   id:    short name used by shop_names below
+#   name:  what the shop is called
+#   base:  the shop's energy drink base (an order line reads "Rush with passion fruit, ...")
+#   top:   the shop's foam top, for the "Also good with" line
+# drinks: in this order on the page.
+#   id:         the card's link: /caffeine/#hawkins
+#   name:       the Hawkins name
+#   flavors:    the flavors, in the order they're said
+#   style:      iced or blended
+#   sugar_free: true       optional (default false); adds "Sugar-free" to the style line
+#   top: true              optional: "has been good with a foam top". Each shop's row says
+#                          "Also good with a Soft Top" in its own word. Never part of the drink itself.
+#   shop_names: { dutch-bros: Galaxy Fish }
+#                          optional: a shop's own menu name for it, by shop id. A shop
+#                          without one gets the base and the flavors instead.
+#   shop_notes: { dutch-bros: Sour shots make it sweeter. }
+#                          optional: a tip for one shop, shown under that shop's order line
+#   photo, photo_alt       optional: a 4:5 photo (scripts/add-drink-photo.sh makes the files)
+
+shops:
+  - { id: dutch-bros, name: Dutch Bros, base: Rebel, top: Soft Top }
+  - { id: aroma-joes, name: "Aroma Joe's", base: Rush, top: Cloud Top }
+
+drinks:
+  - id: lifeguard
+    name: Lifeguard
+    flavors: [Passion Fruit, Strawberry, Lime]
+    style: iced
+    shop_names: { dutch-bros: Galaxy Fish }
+    photo: /assets/images/drinks/lifeguard.jpg
+    photo_alt: Red-orange iced energy drink in an Aroma Joe's cup
+  - id: hawkins
+    name: Hawkins
+    flavors: [Blackberry, Cherry, Grape]
+    style: iced
+    shop_names: { aroma-joes: Amethyst }
+    top: true
+    photo: /assets/images/drinks/hawkins.jpg
+    photo_alt: Deep red iced energy drink with a white Cloud Top in an Aroma Joe's cup
+  - id: demobat
+    name: Demobat
+    flavors: [Strawberry, Pomegranate]
+    style: iced
+    shop_names: { dutch-bros: Vampire Slayer }
+    shop_notes: { dutch-bros: Sour shots make it sweeter. }
+  - id: the-upside-down
+    name: The Upside Down
+    flavors: [Blue Raspberry, Red Raspberry]
+    style: iced
+    shop_names: { dutch-bros: Dragon Slayer }
+    shop_notes: { dutch-bros: Comes with a blackberry float. }
+  - id: madmax
+    name: MADMAX
+    flavors: [Orange, Lemon, Blackberry]
+    style: iced
+    shop_names: { aroma-joes: Black Jack }

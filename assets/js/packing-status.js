@@ -3,7 +3,8 @@
 // because only /packing/ has the kit data to count it. It shows in two places:
 //
 //   - The header: a percentage on the Packing link ("72%"), the share of the
-//     list that's decided (packed or skipped).
+//     list that's decided (packed or skipped). It shows in the phone Menu too,
+//     with a dot on the Menu button.
 //   - "Pick up where you left off" on the home page ([data-packing-resume]):
 //     the trip and "48 of 66 decided", linking back to /packing/.
 //
@@ -45,15 +46,17 @@
   const render = () => {
     const now = status();
 
-    // Header: the percent decided, next to "Packing".
-    const badge = document.querySelector("[data-packing-count]");
-    if (badge) {
+    // Header: the percent decided, next to "Packing". On phones Packing lives in
+    // the Menu, so the percent shows there too, and a dot on the Menu button
+    // says there's something in it.
+    document.querySelectorAll("[data-packing-count]").forEach((badge) => {
       badge.hidden = !now;
       if (now) badge.textContent = `${now.percent}%`;
       const link = badge.closest("a");
       if (now) link.setAttribute("aria-label", `Packing, ${now.percent}% decided`);
       else link.removeAttribute("aria-label");
-    }
+    });
+    document.querySelectorAll("[data-nav-menu-toggle]").forEach((toggle) => toggle.toggleAttribute("data-badge", !!now));
 
     // Pick up where you left off.
     document.querySelectorAll("[data-packing-resume]").forEach((section) => {

@@ -18,7 +18,7 @@
           {%- if section.status == "live" %}
             {%- assign prefix = page.url | slice: 0, section.url.size %}
             {%- comment %} Each section after the first starts a group, with a divider before it. {% endcomment %}
-            <li{% if groups > 0 %} class="site-nav__group-start"{% endif %}>
+            <li class="site-nav__section{% if groups > 0 %} site-nav__group-start{% endif %}">
               {%- comment %} Packing shows how much of the trip is decided (packing-status.js). {% endcomment %}
               <a{% if section.id == "packing" %} class="plan-link"{% endif %} href="{{ section.url | relative_url }}"
                 {%- if page.url == section.url %} aria-current="page"{% elsif prefix == section.url %} aria-current="true"{% endif %}>
@@ -45,8 +45,28 @@
             <span class="cooking-link__label" data-cooking-label>Cooking</span><span class="plan-link__count" data-cooking-count hidden></span>
           </button>
         </li>
+        {%- comment %} Phones: the section links don't fit, so they move into this menu (nav.js). {% endcomment %}
+        <li class="nav-menu">
+          <button class="nav-menu__toggle" type="button" aria-expanded="false" aria-controls="nav-menu" data-nav-menu-toggle>
+            <svg class="nav-menu__icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+            <span class="nav-menu__label">Menu</span><span class="nav-menu__dot" aria-hidden="true"></span>
+          </button>
+        </li>
       </ul>
     </nav>
+    <div class="nav-menu__list" id="nav-menu" data-nav-menu hidden>
+      {%- for section in site.data.sections %}
+        {%- if section.status == "live" %}
+          {%- assign prefix = page.url | slice: 0, section.url.size %}
+      <a href="{{ section.url | relative_url }}"
+        {%- if page.url == section.url %} aria-current="page"{% elsif prefix == section.url %} aria-current="true"{% endif %}>
+        <span class="nav-menu__file">{{ section.file }}</span>
+        {{- section.nav | default: section.title -}}
+        {%- if section.id == "packing" %} <span class="plan-link__count plan-link__count--quiet" data-packing-count hidden></span>{% endif -%}
+      </a>
+        {%- endif %}
+      {%- endfor %}
+    </div>
     <div class="cooking-menu" id="cooking-menu" data-cooking-menu hidden>
       <p class="cooking-menu__title">Cooking now</p>
       <ul class="cooking-list"></ul>

@@ -613,25 +613,28 @@ check(`an item can't be both: packed wins (${(await saved()).checked} / ${(await
   && !(await q("document.querySelector('[data-pack-setup-body]').hidden")) && (await saved()).progress.packed === 1 && (await saved()).progress.skipped === 1 && (await saved()).setupFolded === false && (await saved()).skipped.join() === "rain-jacket");
 
 // ---------- The header: nav order, the divider, and the Packing badge ----------
-// Recipes · Plan │ Packing, then the cooking pot while there is one.
-const navHrefs = "[...document.querySelectorAll('.site-nav > ul > li')].map(li => (li.querySelector('a') || { getAttribute: () => 'cooking' }).getAttribute('href')).join()";
+// Recipes · Plan │ Packing │ Caffeine, then the cooking pot while there is one, then the phone Menu
+// (which only shows on phones). The links only show beyond phone width, so this part is on a desktop.
+await send("Emulation.setDeviceMetricsOverride", { width: 1280, height: 800, deviceScaleFactor: 1, mobile: false });
+const navHrefs = "[...document.querySelectorAll('.site-nav > ul > li')].map(li => li.classList.contains('nav-menu') ? 'menu' : li.classList.contains('cooking-nav') ? 'cooking' : li.querySelector('a').getAttribute('href')).join()";
 const navCss = readFileSync(new URL("../_data/sections.yml", import.meta.url), "utf8");
 check("sections.yml says which section Plan goes with, so the nav is data-driven", /- id: recipes[\s\S]*?group_with_plan: true[\s\S]*?- id: packing/.test(navCss) && (navCss.match(/group_with_plan: true/g) || []).length === 1);
 for (const path of ["/", "/recipes/", "/plan/", "/packing/"]) {
   await go(path);
-  check(`${path}: nav is Recipes, Plan, Packing, then the pot: ${await q(navHrefs)}`, (await q(navHrefs)) === "/recipes/,/plan/,/packing/,cooking");
+  check(`${path}: nav is Recipes, Plan, Packing, Caffeine, then the pot and Menu: ${await q(navHrefs)}`, (await q(navHrefs)) === "/recipes/,/plan/,/packing/,/caffeine/,cooking,menu");
 }
 await go("/packing/");
-check("a thin divider starts the Packing group, and only that one", await q(`(() => {
+check("a thin divider starts the Packing group and the Caffeine group, and nothing else", await q(`(() => {
   const li = [...document.querySelectorAll('.site-nav > ul > li')];
   const t = document.createElement('i'); t.style.borderLeft = '1px solid var(--line-strong)'; document.body.append(t);
   const line = getComputedStyle(t).borderLeftColor; t.remove();
   const own = li.map((x) => getComputedStyle(x).borderLeftWidth);
-  return own.join() === '0px,0px,1px,0px' && li[2].classList.contains('site-nav__group-start') && getComputedStyle(li[2]).borderLeftColor === line && li[2].getBoundingClientRect().left > li[1].getBoundingClientRect().right;
+  return own.join() === '0px,0px,1px,1px,0px,0px' && li[2].classList.contains('site-nav__group-start') && getComputedStyle(li[2]).borderLeftColor === line && li[2].getBoundingClientRect().left > li[1].getBoundingClientRect().right;
 })()`));
 check("the current page is marked: Packing here, Plan on its page", await q("document.querySelector('.site-nav a[href=\"/packing/\"]').getAttribute('aria-current') === 'page' && !document.querySelector('.site-nav a[href=\"/plan/\"]').hasAttribute('aria-current')"));
 await go("/plan/");
 check("and Recipes isn't marked on /plan/", await q("document.querySelector('.site-nav a[href=\"/plan/\"]').getAttribute('aria-current') === 'page' && !document.querySelector('.site-nav a[href=\"/recipes/\"]').hasAttribute('aria-current')"));
+await send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
 
 // The badge: the percent decided, from what packing.js saved. Not a trip, nothing to count, or all done: hidden.
 await go("/recipes/");
@@ -667,7 +670,7 @@ check(`ticks and skips move the saved progress and the header's badge at once: $
 await tick("Umbrella"); await q(`${row("Rain jacket")}.querySelector('.pack-row__skip').click()`); await sleep(200);
 check(`unticked and brought back: ${await q(badge)}`, (await q(badge)) === "0%");
 await q("[...document.querySelectorAll('.site-nav a')].find(a => a.textContent.includes('Recipes')).click()"); await sleep(800);
-check(`it follows you to the next page in place: ${await q("location.pathname")}, ${await q(badge)}`, (await q("location.pathname")) === "/recipes/" && (await q(badge)) === "0%" && (await q("document.querySelectorAll('[data-packing-count]').length")) === 1);
+check(`it follows you to the next page in place: ${await q("location.pathname")}, ${await q(badge)}`, (await q("location.pathname")) === "/recipes/" && (await q(badge)) === "0%" && (await q("document.querySelectorAll('[data-packing-count]').length")) === 2); // the bar's and the phone Menu's
 // Another tab changes the trip while this page is open.
 await q(`localStorage.setItem('${KEY}', JSON.stringify({ ...JSON.parse(localStorage.getItem('${KEY}')), progress: { packed: 1, skipped: 0, total: 4 } })); dispatchEvent(new StorageEvent('storage', { key: '${KEY}' }))`);
 check(`another tab's change shows too: ${await q(badge)}`, (await q(badge)) === "25%");
@@ -835,11 +838,12 @@ await send("Emulation.setDeviceMetricsOverride", { width: 360, height: 740, devi
 await fresh("/packing/?d=30&k=flying,car,international,warm,swim,cold,snow,hiking,dressy,rain");
 check("a small phone with every kit on fits", await q(fits));
 check("the Share menu fits there too", await q("(() => { document.querySelector('[data-pack-menu-toggle]').click(); const r = document.querySelector('[data-pack-menu]').getBoundingClientRect(); document.querySelector('[data-pack-menu-toggle]').click(); return r.left >= 0 && r.right <= innerWidth; })()"));
-// Plan's count and Packing's percent both show; the header stays on one line, Packing whole.
-const crowd = "document.querySelector('[data-plan-count]').textContent = '12'; document.querySelector('[data-plan-count]').hidden = false; document.querySelector('[data-packing-count]').textContent = '99%'; document.querySelector('[data-packing-count]').hidden = false";
+// Plan's count and Packing's percent both show (the percent is inside the Menu, with a dot on the button);
+// the header stays on one line.
+const crowd = "document.querySelector('[data-plan-count]').textContent = '12'; document.querySelector('[data-plan-count]').hidden = false; document.querySelectorAll('[data-packing-count]').forEach(b => { b.textContent = '99%'; b.hidden = false }); document.querySelector('[data-nav-menu-toggle]').setAttribute('data-badge', '')";
 await q(crowd);
-check(`header at 360px with both badges: one line (${await q("Math.round(document.querySelector('.site-header').getBoundingClientRect().height)")}px), fits`, await q("document.querySelector('.site-header').getBoundingClientRect().height < 70 && document.querySelector('.site-nav a[href=\"/packing/\"]').getBoundingClientRect().height < 40") && await q(fits));
-check("nothing in the nav is squeezed onto a second line", await q("[...document.querySelectorAll('.site-nav > ul > li')].filter(li => !li.hidden).every(li => li.getBoundingClientRect().height < 46)") && await q("(() => { const p = document.querySelector('.site-nav a[href=\"/packing/\"]').getBoundingClientRect(); return p.right <= innerWidth; })()"));
+check(`header at 360px with both badges: one line (${await q("Math.round(document.querySelector('.site-header').getBoundingClientRect().height)")}px), fits`, await q("document.querySelector('.site-header').getBoundingClientRect().height < 70 && document.querySelector('[data-nav-menu-toggle]').getBoundingClientRect().height < 50") && await q(fits));
+check("the section links moved into the Menu, and nothing in the nav is squeezed onto a second line", await q("document.querySelector('.site-nav a[href=\"/packing/\"]').getBoundingClientRect().width === 0 && [...document.querySelectorAll('.site-nav > ul > li')].filter(li => li.offsetParent).every(li => li.getBoundingClientRect().height < 46)") && await q("(() => { const p = document.querySelector('[data-nav-menu-toggle]').getBoundingClientRect(); return p.right <= innerWidth - 8; })()"));
 await shot("packing-small-phone");
 await q("document.querySelector('[data-cooking]').hidden = false");
 check("header at 360px with the pot as well: fits", await q(fits) && await q("document.querySelector('.site-header').getBoundingClientRect().height < 70"));
@@ -847,7 +851,7 @@ await send("Emulation.setDeviceMetricsOverride", { width: 375, height: 740, devi
 await go("/packing/");
 await q(crowd + "; document.querySelector('[data-cooking]').hidden = false");
 check(`header at 375px with Plan's count, Packing's badge and the Cooking pot: fits (${await q("Math.round(document.querySelector('.site-nav').getBoundingClientRect().right)")}px of 375)`, await q(fits) && await q("document.querySelector('.site-header').getBoundingClientRect().height < 70")
-  && await q("document.querySelector('.site-nav').getBoundingClientRect().right <= innerWidth - 8 && [...document.querySelectorAll('.site-nav > ul > li')].every(li => li.getBoundingClientRect().height < 46)"));
+  && await q("document.querySelector('.site-nav').getBoundingClientRect().right <= innerWidth - 8 && [...document.querySelectorAll('.site-nav > ul > li')].filter(li => li.offsetParent).every(li => li.getBoundingClientRect().height < 46)"));
 await shot("packing-header-375");
 check(`JS errors: ${errors.length} ${errors.join(" | ")}`, errors.length === 0);
 finish();

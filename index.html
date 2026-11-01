@@ -55,7 +55,9 @@ body_class: page-home
           {%- endfor %}
         </div>
         {%- endif %}
-        <p class="file__status">{% if items %}{{ items.size }} {{ section.title | downcase }}{% else %}Open file{% endif %} <span aria-hidden="true">→</span></p>
+        {%- comment %} Caffeine isn't a collection: its drinks are data (_data/drinks.yml). {% endcomment %}
+        {%- if section.id == "caffeine" %}{% assign drink_count = site.data.drinks.drinks.size %}{% endif %}
+        <p class="file__status">{% if section.id == "caffeine" %}{{ drink_count }} drink{% unless drink_count == 1 %}s{% endunless %}{% elsif items %}{{ items.size }} {{ section.title | downcase }}{% else %}Open file{% endif %} <span aria-hidden="true">→</span></p>
       </li>
       {%- endif %}
     {%- endfor %}

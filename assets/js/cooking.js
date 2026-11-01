@@ -28,7 +28,7 @@
   const HOUR = 60 * 60 * 1000;
   const UNDO_MS = 5000;
   const HINT_KEY = "hawkins:cooking-hint";
-  const narrow = matchMedia("(max-width: 40rem)");
+  const narrow = matchMedia("(max-width: 52rem)");
 
   const pathOf = (url) => new URL(url, location.href).pathname;
   const progressLabel = (r) => (r.steps.length ? `Step ${r.next} of ${r.total}` : "Getting ingredients");
@@ -257,6 +257,7 @@
     if (!item) return;
     document.querySelector("[data-cooking-menu]").hidden = !open;
     item.querySelector("[data-cooking-toggle]").setAttribute("aria-expanded", String(open));
+    if (open) document.dispatchEvent(new CustomEvent("hawkins:menu-open", { detail: "cooking" })); // one menu at a time (nav.js)
   };
   document.addEventListener("click", (event) => {
     const item = document.querySelector("[data-cooking]");
@@ -271,6 +272,7 @@
       setMenu(false);
     }
   });
+  document.addEventListener("hawkins:menu-open", (event) => { if (event.detail !== "cooking") setMenu(false); });
   document.addEventListener("keydown", (event) => {
     if (event.key !== "Escape") return;
     const item = document.querySelector("[data-cooking]");

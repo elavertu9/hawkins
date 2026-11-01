@@ -17,6 +17,8 @@ const tap = async (selector) => {
   }
   await sleep(900);
 };
+// The section links live in the Menu on a phone: open it, then tap the link.
+const tapNav = async (href) => { await tap("[data-nav-menu-toggle]"); await tap(`[data-nav-menu] a[href="${href}"]`); };
 const key = async (k) => {
   await send("Input.dispatchKeyEvent", { type: "keyDown", key: k, text: k });
   await send("Input.dispatchKeyEvent", { type: "keyUp", key: k }); await sleep(60);
@@ -32,7 +34,7 @@ await q("window.__sameTab = 1");
 check("Turbo is running", await q("!!(window.Turbo && Turbo.session.drive)"));
 
 // Links swap pages in place.
-await tap('.site-header a[href="/recipes/"]');
+await tapNav("/recipes/");
 check(`header link -> ${await q(path)}, same tab: ${await q(alive)}`, (await q("location.pathname")) === "/recipes/" && await q(alive));
 check(`title updated: ${await q("document.title")}`, /^Recipes/.test(await q("document.title")));
 await tap('.card__link[href="/recipes/beef-and-broccoli/"]');
@@ -43,7 +45,7 @@ await q("history.forward()"); await sleep(1200);
 check(`Forward -> ${await q(path)}`, (await q("location.pathname")) === "/recipes/beef-and-broccoli/" && await q(alive));
 
 // Filters on the list page keep the URL, and Back still works after them.
-await tap('.site-header a[href="/recipes/"]');
+await tapNav("/recipes/");
 await tap("#recipe-search");
 await tap('.suggest .chip[data-category="dessert"]');
 check(`filter in URL: ${await q("location.search")}`, (await q("location.search")).includes("category=dessert"));
@@ -66,7 +68,7 @@ await tap("[data-cook-close]");
 await tap('.site-header a[href="/plan/"]');
 check(`on ${await q(path)}: one tray, one timer, same tab`, (await q("location.pathname")) === "/plan/" && await q("document.querySelectorAll('.timers').length === 1 && document.querySelectorAll('.timer').length === 1") && await q(alive));
 check(`sound still unlocked after moving page (was hidden: ${soundHidden})`, (await q("document.querySelector('.timers__sound').hidden")) === soundHidden);
-await tap('.site-header a[href="/recipes/"]');
+await tapNav("/recipes/");
 await tap('.card__link[href="/recipes/banana-bread/"]');
 check(`still one timer on ${await q(path)}`, await q("document.querySelectorAll('.timers').length === 1 && document.querySelectorAll('.timer').length === 1"));
 await shot("turbo-timer-other-recipe");
@@ -78,7 +80,7 @@ check(`timer -> ${await q(path)} at ${await q(count)}, same tab: ${await q(alive
 
 // Finish it; Continue recipe from another page.
 await tap("[data-cook-close]");
-await tap('.site-header a[href="/recipes/"]');
+await tapNav("/recipes/");
 await q("(() => { const real = Date.now.bind(Date); Date.now = () => real() + 31 * 1000; })()"); await sleep(600);
 check("timer finished on the list page", await q("document.querySelector('.timer').classList.contains('is-done')"));
 await tap(".timer__continue");
@@ -119,7 +121,7 @@ check(`+ Plan adds once after many visits: ${await q("JSON.parse(localStorage.ge
 for (const k of "011") await key(k);
 await sleep(1200);
 check("Upside Down flips once (not twice) after many visits", await q("document.documentElement.classList.contains('upside-down')"));
-await tap('.site-header a[href="/recipes/"]');
+await tapNav("/recipes/");
 check(`stays flipped across pages: ${await q(path)}`, await q("document.documentElement.classList.contains('upside-down')") && await q(alive));
 check("toast follows to the new page", await q("(() => { const t = document.querySelector('.upside-toast'); return !t || t.isConnected; })()"));
 for (const k of "011") await key(k);
