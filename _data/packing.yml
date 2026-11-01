@@ -38,6 +38,8 @@ kits:
       - { id: toothbrush, item: Toothbrush }
       - { id: toothpaste, item: Toothpaste }
       - { id: floss, item: Floss }
+      - { id: retainers, item: Retainers }
+      - { id: retainer-cleaner, item: Retainer cleaner }
       - { id: deodorant, item: Deodorant }
       - { id: body-wash, item: Body wash }
       - { id: shampoo, item: Shampoo }
