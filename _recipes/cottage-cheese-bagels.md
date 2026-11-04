@@ -32,6 +32,11 @@ ingredients:
         item: egg, whisked, for the egg wash
       - qty: ""
         item: everything bagel seasoning
+  - group: To serve
+    items:
+      - qty: "4 tablespoons"
+        item: cream cheese, about 1 tablespoon per bagel
+        shop: cream cheese
 
 steps:
   - title: Heat the oven
@@ -57,7 +62,6 @@ steps:
     text: Bake **20 minutes**, until golden brown.
 
 notes:
-  - Calories are per bagel, from the original recipe, and don't include toppings. Two tablespoons of cream cheese adds about 100 (about 60 for light).
+  - Calories are per bagel, from the original recipe, and don't include the cream cheese. One tablespoon adds about 40 calories, two about 80.
   - Blend the cottage cheese in a blender or food processor first so the dough comes out smooth.
-  - The original doesn't list a prep time. That's an estimate.
 ---
