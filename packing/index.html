@@ -38,7 +38,7 @@ description: Pick the days and the kind of trip, and get one checklist that reme
             <button class="toggle pack-setup__done" type="button" data-pack-summary-done hidden>Hide</button>
           </div>
 
-          {%- comment %} Presets are for starting out: once there's a trip, "Start a new trip" clears it and brings them back. {% endcomment %}
+          {%- comment %} Presets are for starting out: once there's a trip, Clear trip (by Share) clears it and brings them back. {% endcomment %}
           <div data-pack-presets-block>
             <p class="suggest__label pack-setup__presets-label">Quick start</p>
             {%- comment %} Links, not toggles: a row each, with how long it is. {% endcomment %}
@@ -62,9 +62,6 @@ description: Pick the days and the kind of trip, and get one checklist that reme
           {%- comment %} The trip kits, under their `group:` headings (packing.js). {% endcomment %}
           <p class="pack-setup__hint">Pick all that apply</p>
           <div class="pack-groups" data-pack-kit-chips></div>
-          <div class="pack-setup__tools" data-pack-trip-tools hidden>
-            <button class="pack-setup__new" type="button" data-pack-new>Start a new trip</button>
-          </div>
         </div>
       </div>
     </section>
@@ -72,7 +69,8 @@ description: Pick the days and the kind of trip, and get one checklist that reme
     <section class="pack-list" aria-labelledby="pack-list-title">
       <div class="section-head">
         <h2 id="pack-list-title">Checklist</h2>
-        {%- comment %} Share: the list, or just the link (the same menu as the shopping list). {% endcomment %}
+        {%- comment %} Share: the list, or just the link (the same menu as the shopping list).
+          Clear trip: asks first, in the dialog below. {% endcomment %}
         <div class="section-head__actions">
           <div class="menu">
             <button class="toggle" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="pack-share-menu" data-pack-menu-toggle>Share</button>
@@ -81,6 +79,7 @@ description: Pick the days and the kind of trip, and get one checklist that reme
               <button type="button" data-pack-share="link">Just the link<small>Opens this trip on their phone</small></button>
             </div>
           </div>
+          <button class="toggle" type="button" data-pack-clear hidden>Clear trip</button>
         </div>
         <span class="section-head__count" data-pack-count></span>
       </div>
@@ -96,6 +95,16 @@ description: Pick the days and the kind of trip, and get one checklist that reme
     <span data-pack-toast-text></span>
     <button class="plan-toast__undo" type="button" data-pack-toast-action hidden>Undo</button>
   </div>
+
+  {%- comment %} Are you sure? Clear trip opens this; Cancel, Escape or a tap outside keeps the trip. {% endcomment %}
+  <dialog class="confirm" aria-labelledby="pack-clear-title" aria-describedby="pack-clear-text" data-pack-clear-dialog>
+    <h2 class="confirm__title" id="pack-clear-title">Clear this trip?</h2>
+    <p class="confirm__text" id="pack-clear-text">This unchecks every item and resets your trip setup, so you can start a new one.</p>
+    <form class="confirm__actions" method="dialog">
+      <button class="toggle" value="cancel" autofocus>Cancel</button>
+      <button class="button button--primary" value="clear">Clear trip</button>
+    </form>
+  </dialog>
 </div>
 
 {%- comment -%} Every kit and item, for building the checklist. {%- endcomment -%}

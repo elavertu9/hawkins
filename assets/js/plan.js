@@ -189,7 +189,7 @@
     ["Drinks & Alcohol", /\bwine\b|sherry|marsala|crème de|creme de|liqueur|vodka|\brum\b|beer/],
     ["Baking", /jell-o|gelatin|pudding|cake mix|muffin mix/],
     ["Spices & Seasonings", /\bsalt\b|black pepper|^pepper$|cayenne|paprika|cumin|cinnamon|ground (cloves|ginger|coriander)|oregano|thyme|marjoram|dried basil|italian seasoning|chili powder|garlic powder|onion powder|celery seed|bay lea|red pepper flakes|seasoning|ranch|^accent|sesame seeds|dried minced onion/],
-    ["Oils, Vinegar & Sauces", /\boil\b|vinegar|soy sauce|tamari|hoisin|worcestershire|mustard|mayonnaise|chili sauce|cooking spray/],
+    ["Oils, Vinegar & Sauces", /\boil\b|vinegar|soy sauce|tamari|hoisin|worcestershire|mustard|mayonnaise|ketchup|horseradish|chili sauce|cooking spray/],
     ["Canned & Jarred", /broth|stock|consommé|bouillon|\bsoup\b|\bbeans?\b|tomato (sauce|paste)|(crushed|diced|whole|petite) tomatoes|tomatoes &|green chilies|pasta sauce|spaghetti sauce|cream-style corn|whole kernel corn|mandarin|pineapple|jelly|preserves|pepperoncini/],
     ["Meat & Seafood", /beef|steak|chuck|pork|lamb|chicken|sausage|bacon|lobster|crab|shrimp|turkey|\bham\b|meatballs?/],
     ["Dairy & Refrigerated", /butter|margarine|milk|cream|cheese|cheddar|mozzarella|parmesan|parmigiano|romano|ricotta|feta|provolone|velveeta|neufchâtel|yogurt|\beggs?\b|crescent|cookie dough|tortellini|pie crust|pie pastry|wonton/],

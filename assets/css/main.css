@@ -2770,22 +2770,25 @@ body:has(> .timers:not([hidden])) { padding-bottom: 8rem; }
 /* Getting there / Weather / Plans: a small heading over each row of kits. */
 .pack-groups { display: grid; gap: 0.9rem; margin-top: 0.75rem; }
 .pack-setup .pack-group__label { margin: 0 0 0.45rem; font-size: 0.6875rem; }
-/* Start a new trip: quiet words. */
-.pack-setup__tools { margin-top: 0.75rem; }
-.pack-setup__new {
-  display: inline-flex;
-  align-items: center;
-  min-height: 2.75rem;
-  padding: 0 0.2rem;
-  font: inherit;
-  font-size: 0.875rem;
-  color: var(--text-muted);
-  background: none;
-  border: 0;
-  cursor: pointer;
+/* Clear trip's "are you sure?": a small box in the middle of the screen. */
+.confirm {
+  width: min(22rem, calc(100% - 2 * var(--gutter)));
+  padding: 1.25rem;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: 1.25rem;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
 }
-.pack-setup__new:hover { color: var(--red-bright); text-decoration: underline; }
-.pack-setup__new:focus-visible { outline: 2px solid var(--red-bright); border-radius: 6px; }
+.confirm[open] { animation: cooking-menu-in 0.18s ease-out; }
+.confirm::backdrop { background: rgba(0, 0, 0, 0.55); }
+.confirm__title { margin: 0 0 0.5rem; font-size: 1.25rem; }
+.confirm__text { margin: 0 0 1.25rem; color: var(--text-muted); }
+.confirm__actions { display: flex; justify-content: flex-end; gap: 0.5rem; }
+.confirm__actions .button { padding: 0.5rem 1.1rem; font-size: 0.8125rem; }
+@media (prefers-reduced-motion: reduce) {
+  .confirm[open] { animation: none; }
+}
 
 /* How long: "3 days" between a − and a +. */
 .pack-days { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.75rem; }

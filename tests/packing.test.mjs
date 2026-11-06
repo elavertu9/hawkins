@@ -12,6 +12,8 @@ await send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, devi
 
 const fits = "document.documentElement.scrollWidth <= document.documentElement.clientWidth";
 const KEY = "hawkins:packing";
+// Clear trip, then "Clear trip" again in the are-you-sure box.
+const clearTrip = "document.querySelector('[data-pack-clear]').click(); document.querySelector('[data-pack-clear-dialog] button[value=clear]').click()";
 const saved = () => q(`JSON.parse(localStorage.getItem('${KEY}'))`);
 const fresh = async (path = "/packing/") => { await go("/packing/"); await q("localStorage.clear()"); await go(path); };
 const kitIds = () => q("[...document.querySelectorAll('.pack-kit')].map(k => k.dataset.packKitId).join()");
@@ -81,8 +83,8 @@ check(`eyebrow and title: ${await q("document.querySelector('.eyebrow').textCont
 check("no Leaving home: the progress bar goes straight into the kits", await q("!document.querySelector('[data-pack-door], [data-pack-walks], [data-pack-dialog]') && document.querySelector('[data-pack-bar]').nextElementSibling.matches('[data-pack-kits]')"));
 check(`credit: "${await q("document.querySelector('.pack-credit').textContent")}"`, (await q("document.querySelector('.pack-credit a').href")) === "https://www.smartertravel.com/the-ultimate-packing-list/" && (await q("document.querySelector('.pack-credit').textContent")) === "Adapted from SmarterTravel's Ultimate Packing List.");
 check("the credit comes right after the kits: no Heading home note", await q("document.querySelector('[data-pack-kits]').nextElementSibling.matches('.pack-credit') && !document.querySelector('.pack-home')"));
-check("no footer row under the list: Start a new trip lives in the trip panel", await q("!document.querySelector('[data-pack-tools], [data-pack-finish]') && document.querySelector('[data-pack-setup-body]').contains(document.querySelector('[data-pack-trip-tools]'))"));
-check("and it waits until there's a trip", await q("document.querySelector('[data-pack-trip-tools]').hidden"));
+check("no footer row under the list: Clear trip sits by Share, above the checklist", await q("!document.querySelector('[data-pack-tools], [data-pack-finish], [data-pack-new]') && document.querySelector('[data-pack-menu-toggle]').closest('.section-head__actions').contains(document.querySelector('[data-pack-clear]'))"));
+check("and it waits until there's a trip", await q("document.querySelector('[data-pack-clear]').hidden"));
 const groupRows = () => q("[...document.querySelectorAll('.pack-group')].map(g => g.querySelector('.pack-group__label').textContent + ': ' + [...g.querySelectorAll('[data-pack-kit]')].map(c => c.querySelector('.chip__name').textContent).join(', ')).join(' | ')");
 check(`kits under three headings: ${await groupRows()}`, (await groupRows()) === "Getting there: Flying, Car, International | Weather: Warm, Cold, Snow, Rain | Plans: Beach / Pool, Hiking, Dressy, Laundry");
 check("each row is a labelled group, after \"Pick all that apply\"", await q("[...document.querySelectorAll('.pack-chips')].every(c => c.getAttribute('role') === 'group' && document.getElementById(c.getAttribute('aria-labelledby'))?.classList.contains('pack-group__label')) && document.querySelector('.pack-setup__hint').textContent === 'Pick all that apply' && document.querySelector('.pack-setup__hint').nextElementSibling === document.querySelector('[data-pack-kit-chips]')"));
@@ -91,7 +93,7 @@ check(`Quick start comes first, each with its length: ${await quick()}`, (await 
   && await q("document.querySelector('.pack-setup__presets-label').textContent === 'Quick start' && document.querySelector('[data-pack-presets-block]').compareDocumentPosition(document.querySelector('.pack-days')) & Node.DOCUMENT_POSITION_FOLLOWING")
   && (await q("document.querySelector('.pack-setup__or').textContent")) === "or build your own");
 await shot("packing-setup-new-mobile");
-check("presets show while there's no trip, and there's no Start a new trip", await q("!document.querySelector('[data-pack-presets-block]').hidden && document.querySelector('[data-pack-trip-tools]').hidden"));
+check("presets show while there's no trip, and there's no Clear trip", await q("!document.querySelector('[data-pack-presets-block]').hidden && document.querySelector('[data-pack-clear]').hidden"));
 check(`progress with nothing decided: "${await progress()}"`, /^0 packed · \d+ to go$/.test(await progress()) && (await fill()) === "0%");
 check("nothing saved yet, so no badge in the header", (await q(badge)) === "hidden" && (await q(`localStorage.getItem('${KEY}')`)) === null);
 check("packing page fits at 390px", await q(fits));
@@ -134,20 +136,47 @@ await q("document.querySelector('[data-pack-summary]').click()"); await sleep(20
 check("Edit opens it, and that's remembered too", await q("!document.querySelector('[data-pack-setup-body]').hidden && !document.querySelector('[data-pack-summary-done]').hidden && document.querySelector('[data-pack-summary]').hidden") && (await saved()).setupFolded === false);
 await go("/packing/");
 check("reload: open again", await q("!document.querySelector('[data-pack-setup-body]').hidden"));
-// With a trip, the presets are gone and Start a new trip clears it (with Undo) to bring them back.
-check("a trip hides the presets; Start a new trip is there", await q("document.querySelector('[data-pack-presets-block]').hidden && !document.querySelector('[data-pack-trip-tools]').hidden && !document.querySelector('[data-pack-new]').hidden && document.querySelector('[data-pack-new]').textContent === 'Start a new trip'"));
+// With a trip, the presets are gone and Clear trip (after "are you sure?") clears it, with Undo, to bring them back.
+check("a trip hides the presets; Clear trip is there, a button like Share", await q("document.querySelector('[data-pack-presets-block]').hidden && !document.querySelector('[data-pack-clear]').hidden && document.querySelector('[data-pack-clear]').textContent === 'Clear trip' && document.querySelector('[data-pack-clear]').className === document.querySelector('[data-pack-menu-toggle]').className"));
 await tick("Underwear");
-await q("document.querySelector('[data-pack-new]').click()"); await sleep(200);
-check(`Start a new trip clears it: storage ${await q(`localStorage.getItem('${KEY}')`)}, URL "${await q("location.search")}", ${await days()}, toast "${await q(toastText)}"`,
+// ---------- Are you sure? ----------
+const dialogOpen = "document.querySelector('[data-pack-clear-dialog]').open";
+await q("document.querySelector('[data-pack-summary-done]')?.click()"); await sleep(200);
+check("with the setup folded away, Clear trip is still in view", await q("document.querySelector('[data-pack-setup-body]').hidden && document.querySelector('[data-pack-clear]').getBoundingClientRect().width > 0"));
+await q("document.querySelector('[data-pack-clear]').click()"); await sleep(250);
+check(`Clear trip asks first: "${await q("document.querySelector('#pack-clear-title').textContent")}", with Cancel focused`, await q(dialogOpen) && (await q("document.querySelector('#pack-clear-title').textContent")) === "Clear this trip?"
+  && await q("document.activeElement === document.querySelector('[data-pack-clear-dialog] button[value=cancel]') && document.querySelector('[data-pack-clear-dialog] button[value=clear]').textContent === 'Clear trip'")
+  && (await q(`localStorage.getItem('${KEY}')`)) !== null);
+await shot("packing-clear-confirm-mobile");
+check("the box fits on screen, centered", await q("(() => { const r = document.querySelector('[data-pack-clear-dialog]').getBoundingClientRect(); return r.left >= 8 && r.right <= innerWidth - 8 && Math.abs((r.left + r.right) / 2 - innerWidth / 2) < 2; })()"));
+await q("document.querySelector('[data-pack-clear-dialog] button[value=cancel]').click()"); await sleep(250);
+check("Cancel keeps the trip, and focus goes back to Clear trip", !(await q(dialogOpen)) && (await saved()).checked.join() === "underwear" && await q("document.activeElement === document.querySelector('[data-pack-clear]')"));
+await q("document.querySelector('[data-pack-clear]').click()"); await sleep(250);
+await send("Input.dispatchKeyEvent", { type: "keyDown", key: "Escape", code: "Escape", windowsVirtualKeyCode: 27 });
+await send("Input.dispatchKeyEvent", { type: "keyUp", key: "Escape", code: "Escape", windowsVirtualKeyCode: 27 }); await sleep(250);
+check("Escape keeps the trip", !(await q(dialogOpen)) && (await saved()).checked.join() === "underwear");
+await q("document.querySelector('[data-pack-clear]').click()"); await sleep(250);
+for (const type of ["mousePressed", "mouseReleased"]) await send("Input.dispatchMouseEvent", { type, x: 6, y: 120, button: "left", clickCount: 1 });
+await sleep(250);
+check("a tap outside the box keeps the trip", !(await q(dialogOpen)) && (await saved()).checked.join() === "underwear");
+await q("document.querySelector('[data-pack-clear]').click()"); await sleep(250);
+await q("(() => { const r = document.querySelector('[data-pack-clear-dialog]').getBoundingClientRect(); window.__pad = { x: r.left + 6, y: r.top + 6 }; })()");
+const pad = await q("window.__pad");
+for (const type of ["mousePressed", "mouseReleased"]) await send("Input.dispatchMouseEvent", { type, x: pad.x, y: pad.y, button: "left", clickCount: 1 });
+await sleep(250);
+check("a tap on the box's own padding doesn't close it", await q(dialogOpen));
+await q("document.querySelector('[data-pack-clear-dialog] button[value=cancel]').click()"); await sleep(250);
+await q(clearTrip); await sleep(200);
+check(`Clear trip clears it: storage ${await q(`localStorage.getItem('${KEY}')`)}, URL "${await q("location.search")}", ${await days()}, toast "${await q(toastText)}"`,
   (await q(`localStorage.getItem('${KEY}')`)) === null && (await q("location.search")) === "" && (await days()) === "3 days" && (await pressed()) === "" && (await q(toastText)) === "Trip cleared");
-check("the presets are back, focused, and the trip buttons are gone", await q("!document.querySelector('[data-pack-presets-block]').hidden && document.activeElement === document.querySelector('[data-pack-presets] a') && document.querySelector('[data-pack-trip-tools]').hidden"));
+check("the presets are back, focused, and the trip buttons are gone", await q("!document.querySelector('[data-pack-presets-block]').hidden && document.activeElement === document.querySelector('[data-pack-presets] a') && document.querySelector('[data-pack-clear]').hidden"));
 await shot("packing-presets-revealed-mobile");
 check("with the presets out, it fits", await q(fits));
 await undo();
 check(`Undo brings the trip back: ${await pressed()}, ${(await saved()).checked}`, (await pressed()) === "flying,warm,swim" && (await saved()).checked.join() === "underwear" && (await q("location.search")) === "?d=7&k=flying,warm,swim");
-await q("document.querySelector('[data-pack-new]').click()"); await sleep(200);
+await q(clearTrip); await sleep(200);
 await q("[...document.querySelectorAll('[data-pack-presets] a')].find(a => a.querySelector('.chip__name').textContent === 'Ski trip').click()"); await sleep(800);
-check(`picking one starts that trip (${await pressed()}), with nothing checked, and the presets are tucked away again`, (await pressed()) === "car,cold,snow" && (await saved()).checked.length === 0 && await q("document.querySelector('[data-pack-presets-block]').hidden && !document.querySelector('[data-pack-new]').hidden"));
+check(`picking one starts that trip (${await pressed()}), with nothing checked, and the presets are tucked away again`, (await pressed()) === "car,cold,snow" && (await saved()).checked.length === 0 && await q("document.querySelector('[data-pack-presets-block]').hidden && !document.querySelector('[data-pack-clear]').hidden"));
 
 // ---------- Quantities ----------
 await fresh("/packing/?d=3");
@@ -362,7 +391,7 @@ check(`all decided: "${await progress()}", bar ${await fill()}, "${await q("docu
 check("every kit folds, Extras (always open, for its add row) doesn't", await q("[...document.querySelectorAll('.pack-kit')].filter(k => k.dataset.packKitId !== 'extras').every(k => k.querySelector('.pack-kit__list').hidden && k.classList.contains('is-complete'))") && !(await folded("extras")));
 await shot("packing-all-set-mobile");
 
-// Nothing unchecks everything at once any more: Start a new trip is the one reset.
+// Nothing unchecks everything at once any more: Clear trip is the one reset.
 check("no Uncheck all / Start over / Pack this trip again", await q("!document.querySelector('[data-pack-uncheck]')"));
 
 // ---------- Kits on and off ----------
@@ -595,12 +624,12 @@ check(`Use shared trip: ${await days()}, ${await pressed()}, ticks and skips cle
 await undo();
 check("Undo brings my trip back", (await days()) === "4 days" && (await pressed()) === "rain" && (await saved()).checked.join() === "umbrella" && (await saved()).skipped.join() === "rain-jacket");
 
-// ---------- Start a new trip clears it ----------
-check("Start a new trip is there once there's a trip", await q("!document.querySelector('[data-pack-new]').hidden"));
-await q("document.querySelector('[data-pack-new]').click()"); await sleep(200);
+// ---------- Clear trip clears it ----------
+check("Clear trip is there once there's a trip", await q("!document.querySelector('[data-pack-clear]').hidden"));
+await q(clearTrip); await sleep(200);
 check(`cleared: storage ${await q(`localStorage.getItem('${KEY}')`)}, URL "${await q("location.search")}", ${await days()}, toast "${await q(toastText)}"`,
   (await q(`localStorage.getItem('${KEY}')`)) === null && (await q("location.search")) === "" && (await days()) === "3 days" && (await pressed()) === "" && (await q(toastText)) === "Trip cleared");
-check("the setup is open with the presets back, and the header badge is gone", await q("!document.querySelector('[data-pack-setup-body]').hidden && !document.querySelector('[data-pack-presets-block]').hidden && document.querySelector('[data-pack-trip-tools]').hidden") && (await q(badge)) === "hidden");
+check("the setup is open with the presets back, and the header badge is gone", await q("!document.querySelector('[data-pack-setup-body]').hidden && !document.querySelector('[data-pack-presets-block]').hidden && document.querySelector('[data-pack-clear]').hidden") && (await q(badge)) === "hidden");
 await undo();
 check(`Undo brings it back: ${(await saved()).days} days, ${(await saved()).kits}, ${(await saved()).checked}`, (await saved()).days === 4 && (await saved()).kits.join() === "rain" && (await saved()).checked.join() === "umbrella" && (await saved()).skipped.join() === "rain-jacket" && (await q("location.search")) === "?d=4&k=rain");
 await go("/packing/");
@@ -675,8 +704,8 @@ check(`it follows you to the next page in place: ${await q("location.pathname")}
 await q(`localStorage.setItem('${KEY}', JSON.stringify({ ...JSON.parse(localStorage.getItem('${KEY}')), progress: { packed: 1, skipped: 0, total: 4 } })); dispatchEvent(new StorageEvent('storage', { key: '${KEY}' }))`);
 check(`another tab's change shows too: ${await q(badge)}`, (await q(badge)) === "25%");
 await q("history.back()"); await sleep(800);
-await q("document.querySelector('[data-pack-new]').click()"); await sleep(200);
-check(`Start a new trip: ${await q(badge)}`, (await q(badge)) === "hidden");
+await q(clearTrip); await sleep(200);
+check(`Clear trip: ${await q(badge)}`, (await q(badge)) === "hidden");
 await undo();
 check(`Undo: ${await q(badge)}`, (await q(badge)) === "0%");
 
@@ -734,12 +763,12 @@ const headerEnd = await q("Math.round(document.querySelector('.site-header').get
 check(`1280: scrolled down 600px it stays under the header (top ${stuck.top}px, header ends ${headerEnd}px)`, (await q("scrollY")) > 500 && stuck.top >= headerEnd && stuck.top <= headerEnd + 32 && stuck.bottom <= 900);
 // Taller than the window: it scrolls inside itself rather than being cut off.
 await send("Emulation.setDeviceMetricsOverride", { width: 1280, height: 520, deviceScaleFactor: 1, mobile: false });
-await q("document.querySelector('[data-pack-new]').click()"); await sleep(200);
+await q(clearTrip); await sleep(200);
 await q("scrollTo(0, 400)"); await sleep(250);
 check("1280 x 520: the setup scrolls inside itself, and its bottom is on screen", await q("(() => { const e = document.querySelector('.pack-setup'), c = getComputedStyle(e); return e.scrollHeight > e.clientHeight && (c.overflowY === 'auto' || c.overflowY === 'scroll') && e.getBoundingClientRect().bottom <= innerHeight; })()"));
 await q("document.querySelector('.pack-setup').scrollTop = 9999"); await sleep(100);
 check("and its last line can be reached", await q("(() => { const e = document.querySelector('.pack-setup'); return e.scrollTop + e.clientHeight >= e.scrollHeight - 1; })()"));
-await undo(); // Start a new trip cleared it
+await undo(); // Clear trip cleared it
 await send("Emulation.setDeviceMetricsOverride", { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
 await fresh("/packing/?d=7&k=flying,warm,swim,rain");
 const wide = await q("(() => { const r = document.querySelector('.pack-list').getBoundingClientRect(); return Math.round(r.width); })()");
@@ -803,10 +832,10 @@ for (const t of ["dark", "light"]) {
   await q("document.querySelector('[data-pack-summary-done]').click()"); await sleep(200);
   await shot(`packing-setup-folded-${t}-mobile`);
   await q("document.querySelector('[data-pack-summary]').click()"); await sleep(100);
-  await q("document.querySelector('[data-pack-new]').click()"); await sleep(200);
+  await q(clearTrip); await sleep(200);
   await q("document.querySelector('[data-pack-presets-block]').scrollIntoView({ block: 'center' })"); await sleep(200);
   await shot(`packing-presets-${t}-mobile`);
-  await undo(); // Start a new trip cleared it
+  await undo(); // Clear trip cleared it
   await q("scrollTo(0, 0)");
 }
 await q("localStorage.removeItem('hawkins:theme')");

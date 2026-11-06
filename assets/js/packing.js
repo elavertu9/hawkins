@@ -134,14 +134,14 @@
     summaryDone: $("[data-pack-summary-done]"),
     setupBody: $("[data-pack-setup-body]"),
     presets: $("[data-pack-presets-block]"),
-    newTrip: $("[data-pack-new]"),
+    clear: $("[data-pack-clear]"),
+    clearDialog: $("[data-pack-clear-dialog]"),
     daysValue: $("[data-pack-days-value]"),
     chips: $("[data-pack-kit-chips]"),
     count: $("[data-pack-count]"),
     bar: $("[data-pack-bar]"),
     barFill: $("[data-pack-bar-fill]"),
     kits: $("[data-pack-kits]"),
-    tripTools: $("[data-pack-trip-tools]"),
     toast: $("[data-pack-toast]"),
     toastText: $("[data-pack-toast-text]"),
     toastAction: $("[data-pack-toast-action]"),
@@ -193,9 +193,9 @@
     ui.setupBody.hidden = folded;
     ui.summaryDone.hidden = !(hasTrip && !folded);
     ui.summaryText.textContent = summaryParts(state.days, state.kits).join(" · ");
-    // The presets are for starting out; with a trip, Start a new trip clears it.
+    // The presets are for starting out; with a trip, Clear trip clears it.
     ui.presets.hidden = hasTrip;
-    ui.tripTools.hidden = !hasTrip;
+    ui.clear.hidden = !hasTrip;
   };
   ui.summary.addEventListener("click", () => {
     state.setupFolded = false;
@@ -207,11 +207,25 @@
     save();
     ui.summary.focus();
   });
-  // Clears the trip (Undo brings it back) and opens a blank setup with the presets.
-  ui.newTrip.addEventListener("click", () => {
+  // Clear trip asks first. Clearing (Undo brings it back) opens a blank setup
+  // with the presets; anything else keeps the trip.
+  ui.clear.addEventListener("click", () => {
+    ui.clearDialog.returnValue = "";
+    ui.clearDialog.showModal();
+  });
+  // A tap outside the box is Cancel. (A tap on the box's own padding is inside.)
+  ui.clearDialog.addEventListener("click", (event) => {
+    const r = ui.clearDialog.getBoundingClientRect();
+    const outside = event.clientX < r.left || event.clientX > r.right || event.clientY < r.top || event.clientY > r.bottom;
+    if (event.target === ui.clearDialog && outside) ui.clearDialog.close("cancel");
+  });
+  ui.clearDialog.addEventListener("close", () => {
+    if (ui.clearDialog.returnValue !== "clear") return ui.clear.focus();
     finishTrip();
     ui.presets.querySelector("a").focus();
   });
+  // Never leave it open in the page Turbo keeps for Back.
+  document.addEventListener("turbo:before-cache", () => ui.clearDialog.close(), { once: true });
 
   const setDays = (days) => {
     state.days = clampDays(days);
@@ -502,7 +516,7 @@
   };
 
   // ---------- Controls ----------
-  // Start a new trip: the only thing that clears a trip. Undo brings it all back.
+  // Clear trip: the only thing that clears a trip. Undo brings it all back.
   const finishTrip = () => {
     const before = snapshot();
     state = blank();

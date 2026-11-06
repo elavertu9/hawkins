@@ -140,8 +140,8 @@ like `/packing/?d=7&k=flying,warm,swim`). The file's header comment lists the it
 - A kit can have `tips: { title, items, links }`: a short note, folded under its list (Flying has the TSA rules).
 - Each trip kit has a `group:` (Getting there, Weather, Plans): the heading its button sits under in the setup.
 
-The trip is saved in the browser under `hawkins:packing` and never expires; "Start a new
-trip" clears it, with Undo. Each
+The trip is saved in the browser under `hawkins:packing` and never expires; "Clear trip"
+(next to Share) clears it, after an "are you sure?" box, with Undo. Each
 item is to pack, packed, or skipped ("not taking it"), so the saved trip has `checked` and `skipped` (an item is in at most one), `extras`
 (your own items, the Extras kit at the end), and `setupFolded` (the setup stays open until
 you tap Hide). `packing.js` also saves `progress: { packed, skipped, total }` each time it

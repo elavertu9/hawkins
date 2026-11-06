@@ -30,7 +30,7 @@ const type = async (text) => { for (const ch of text) await send("Input.insertTe
 
 await send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
 await go("/recipes/");
-check(`initial: ${await ev(status)}, suggestions closed`, (await ev(status)) === "47 recipes" && !(await ev(suggestOpen)));
+check(`initial: ${await ev(status)}, suggestions closed`, (await ev(status)) === "48 recipes" && !(await ev(suggestOpen)));
 check(`grouped by dish: ${await ev(groups)}`, /^Dinner \d+ \| Soup \d+ \| Side \d+ \| Appetizer \d+ \| Breakfast \d+ \| Dessert \d+ \| Sauce \d+$/.test(await ev(groups)));
 
 await tap("#recipe-search");
@@ -77,7 +77,7 @@ check(`?tag=low-calorie: ${await ev(visible)} | pill ${await ev(tokens)}`, (awai
 await go("/recipes/?tag=slow-cooker&tag=low-calorie");
 check(`dead end: ${await ev("document.querySelector('[data-empty-text]').textContent")}`, !(await ev("document.querySelector('[data-empty]').hidden")) && /Slow Cooker \+ Low Calorie/.test(await ev("document.querySelector('[data-empty-text]').textContent")));
 await tap("[data-clear]");
-check(`clear resets everything: ${await ev(status)} | ${await ev(tokens) || "no pills"}`, (await ev(status)) === "47 recipes" && (await ev(tokens)) === "");
+check(`clear resets everything: ${await ev(status)} | ${await ev(tokens) || "no pills"}`, (await ev(status)) === "48 recipes" && (await ev(tokens)) === "");
 
 // Search still finds recipes by tag name, and recipe pages link to their tags.
 await go("/recipes/?q=low+calorie");
