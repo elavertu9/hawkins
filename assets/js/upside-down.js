@@ -1,5 +1,5 @@
 // Easter egg: flips the site into the Upside Down.
-// Keyboard: type 011 (Eleven's tattoo). Touch: triple-tap a blank spot.
+// Keyboard: type 011 (Eleven's tattoo). Touch: tap one blank spot 4 times quickly.
 // Do it again to get back. It lasts for the browser session, so the whole
 // site stays flipped as you click around. Runs once per visit to the site
 // (from <head>; see page.js).
@@ -7,9 +7,10 @@
   const root = document.documentElement;
   const STORAGE_KEY = "hawkins:upside-down";
   const CODE = "011";
-  const TAPS = 3;
+  const TAPS = 4; // 3 was too easy to do by accident
   const TAP_GAP_MS = 450; // max time between taps
   const TAP_SLOP_PX = 30; // max finger movement for a tap
+  const TAP_SPOT_PX = 40; // max distance between taps, so they land in one spot
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   let typed = "";
@@ -85,18 +86,22 @@
   let start = null;
   let taps = 0;
   let lastTap = 0;
+  let lastSpot = null;
   document.addEventListener("touchstart", (e) => {
     start = e.touches.length === 1 ? { x: e.touches[0].clientX, y: e.touches[0].clientY } : null;
   }, { passive: true });
   document.addEventListener("touchend", (e) => {
     if (!start) return;
-    const moved = Math.hypot(e.changedTouches[0].clientX - start.x, e.changedTouches[0].clientY - start.y);
+    const end = { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY };
+    const moved = Math.hypot(end.x - start.x, end.y - start.y);
     start = null;
     // Scrolls, and taps on links and buttons, reset the count.
     if (moved > TAP_SLOP_PX || e.target.closest("a, button, label, input")) return (taps = 0);
     const now = Date.now();
-    taps = now - lastTap < TAP_GAP_MS ? taps + 1 : 1;
+    const sameSpot = lastSpot && Math.hypot(end.x - lastSpot.x, end.y - lastSpot.y) <= TAP_SPOT_PX;
+    taps = sameSpot && now - lastTap < TAP_GAP_MS ? taps + 1 : 1;
     lastTap = now;
+    lastSpot = end;
     if (taps === TAPS) {
       taps = 0;
       toggle();

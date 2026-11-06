@@ -12,6 +12,13 @@ body_class: page-home
     <h1 class="neon-title">{{ site.title }}</h1>
     {%- comment -%} Joyce's alphabet wall. Built by lights.js from data-lights. {%- endcomment -%}
     <div class="lights" data-lights="RIGHT HERE" aria-hidden="true"></div>
+    {%- comment %} Stranger Things Day: Nov 6, the night Will vanished in 1983. Shows on the visitor's own Nov 6; ?st-day previews it. {% endcomment %}
+    <aside class="st-day" data-st-day hidden aria-labelledby="st-day-title">
+      <p class="eyebrow">November 6 · 1983</p>
+      <h2 class="neon-title st-day__title" id="st-day-title">Happy Stranger Things Day</h2>
+      <p class="st-day__text">On this night in 1983, Will Byers vanished on his way home from Mike's. Leave a light on.</p>
+    </aside>
+    <script>(() => { const d = new Date(); if ((d.getMonth() === 10 && d.getDate() === 6) || new URLSearchParams(location.search).has("st-day")) document.querySelector("[data-st-day]").hidden = false; })();</script>
     <p class="home-hero__tagline">{{ site.tagline }}</p>
   </div>
 </section>

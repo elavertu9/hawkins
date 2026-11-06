@@ -10,6 +10,12 @@ for (const [w, h, mobile, label] of [[1280, 1000, false, "desktop"], [390, 844, 
   check(`${label}: Packing Lists is open, not coming soon`, await ev("[...document.querySelectorAll('.files > .file:not(.is-soon) .file__link')].some(a => a.textContent === 'Packing Lists' && a.getAttribute('href') === '/packing/')")
     && !(await ev("[...document.querySelectorAll('.soon-list__item')].map(e => e.textContent).join()")).includes("Packing"));
   await shot(`files-${label}`);
+  // Stranger Things Day: only on Nov 6, or with ?st-day to preview it.
+  const today = new Date(await ev("Date.now()"));
+  check(`${label}: no Stranger Things Day note unless it's Nov 6`, (await ev("document.querySelector('[data-st-day]').hidden")) === !(today.getMonth() === 10 && today.getDate() === 6));
+  await go("/?st-day");
+  check(`${label}: ?st-day shows the Stranger Things Day note, and it fits`, !(await ev("document.querySelector('[data-st-day]').hidden")) && await ev("document.documentElement.scrollWidth <= document.documentElement.clientWidth"));
+  await shot(`st-day-${label}`);
 }
 
 // ---------- Pick up where you left off: the packing trip ----------

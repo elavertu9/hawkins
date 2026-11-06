@@ -1053,6 +1053,36 @@ a.tag:hover { border-color: var(--amber); }
   color: var(--text-muted);
 }
 
+/* Stranger Things Day (Nov 6), under the tagline */
+.st-day {
+  max-width: 44rem;
+  margin: 2.5rem auto 0;
+  padding: clamp(1.5rem, 5vw, 2.5rem) clamp(1.25rem, 5vw, 2.5rem);
+  border: 2px solid var(--red-bright);
+  border-radius: var(--radius);
+  background: var(--red-wash);
+  box-shadow: 0 0 24px var(--red-glow), inset 0 0 24px var(--red-glow-inset);
+  animation: st-day-glow 3s ease-in-out infinite;
+}
+.st-day .eyebrow { margin: 0; font-size: 0.9375rem; }
+.st-day__title {
+  margin: 0.75rem 0 1rem;
+  font-size: clamp(1.9rem, 7.5vw, 3.5rem);
+  line-height: 1.15;
+}
+.st-day__text {
+  max-width: 32rem;
+  margin: 0 auto;
+  font-size: clamp(1.0625rem, 2.5vw, 1.25rem);
+  color: var(--text);
+}
+@keyframes st-day-glow {
+  50% { box-shadow: 0 0 44px var(--red-glow), inset 0 0 32px var(--red-glow-soft); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .st-day, .st-day__title { animation: none; }
+}
+
 .home-section + .home-section { margin-top: clamp(3rem, 8vw, 4.5rem); }
 
 /* Christmas lights strung across the wall */
