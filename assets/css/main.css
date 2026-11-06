@@ -177,7 +177,7 @@
 
 html {
   -webkit-text-size-adjust: 100%;
-  touch-action: manipulation; /* no double-tap zoom, so triple-tap reaches upside-down.js */
+  touch-action: manipulation; /* no double-tap zoom, so quick taps reach upside-down.js */
   scroll-padding-top: calc(var(--header-h) + 1rem);
 }
 
@@ -1382,6 +1382,14 @@ a.tag:hover { border-color: var(--amber); }
 .step__text { margin-top: 0.35rem; }
 .step__text p + p { margin-top: 0.75rem; }
 .step__text strong { font-weight: 600; color: var(--amber); }
+/* A step with several separate actions is written as a bulleted list. */
+.step__text ul,
+.cook__text ul { margin: 0; padding-left: 1.25em; list-style: disc; }
+.step__text li + li { margin-top: 0.35rem; }
+.step__text li::marker,
+.cook__text li::marker { color: var(--red-bright); }
+.step__text p + ul,
+.step__text ul + p { margin-top: 0.75rem; }
 
 .step.is-done .step__num {
   background: var(--red);
@@ -1663,6 +1671,9 @@ a.tag:hover { border-color: var(--amber); }
 .cook__text p { margin: 0; }
 .cook__text p + p { margin-top: 1rem; }
 .cook__text strong { font-weight: 600; color: var(--amber); }
+.cook__text li + li { margin-top: 0.6rem; }
+.cook__text p + ul,
+.cook__text ul + p { margin-top: 1rem; }
 .cook__text a { color: var(--text); }
 
 .cook__step.is-enter-next { animation: cook-in-next 0.28s ease; }
@@ -2012,8 +2023,13 @@ a.tag:hover { border-color: var(--amber); }
   padding-right: 0.75rem;
 }
 .timer__actions[hidden] { display: none; }
-.timer__actions:has(.timer__stop:not([hidden])) { grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr); }
+.timer__actions:has(.timer__stop:not([hidden])),
+.timer__actions:has(.timer__extend:not([hidden])) { grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr); }
+/* Stop, +5 min, and the step: a range timer that just rang. */
+.timer__actions:has(.timer__stop:not([hidden])):has(.timer__extend:not([hidden])) { grid-template-columns: minmax(0, 0.8fr) minmax(0, 0.9fr) minmax(0, 1.5fr); gap: 0.4rem; }
+.timer__actions:has(.timer__extend:not([hidden])) > .button { padding-inline: 0.5rem; }
 .timer__stop,
+.timer__extend,
 .timer__continue {
   justify-content: center;
   padding: 0.75rem 0.75rem;
@@ -2021,6 +2037,7 @@ a.tag:hover { border-color: var(--amber); }
   white-space: nowrap;
 }
 .timer__stop { background: var(--surface-2); }
+.timer__extend { color: var(--amber); background: var(--surface-2); border-color: var(--amber-line); }
 .timer__continue {
   color: #fff;
   background: var(--red);

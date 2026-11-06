@@ -60,10 +60,11 @@ steps:
       Bring a large pot of lightly salted water to a boil. Cook the ziti until
       al dente, **8 to 10 minutes**, then drain.
   - title: Cook the onion, garlic, and rosemary
-    text: >-
-      Meanwhile, heat the olive oil in a large, heavy skillet over **medium heat**.
-      Cook the onion until tender, then stir in the rosemary and garlic. Scoop it
-      all into a small bowl.
+    text: |-
+      - Meanwhile, heat the olive oil in a large, heavy skillet over **medium
+        heat**.
+      - Cook the onion until tender, then stir in the rosemary and garlic.
+      - Scoop it all into a small bowl.
   - title: Brown the meat
     text: >-
       Add the ground beef and sausage to the same skillet. Cook over

@@ -1,37 +1,20 @@
 // Classified recipes. The page carries the recipe encrypted with the clearance
 // code (AES-GCM, key from PBKDF2-SHA256; see scripts/classified.rb). The right code
-// decrypts it here in the browser, and the recipe takes the lock screen's place.
-// A working code is remembered on this device so other classified files open on
-// their own; "Lock" forgets it.
+// decrypts it here in the browser (HawkinsPage.clearance, in page.js), and the
+// recipe takes the lock screen's place. A working code is remembered on this
+// device so other classified files open on their own, and they can go in the
+// meal plan; "Lock" forgets it.
 (() => {
   const lock = document.querySelector("[data-classified]");
   if (!lock) return;
 
-  const STORAGE_KEY = "hawkins:clearance-code";
   const form = lock.querySelector("[data-classified-form]");
   const input = lock.querySelector("[data-classified-input]");
   const submit = lock.querySelector("[data-classified-submit]");
   const error = lock.querySelector("[data-classified-error]");
   const cipher = JSON.parse(lock.querySelector("[data-classified-cipher]").textContent);
 
-  // Codes ignore case and extra spaces, so "Friends  Don't Lie" works too.
-  // Must match normalize in scripts/classified.rb.
-  const normalize = (code) => code.trim().replace(/\s+/g, " ").toLowerCase();
-
-  const bytes = (b64) => Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
-
-  const decrypt = async (code) => {
-    const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(normalize(code)), "PBKDF2", false, ["deriveKey"]);
-    const key = await crypto.subtle.deriveKey(
-      { name: "PBKDF2", salt: bytes(cipher.salt), iterations: cipher.iterations, hash: "SHA-256" },
-      base, { name: "AES-GCM", length: 256 }, false, ["decrypt"]);
-    const plain = await crypto.subtle.decrypt({ name: "AES-GCM", iv: bytes(cipher.iv) }, key, bytes(cipher.data));
-    return new TextDecoder().decode(plain);
-  };
-
-  const remembered = () => HawkinsPage.store.getText(STORAGE_KEY);
-  const remember = (code) => HawkinsPage.store.setText(STORAGE_KEY, code);
-  const forget = () => HawkinsPage.store.remove(STORAGE_KEY);
+  const { clearance } = HawkinsPage;
 
   const open = (html) => {
     const template = document.createElement("template");
@@ -41,9 +24,12 @@
     const bar = document.createElement("p");
     bar.className = "classified__bar";
     bar.innerHTML = '<span>Clearance granted · Classified file</span> <button type="button">Lock</button>';
-    bar.querySelector("button").addEventListener("click", () => { forget(); location.reload(); });
+    bar.querySelector("button").addEventListener("click", () => { clearance.forget(); location.reload(); });
 
+    // Its + Add to meal plan button: plan.js shows it once the recipe is open.
+    template.content.querySelectorAll("[data-plan-add]").forEach((b) => { b.dataset.planClassified = ""; });
     lock.replaceWith(bar, template.content);
+    document.dispatchEvent(new CustomEvent("hawkins:classified-open"));
 
     // Now that the recipe is on the page, start its checklists, then cook mode
     // and timers (cook.js builds on recipe.js, so keep them in order).
@@ -58,8 +44,8 @@
 
   const tryCode = async (code, fromForm) => {
     try {
-      const html = await decrypt(code);
-      remember(code);
+      const html = await clearance.decrypt(cipher, code);
+      clearance.remember(code);
       open(html);
       return true;
     } catch (_) {
@@ -70,7 +56,7 @@
         form.classList.add("is-denied");
         input.select();
       } else {
-        forget(); // the code changed since this device saved it
+        clearance.forget(); // the code changed since this device saved it
       }
       return false;
     }
@@ -96,7 +82,7 @@
   });
 
   (async () => {
-    const saved = remembered();
+    const saved = clearance.code();
     if (saved && await tryCode(saved, false)) return;
     form.hidden = false;
     input.focus({ preventScroll: true });

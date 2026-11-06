@@ -68,11 +68,13 @@ ingredients:
 
 steps:
   - title: Start the potatoes
-    text: >-
-      Put the potatoes in a large pot, cover them with cold water by about
-      **1 inch**, and add **1 teaspoon** salt. Bring to a boil over **high heat**,
-      then turn it down to a simmer and cook **15–20 minutes**, until a fork
-      slides in easily. Make the chicken while they cook.
+    text: |-
+      - Put the potatoes in a large pot, cover them with cold water by about
+        **1 inch**, and add **1 teaspoon** salt.
+      - Bring to a boil over **high heat**.
+      - Turn it down to a simmer and cook **15–20 minutes**, until a fork slides
+        in easily.
+      - Make the chicken while they cook.
   - title: Flatten the chicken
     text: >-
       If your chicken isn't already thin, place each breast between two sheets
@@ -99,10 +101,10 @@ steps:
       until it's no longer pink in the middle and the juices run clear
       (165°F on a thermometer).
   - title: Mash the potatoes
-    text: >-
-      While the chicken simmers, drain the potatoes and put them back in the
-      pot. Add **4 tablespoons** butter and the warm milk, and mash until smooth.
-      Season with salt and pepper to taste.
+    text: |-
+      - While the chicken simmers, drain the potatoes and put them back in the pot.
+      - Add **4 tablespoons** butter and the warm milk, and mash until smooth.
+      - Season with salt and pepper to taste.
   - title: Serve
     text: >-
       Spoon the mashed potatoes onto plates, set the chicken on top, and spoon

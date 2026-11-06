@@ -53,17 +53,17 @@ ingredients:
 
 steps:
   - title: Brown the beef
-    text: >-
-      Heat the oil in a large pot over **medium-high heat**. Add the onion and
-      beef and cook until the beef is no longer pink. Drain off the fat and
-      return the pot to the stove.
+    text: |-
+      - Heat the oil in a large pot over **medium-high heat**.
+      - Add the onion and beef and cook until the beef is no longer pink.
+      - Drain off the fat and return the pot to the stove.
   - title: Add the garlic
     text: Stir in the garlic and cook until fragrant, about **30 seconds**.
   - title: Add everything else
-    text: >-
-      Pour in the tomato sauce, diced tomatoes, broth, and Worcestershire. Add the
-      seasoned salt, Italian seasoning, bay leaves, and the dry macaroni. Stir and
-      bring to a boil.
+    text: |-
+      - Pour in the tomato sauce, diced tomatoes, broth, and Worcestershire.
+      - Add the seasoned salt, Italian seasoning, bay leaves, and the dry macaroni.
+      - Stir and bring to a boil.
   - title: Simmer the pasta
     text: >-
       Lower the heat to a gentle boil and cook, stirring now and then, until the

@@ -39,8 +39,7 @@ steps:
       seasoning.
   - title: Bake
     text: >-
-      Bake **10 to 15 minutes**, until the cheese is melted and the edges are
-      crisp.
+      Bake **15 minutes**, until the cheese is melted and the edges are crisp.
 
 notes:
   - "Calories by ingredient: lavash 100, crushed tomatoes 30, mozzarella 160, and 12 slices of turkey pepperoni 56."

@@ -5,6 +5,9 @@
 # site, then the rendered recipe is encrypted with the clearance code from
 # .classified-code (gitignored): PBKDF2-SHA256 for the key, AES-256-GCM for the
 # data. assets/js/classified.js does the same in reverse in the browser.
+#
+# It also locks the meal plan's copy of them (servings and ingredients) into
+# _data/classified_plan.yml, which plan/index.html carries for plan.js.
 require "base64"
 require "date"
 require "digest"
@@ -17,6 +20,7 @@ require "yaml"
 ROOT = File.expand_path("..", __dir__)
 CODE_FILE = File.join(ROOT, ".classified-code")
 CLASSIFIED_DIR = File.join(ROOT, "_classified")
+PLAN_FILE = File.join(ROOT, "_data", "classified_plan.yml")
 ITERATIONS = 310_000
 START = "<!--classified:start-->"
 FINISH = "<!--classified:end-->"
@@ -120,4 +124,31 @@ Dir.mktmpdir("hawkins-classified") do |tmp|
     File.write(stub_path, text)
     puts "#{same ? "updated   " : "encrypted "} #{slug}"
   end
+end
+
+# The meal plan's copy: each recipe's servings and ingredients, in the shape
+# plan/index.html gives the others. One lock for all of them, so the plan page
+# works out the key once.
+plan = recipes.to_h do |path|
+  data = front_matter(path)
+  items = (data["ingredients"] || []).flat_map { |group| group["items"] || [] }
+  [File.basename(path, ".md"), {
+    "servings" => data["servings"] || 0,
+    "ingredients" => items.map { |i| [i["qty"].to_s, i["item"].to_s.strip, i["shop"], i["shop_aisle"]] },
+  }]
+end
+json = JSON.generate(plan)
+old = File.exist?(PLAN_FILE) ? YAML.safe_load(File.read(PLAN_FILE)) : nil
+same = old && old["cipher"] && decrypt(old["cipher"], code) == json
+text = [
+  "# Classified recipes for the meal plan, encrypted by ./classified.sh from _classified/.",
+  "# Don't edit; run ./classified.sh again.",
+  YAML.dump({ "cipher" => same ? old["cipher"] : encrypt(json, code) }).sub(/\A---\n/, "").chomp,
+  "",
+].join("\n")
+if File.exist?(PLAN_FILE) && File.read(PLAN_FILE) == text
+  puts "unchanged  meal plan"
+else
+  File.write(PLAN_FILE, text)
+  puts "#{same ? "updated   " : "encrypted "} meal plan"
 end

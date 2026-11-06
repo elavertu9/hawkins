@@ -84,6 +84,20 @@ await sleep(300);
 // Fast-forward the clock just past the end of the 4-minute timer.
 await q("(() => { const real = Date.now.bind(Date); Date.now = () => real() + 250 * 1000; })()"); await sleep(600);
 check(`timer done: ${await q(tray + ".textContent")}`, await q("document.querySelector('.timer').classList.contains('is-done')"));
+// A range rings at the low end, and offers the rest of it beside Stop.
+check(`range rings at the low end: "${await q("document.querySelector('.timer__step').textContent")}", "${await q("document.querySelector('.timer__extend').textContent")}"`,
+  (await q("document.querySelector('.timer__step').textContent")) === "Step 3 timer is done" && (await q("document.querySelector('.timer__extend').textContent")) === "+1 min"
+  && await q("!document.querySelector('.timer__extend').hidden && !document.querySelector('.timer__stop').hidden && !document.querySelector('.timer__continue').hidden"));
+check(`Stop, +1 min, step: "${await q("[...document.querySelectorAll('.timer__actions .button')].map(b => b.textContent).join(' | ')")}", all on one row`,
+  await q("(() => { const b = [...document.querySelectorAll('.timer__actions .button')]; return b.every((x) => x.getBoundingClientRect().top === b[0].getBoundingClientRect().top && x.scrollWidth <= x.clientWidth); })()"));
+await shot("timer-check");
+await q("document.querySelector('.timer__stop').click()"); await sleep(300);
+check("Stop silences a range timer but keeps +1 min", await q("document.querySelector('.timer').classList.contains('is-stopped') && document.querySelector('.timer__stop').hidden && !document.querySelector('.timer__extend').hidden"));
+await q("document.querySelector('.timer__extend').click()"); await sleep(400);
+check(`+1 min runs it on: ${await q(tray + ".textContent")}`, await q("!document.querySelector('.timer').classList.contains('is-done')") && /^(1:00|0:59)$/.test(await q("document.querySelector('.timer__time').textContent"))
+  && (await q("document.querySelector('.timer__meta').textContent")) === "Beef and Broccoli · 4–5 minutes" && (await q("JSON.parse(localStorage.getItem('hawkins:timers'))[0].extra")) === 0);
+await q("(() => { const real = Date.now; Date.now = () => real() + 70 * 1000; })()"); await sleep(600);
+check(`then rings for good: "${await q("document.querySelector('.timer__step').textContent")}"`, (await q("document.querySelector('.timer__step').textContent")) === "Step 3 timer is done" && await q("document.querySelector('.timer__extend').hidden"));
 check("finished timer stays up with Stop and Continue", await q("!document.querySelector('.timer__actions').hidden && !document.querySelector('.timer__stop').hidden"));
 await shot("timer-finished");
 await q("document.querySelector('.timer__stop').click()"); await sleep(300);
@@ -93,10 +107,10 @@ await q("document.querySelector('.timer__cancel').click()"); await sleep(100);
 check("dismissed, tray hidden", await q(tray + ".hidden"));
 check("dismissed timer forgotten", await q("localStorage.getItem('hawkins:timers') === null"));
 // A timer that finished while you were away says how long ago.
-const finished = "localStorage.setItem('hawkins:timers', JSON.stringify([{ key: 'x:0-0', recipe: 'Beef and Broccoli', url: '/recipes/beef-and-broccoli/', step: 1, title: 'Get ready', time: '30 minutes', end: Date.now() - 8 * 60 * 1000 }]))"; // this page's clock still runs 250 s fast
+const finished = "localStorage.setItem('hawkins:timers', JSON.stringify([{ key: 'x:0-0', recipe: 'Beef and Broccoli', url: '/recipes/beef-and-broccoli/', step: 1, title: 'Get ready', time: '30 minutes', end: Date.now() - 8 * 60 * 1000 }]))"; // this page's clock still runs 320 s fast
 await q(finished);
 await go("/recipes/");
-check(`finished while away: ${await q("document.querySelector('.timer__time').textContent")}`, /^[34] min ago$/.test(await q("document.querySelector('.timer__time').textContent")));
+check(`finished while away: ${await q("document.querySelector('.timer__time').textContent")}`, /^[23] min ago$/.test(await q("document.querySelector('.timer__time').textContent")));
 check(`it says which step: "${await q("document.querySelector('.timer__step').textContent")}" / "${await q("document.querySelector('.timer__meta').textContent")}", button "${await q("document.querySelector('.timer__continue').textContent")}"`,
   (await q("document.querySelector('.timer__step').textContent")) === "Step 1 timer is done" && (await q("document.querySelector('.timer__meta').textContent")) === "Get ready · Beef and Broccoli" && (await q("document.querySelector('.timer__continue').textContent")) === "Go to step 1 ›");
 await q("document.querySelector('.timer__continue').click()"); await sleep(1500);

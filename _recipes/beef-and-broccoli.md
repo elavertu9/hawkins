@@ -62,20 +62,22 @@ steps:
       Stir all the sauce ingredients together in a bowl until the sugar
       dissolves. Set aside.
   - title: Cook the broccoli
-    text: >-
-      Heat **1 tablespoon** of the oil in a large skillet over **medium heat**. Add
-      the broccoli, partly cover, and cook **4–5 minutes**, tossing a few times,
-      until bright green and crisp-tender. Move it to a plate.
+    text: |-
+      - Heat **1 tablespoon** of the oil in a large skillet over **medium heat**.
+      - Add the broccoli, partly cover, and cook **4–5 minutes**, tossing a few
+        times, until bright green and crisp-tender.
+      - Move it to a plate.
   - title: Sear the beef
     text: >-
       Turn the heat to **high** and add the remaining **1 tablespoon** oil. Lay the
       beef in a single layer and cook about **2 minutes** per side, just until
       cooked through.
   - title: Sauce and serve
-    text: >-
-      Pour in the sauce, turn the heat to **medium-low**, and simmer
-      **3–4 minutes**, until it thickens. Stir the broccoli back in. Thin with
-      **1–2 tablespoons** water if you like, and serve over rice.
+    text: |-
+      - Pour in the sauce, turn the heat to **medium-low**, and simmer **3–4
+        minutes**, until it thickens.
+      - Stir the broccoli back in.
+      - Thin with **1–2 tablespoons** water if you like, and serve over rice.
 
 notes:
   - For softer broccoli, add 2 tablespoons water before covering the pan so it steams.

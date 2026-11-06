@@ -87,12 +87,13 @@ steps:
       Start the sauce first, since it simmers for 90 minutes. Pour both cans of
       tomatoes into a bowl and crush them with your hand, leaving some chunks.
   - title: Bloom the aromatics
-    text: >-
-      Heat the olive oil in a large heavy-bottomed saucepan over
-      **medium-low heat**. Add the red pepper flakes, garlic, onion, sugar, salt,
-      pepper, and most of the oregano, basil, and mint, saving a pinch of each for
-      the end. Simmer gently about **5 minutes**, until the onion is translucent
-      and the oil smells of the herbs.
+    text: |-
+      - Heat the olive oil in a large heavy-bottomed saucepan over **medium-low
+        heat**.
+      - Add the red pepper flakes, garlic, onion, sugar, salt, pepper, and most of
+        the oregano, basil, and mint, saving a pinch of each for the end.
+      - Simmer gently about **5 minutes**, until the onion is translucent and the
+        oil smells of the herbs.
   - title: Simmer the sauce
     text: >-
       Turn the heat to **medium-high** and add the tomatoes. Bring to a boil, then
@@ -103,16 +104,16 @@ steps:
       While the sauce simmers, soak the breadcrumbs in the milk in a small bowl
       for **20 minutes**.
   - title: Cook the onion
-    text: >-
-      Heat the 2 tablespoons olive oil in a skillet over **medium heat**. Cook the
-      onion, stirring, until soft and translucent, about **5 minutes**. Turn to
-      **low** and cook **5 minutes** more.
+    text: |-
+      - Heat the 2 tablespoons olive oil in a skillet over **medium heat**.
+      - Cook the onion, stirring, until soft and translucent, about **5 minutes**.
+      - Turn to **low** and cook **5 minutes** more.
   - title: Mix the meatballs
-    text: >-
-      In a large bowl, gently combine the beef and pork without overmixing. Add the
-      onion, soaked breadcrumbs, eggs, parsley, garlic, salt, pepper, red pepper
-      flakes, Italian seasoning, and Parmesan, and mix just until combined. Hands
-      work best.
+    text: |-
+      - In a large bowl, gently combine the beef and pork without overmixing.
+      - Add the onion, soaked breadcrumbs, eggs, parsley, garlic, salt, pepper, red
+        pepper flakes, Italian seasoning, and Parmesan, and mix just until combined.
+        Hands work best.
   - title: Chill (optional)
     text: >-
       Cover and refrigerate about **1 hour**. It makes the mixture easier to shape.

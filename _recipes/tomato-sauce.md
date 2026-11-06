@@ -57,12 +57,13 @@ steps:
       Pour both cans of tomatoes into a bowl and crush them with your hand,
       leaving some chunks.
   - title: Bloom the aromatics
-    text: >-
-      Heat the olive oil in a large heavy-bottomed saucepan over
-      **medium-low heat**. Add the red pepper flakes, garlic, onion, sugar, salt,
-      pepper, and most of the oregano, basil, and mint, saving a pinch of each for
-      the end. Simmer gently about **5 minutes**, until the onion is translucent
-      and the oil smells of the herbs.
+    text: |-
+      - Heat the olive oil in a large heavy-bottomed saucepan over **medium-low
+        heat**.
+      - Add the red pepper flakes, garlic, onion, sugar, salt, pepper, and most of
+        the oregano, basil, and mint, saving a pinch of each for the end.
+      - Simmer gently about **5 minutes**, until the onion is translucent and the
+        oil smells of the herbs.
   - title: Simmer
     text: >-
       Turn the heat to **medium-high** and add the tomatoes. Bring to a boil, then

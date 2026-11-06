@@ -3,8 +3,9 @@ layout: default
 title: Meal Plan
 description: Pick a few recipes and get one shopping list, sorted by aisle.
 ---
-{%- comment -%} Classified recipes stay out: their ingredients would show in this page. {%- endcomment -%}
+{%- comment -%} Classified recipes come separately, locked (see plan-classified below). {%- endcomment -%}
 {%- assign recipes = site.recipes | where_exp: "r", "r.classified != true" | sort: "title" -%}
+{%- assign classified = site.recipes | where: "classified", true | sort: "title" -%}
 {%- assign categories = recipes | map: "category" | uniq | sort -%}
 
 <div class="container plan-page" data-plan-page>
@@ -117,6 +118,16 @@ description: Pick a few recipes and get one shopping list, sorted by aisle.
     </section>
   </div>
 
+  {%- comment %} Share with classified recipes in the plan: they stay behind (plan.js). {% endcomment %}
+  <dialog class="confirm" aria-labelledby="plan-held-title" aria-describedby="plan-held-text" data-plan-held-dialog>
+    <h2 class="confirm__title" id="plan-held-title" data-plan-held-title></h2>
+    <p class="confirm__text" id="plan-held-text" data-plan-held-text></p>
+    <div class="confirm__actions">
+      <button class="toggle" type="button" autofocus data-plan-held-cancel>Cancel</button>
+      <button class="button button--primary" type="button" data-plan-held-share>Share the rest</button>
+    </div>
+  </dialog>
+
   <div class="plan-toast" role="status" data-plan-toast>
     <span data-plan-toast-text></span>
     <button class="plan-toast__undo" type="button" data-plan-toast-action hidden>Undo</button>
@@ -143,3 +154,20 @@ description: Pick a few recipes and get one shopping list, sorted by aisle.
 {%- endfor %}
 ]
 </script>
+{%- comment -%}
+  Classified recipes: names here, servings and ingredients locked with the
+  clearance code in _data/classified_plan.yml (written by ./classified.sh).
+  plan.js opens them on a device that has the code.
+{%- endcomment -%}
+{%- if site.data.classified_plan.cipher and classified.size > 0 %}
+<script type="application/json" id="plan-classified">
+{
+  "cipher": {{ site.data.classified_plan.cipher | jsonify }},
+  "recipes": [
+  {%- for r in classified %}
+    { "slug": {{ r.slug | jsonify }}, "title": {{ r.title | jsonify }}, "url": {{ r.url | relative_url | jsonify }}, "category": {{ r.category | jsonify }} }{% unless forloop.last %},{% endunless %}
+  {%- endfor %}
+  ]
+}
+</script>
+{%- endif %}

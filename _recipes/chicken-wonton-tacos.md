@@ -65,10 +65,11 @@ steps:
       Preheat the oven to **375°F**. Spray or brush the wonton wrappers with a
       little oil, then drape them over the edges of a **9×13** baking dish.
   - title: Bake the shells
-    text: >-
-      Bake for **7–8 minutes**, watching closely so they don't burn. While they're
-      still pliable, gently pull them apart so they're easier to fill. Bake
-      another **7–8 minutes**, until crisp.
+    text: |-
+      - Bake for **7–8 minutes**, watching closely so they don't burn.
+      - While they're still pliable, gently pull them apart so they're easier to
+        fill.
+      - Bake another **7–8 minutes**, until crisp.
   - title: Cook the chicken
     text: >-
       Toss the raw chicken with the hoisin, sesame oil, soy sauce, garlic, and

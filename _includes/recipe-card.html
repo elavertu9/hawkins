@@ -10,9 +10,8 @@
 {%- endcapture -%}
 {%- capture tag_slugs -%}{% for tag in r.tags %}{{ tag | slugify }} {% endfor %}{%- endcapture -%}
 <article class="card{% if r.classified %} card--classified{% endif %}" data-slug="{{ r.slug }}" data-category="{{ r.category | slugify }}" data-tags="{{ tag_slugs | strip }}" data-added="{{ r.added | date: '%Y-%m-%d' }}"{% unless r.classified %} data-total="{{ total }}"{% endunless %} data-search="{{ search | strip_newlines | normalize_whitespace | downcase | escape }}">
-  {%- unless r.classified %}
-  <button class="card__plan" type="button" data-plan-add="{{ r.slug }}" data-plan-title="{{ r.title | escape }}" aria-pressed="false" hidden></button>
-  {%- endunless %}
+  {%- comment %} A classified recipe's + Plan shows only with the clearance code (plan.js). {% endcomment %}
+  <button class="card__plan" type="button" data-plan-add="{{ r.slug }}" data-plan-title="{{ r.title | escape }}"{% if r.classified %} data-plan-classified{% endif %} aria-pressed="false" hidden></button>
   <div class="card__media{% if r.image %} is-photo{% endif %}">
     {%- if r.image %}
     {% include recipe-image.html recipe=r alt="" attrs='loading="lazy"' sizes="(max-width: 40rem) 7rem, 20rem" %}

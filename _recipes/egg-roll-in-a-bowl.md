@@ -57,10 +57,11 @@ ingredients:
 
 steps:
   - title: Brown the meat
-    text: >-
-      Heat a large skillet over **medium-high heat**. Add the ground meat and
-      cook, stirring, until no longer pink, **5–7 minutes**. Drain off the grease
-      and return the meat to the pan.
+    text: |-
+      - Heat a large skillet over **medium-high heat**.
+      - Add the ground meat and cook, stirring, until no longer pink, **5–7
+        minutes**.
+      - Drain off the grease and return the meat to the pan.
   - title: Soften the onion
     text: >-
       Add the onion, sesame oil, and rice vinegar. Cook, stirring, until the onion

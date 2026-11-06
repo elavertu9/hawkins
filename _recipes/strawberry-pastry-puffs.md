@@ -39,10 +39,11 @@ ingredients:
 
 steps:
   - title: Heat the oven and top the pastry
-    text: >-
-      Preheat the oven to **400°F (200°C)**. Unfold the pastry sheet onto a baking
-      stone or baking sheet. Mix the almonds and sugar, sprinkle them over the
-      pastry, and press them in lightly.
+    text: |-
+      - Preheat the oven to **400°F (200°C)**.
+      - Unfold the pastry sheet onto a baking stone or baking sheet.
+      - Mix the almonds and sugar, sprinkle them over the pastry, and press them in
+        lightly.
   - title: Cut into squares
     text: >-
       With a pizza cutter or sharp knife, cut the pastry lengthwise into 3 strips,

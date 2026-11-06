@@ -20,6 +20,12 @@
 // bottom of every page and remembered in this browser. head.html applies it
 // before the page draws.
 //
+// HawkinsPage.clearance: the clearance code for classified recipes, saved on
+// this device once it works. open(cipher) decrypts something locked with it
+// (see scripts/classified.rb), or gives null. forget() locks every classified
+// file again and fires "hawkins:locked" on document (plan.js drops them from
+// the meal plan).
+//
 // HawkinsPage.wake: keeps the screen on (Screen Wake Lock API) while anything
 // asks for it. Each part of the site asks under its own name (cook mode, the
 // Keep screen on button, running timers), and the screen can sleep again once
@@ -145,6 +151,38 @@
     };
   })();
 
+  const clearance = (() => {
+    const KEY = "hawkins:clearance-code";
+    // Codes ignore case and extra spaces, so "Friends  Don't Lie" works too.
+    // Must match normalize in scripts/classified.rb.
+    const normalize = (code) => code.trim().replace(/\s+/g, " ").toLowerCase();
+    const bytes = (b64) => Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+    // AES-GCM, with the key from PBKDF2-SHA256. Throws on the wrong code.
+    const decrypt = async (cipher, code) => {
+      const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(normalize(code)), "PBKDF2", false, ["deriveKey"]);
+      const key = await crypto.subtle.deriveKey(
+        { name: "PBKDF2", salt: bytes(cipher.salt), iterations: cipher.iterations, hash: "SHA-256" },
+        base, { name: "AES-GCM", length: 256 }, false, ["decrypt"]);
+      const plain = await crypto.subtle.decrypt({ name: "AES-GCM", iv: bytes(cipher.iv) }, key, bytes(cipher.data));
+      return new TextDecoder().decode(plain);
+    };
+    const code = () => store.getText(KEY);
+    return {
+      code,
+      remember: (value) => store.setText(KEY, value),
+      forget() {
+        store.remove(KEY);
+        document.dispatchEvent(new CustomEvent("hawkins:locked"));
+      },
+      decrypt,
+      async open(cipher) {
+        const saved = code();
+        if (!saved || !cipher || !window.crypto || !crypto.subtle) return null;
+        try { return await decrypt(cipher, saved); } catch (_) { return null; }
+      },
+    };
+  })();
+
   window.HawkinsPage = {
     on(target, type, listener, options) {
       target.addEventListener(type, listener, options);
@@ -161,6 +199,7 @@
     store,
     session,
     favorites,
+    clearance,
     wake,
   };
 

@@ -53,10 +53,11 @@ ingredients:
 
 steps:
   - title: Brown the sausage
-    text: >-
-      Cook the sausage in a 5-quart Dutch oven over **medium-high heat** until
-      browned and crumbly, **8–10 minutes**. Lift it out with a slotted spoon onto
-      a paper towel–lined plate. Pour off all but **1 tablespoon** of the fat.
+    text: |-
+      - Cook the sausage in a 5-quart Dutch oven over **medium-high heat** until
+        browned and crumbly, **8–10 minutes**.
+      - Lift it out with a slotted spoon onto a paper towel–lined plate.
+      - Pour off all but **1 tablespoon** of the fat.
   - title: Soften the onion and garlic
     text: >-
       Sauté the onion and garlic in the drippings over **medium heat** until the

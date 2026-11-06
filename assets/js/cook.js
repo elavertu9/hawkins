@@ -12,19 +12,19 @@
 
   // ---------- Timers ----------
   // Bold times in a step ("**10 minutes**", "**7–8 minutes**") become buttons
-  // in cook mode. A range starts at the low end, so you check early.
-  const TIME_RE = /^(\d+(?:\.\d+)?[½¼¾]?|[½¼¾])(?:\s*(?:–|-|to)\s*\d+(?:\.\d+)?[½¼¾]?)?\s*(seconds?|secs?|minutes?|mins?|hours?|hrs?)$/i;
+  // in cook mode. A range rings at the low end, so you check early, and then
+  // offers the rest of the range (see timers.js).
+  const TIME_RE = /^(\d+(?:\.\d+)?[½¼¾]?|[½¼¾])(?:\s*(?:–|-|to)\s*(\d+(?:\.\d+)?[½¼¾]?))?\s*(seconds?|secs?|minutes?|mins?|hours?|hrs?)$/i;
   const FRACTIONS = { "½": 0.5, "¼": 0.25, "¾": 0.75 };
+  const amount = (text) => (parseFloat(text) || 0) + (FRACTIONS[text.slice(-1)] || 0);
 
+  // [low, high] in seconds. A single time is its own high end; no time is [0, 0].
   const parseSeconds = (text) => {
     const match = text.trim().match(TIME_RE);
-    if (!match) return 0;
-    const [, amount, unit] = match;
-    const frac = FRACTIONS[amount.slice(-1)] || 0;
-    const whole = parseFloat(amount) || 0;
-    const value = whole + frac;
+    if (!match) return [0, 0];
+    const [, low, high, unit] = match;
     const per = /^s/i.test(unit) ? 1 : /^h/i.test(unit) ? 3600 : 60;
-    return Math.round(value * per);
+    return [low, high || low].map((n) => Math.round(amount(n) * per));
   };
 
   // The timers themselves live in timers.js, on every page of the site.
@@ -221,7 +221,7 @@
     ui.next.textContent = current === steps.length - 1 ? "Finish" : "Next";
 
     ui.text.querySelectorAll("strong").forEach((strong, i) => {
-      const seconds = parseSeconds(strong.textContent);
+      const [seconds, upTo] = parseSeconds(strong.textContent);
       if (!seconds) return;
       const key = `${recipeKey}:${current}-${i}`;
       const button = document.createElement("button");
@@ -232,7 +232,7 @@
       button.textContent = strong.textContent;
       const stepTitle = title ? title.textContent.trim() : "";
       button.addEventListener("click", () =>
-        startTimer(seconds, { key, step: current + 1, title: stepTitle, time: strong.textContent }));
+        startTimer(seconds, { key, step: current + 1, title: stepTitle, time: strong.textContent, extra: upTo - seconds }));
       strong.replaceWith(button);
     });
 

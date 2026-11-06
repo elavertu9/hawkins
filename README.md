@@ -64,6 +64,11 @@ automatically on every push to `main`. There is no build step to run yourself.
    steps:
      - title: Brown the beef
        text: Use **bold** for temperatures and times so they stand out.
+     - title: Start the potatoes   # 3+ separate actions: one bullet each
+       text: |-
+         - Cover the potatoes with cold water and add **1 teaspoon** salt.
+         - Bring to a boil over **high heat**.
+         - Simmer **15–20 minutes**, until a fork slides in easily.
    notes:                      # optional
      - Anything worth remembering.
    ```
@@ -71,6 +76,12 @@ automatically on every push to `main`. There is no build step to run yourself.
 3. Commit and push. The site updates in a minute or two.
 
 Total time is calculated from `prep + cook + additional`.
+
+**Steps.** Write a step as a paragraph, unless it has 3 or more separate actions;
+then make each action a bullet (`text: |-`, one `- ` line per action), so it's
+easy to keep your place in cook mode. A bold time becomes a timer button in cook
+mode. A range (`**15–20 minutes**`) rings at 15, with a +5 min button to run it on
+to 20.
 
 **Shopping names (optional).** The meal plan works out what to buy from each
 ingredient's text ("garlic, minced" becomes "garlic"). When it gets one wrong,
@@ -104,8 +115,12 @@ the site nor this (public) repo shows them without it.
 - To change the code, edit `.classified-code` and run `./classified.sh`. Anyone who
   saved the old code is asked for the new one.
 - Classified recipes show on the recipes page with a "Classified" stamp over
-  the image (an `image:` in the readable copy carries over) and stay out of
-  the meal plan.
+  the image (an `image:` in the readable copy carries over).
+- They can go in the meal plan only on a device that has the code: their
+  + Plan buttons and their place in the plan's Add a recipe list appear once
+  it's entered. `./classified.sh` also locks their servings and ingredients
+  into `_data/classified_plan.yml` for the plan page (safe to commit). Lock
+  takes them back out of the plan.
 - Unlocking needs `https://` (or `localhost`); it won't work over a plain
   `http://` LAN address.
 

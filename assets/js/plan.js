@@ -1,7 +1,12 @@
 // Meal plan: add recipes from anywhere on the site, then build one combined
 // shopping list on /plan/. The plan is saved in this browser and can be shared
 // as a link (/plan/?r=goulash,banana-bread:2).
-(() => {
+//
+// Classified recipes can join the plan only while this device has the
+// clearance code (HawkinsPage.clearance): their + Plan buttons stay hidden
+// until then, and the plan page decrypts their ingredients to list them.
+// Lock takes them back out of the plan.
+(async () => {
   const STORAGE_KEY = "hawkins:plan";
   const { SCALES, QTY_RE, FRACTIONS, nearest, split, singular, plural, formatNumber, formatRange } = HawkinsQty;
 
@@ -43,6 +48,10 @@
 
   const inPlan = (slug) => plan.recipes.some((r) => r.slug === slug);
 
+  // Planned classified recipes are marked, so Lock knows which to take out.
+  const { clearance } = HawkinsPage;
+  const classifiedSlugs = new Set();
+
   // A recipe joins the plan at the servings last picked on its page (recipe.js
   // saves them with your progress for 12 hours), or as written.
   const RECIPE_MAX_AGE_MS = 12 * 60 * 60 * 1000;
@@ -50,7 +59,7 @@
     const saved = store.get(`hawkins:recipe:${slug}`);
     return saved && Date.now() - saved.at < RECIPE_MAX_AGE_MS && SCALES.includes(saved.scale) ? saved.scale : 1;
   };
-  const addToPlan = (slug) => plan.recipes.push({ slug, scale: pickedScale(slug) });
+  const addToPlan = (slug) => plan.recipes.push({ slug, scale: pickedScale(slug), ...(classifiedSlugs.has(slug) && { classified: true }) });
 
   const togglePlan = (slug) => {
     if (inPlan(slug)) plan.recipes = plan.recipes.filter((r) => r.slug !== slug);
@@ -60,7 +69,7 @@
 
   // ---------- Header count and "+ Plan" buttons (every page) ----------
   const badge = document.querySelector("[data-plan-count]");
-  const addButtons = [...document.querySelectorAll("[data-plan-add]")];
+  let addButtons = [];
   let lastCount = null;
 
   const refresh = () => {
@@ -90,13 +99,28 @@
     renderPage();
   };
 
-  addButtons.forEach((button) => {
+  // A classified recipe's button stays hidden without the clearance code.
+  const wireButtons = () => document.querySelectorAll("[data-plan-add]:not([data-plan-wired])").forEach((button) => {
+    if ("planClassified" in button.dataset) {
+      if (!clearance.code()) return;
+      classifiedSlugs.add(button.dataset.planAdd);
+    }
+    button.dataset.planWired = "";
     button.hidden = false;
     button.addEventListener("click", (event) => {
       event.preventDefault();
       event.stopPropagation();
       togglePlan(button.dataset.planAdd);
     });
+    addButtons.push(button);
+  });
+  wireButtons();
+  // A classified recipe page, just unlocked (classified.js).
+  HawkinsPage.on(document, "hawkins:classified-open", () => { wireButtons(); refresh(); });
+  HawkinsPage.on(document, "hawkins:locked", () => {
+    plan = load(); // what's saved, in case this page's copy is behind
+    plan.recipes = plan.recipes.filter((r) => !r.classified);
+    save();
   });
 
   // Another tab changed the plan. Through HawkinsPage, so it's removed when
@@ -113,6 +137,33 @@
   if (!page || !dataEl) { refresh(); return; }
 
   const recipes = JSON.parse(dataEl.textContent);
+  // Classified recipes: listed by name only, their ingredients locked with the
+  // clearance code (scripts/classified.rb). With the code, they join the rest.
+  const classifiedEl = document.getElementById("plan-classified");
+  if (classifiedEl && clearance.code()) {
+    const { cipher, recipes: listed } = JSON.parse(classifiedEl.textContent);
+    const opened = await clearance.open(cipher);
+    if (!page.isConnected) return; // left the page while it decrypted
+    if (opened === null) {
+      clearance.forget(); // the code changed since this device saved it
+    } else {
+      const details = JSON.parse(opened);
+      const select = page.querySelector("[data-plan-select]");
+      listed.filter((r) => details[r.slug]).forEach((r) => {
+        recipes.push({ ...r, ...details[r.slug] });
+        classifiedSlugs.add(r.slug);
+        // Into its course in the Add a recipe list, A–Z.
+        let group = [...select.querySelectorAll("optgroup")].find((g) => g.label === r.category);
+        if (!group) {
+          group = document.createElement("optgroup");
+          group.label = r.category;
+          select.insertBefore(group, [...select.querySelectorAll("optgroup")].find((g) => g.label.localeCompare(r.category) > 0) || null);
+        }
+        const option = new Option(r.title, r.slug);
+        group.insertBefore(option, [...group.children].find((o) => o.text.localeCompare(r.title) > 0) || null);
+      });
+    }
+  }
   const bySlug = new Map(recipes.map((r) => [r.slug, r]));
   const $ = (sel) => page.querySelector(sel);
 
@@ -211,9 +262,9 @@
   };
 
   // Combine every planned recipe's ingredients into one list.
-  const buildList = () => {
+  const buildList = (planned = plan.recipes) => {
     const rows = new Map();
-    plan.recipes.forEach(({ slug, scale }) => {
+    planned.forEach(({ slug, scale }) => {
       const recipe = bySlug.get(slug);
       if (!recipe) return;
       // A recipe can name what to buy with `shop:` (one name or a list) and
@@ -700,9 +751,12 @@
   };
 
   // ?r=goulash,banana-bread:2 for recipes, &x=paper towels|milk for your own items.
+  // Sharing leaves classified recipes out: the person on the other end may not
+  // have the code. shared() is what goes out.
+  const shared = () => plan.recipes.filter((r) => bySlug.has(r.slug) && !classifiedSlugs.has(r.slug));
   const shareUrl = () => {
     const params = new URLSearchParams();
-    const r = plan.recipes.filter((x) => bySlug.has(x.slug))
+    const r = shared()
       .map(({ slug, scale }) => (scale === 1 ? slug : `${slug}:${scale}`)).join(",");
     if (r) params.set("r", r);
     if (plan.extras.length) params.set("x", plan.extras.map((x) => x.text.replace(/\|/g, "/")).join("|"));
@@ -713,16 +767,18 @@
   // you have at home.
   const listText = () => {
     const checked = new Set(plan.checked);
-    const titles = plan.recipes.filter((r) => bySlug.has(r.slug))
+    const recipes = shared();
+    const rows = recipes.length === plan.recipes.filter((r) => bySlug.has(r.slug)).length ? currentRows : buildList(recipes);
+    const titles = recipes
       .map(({ slug, scale }) => `${bySlug.get(slug).title}${scale === 1 ? "" : ` (${amountLabel(bySlug.get(slug), scale)})`}`);
     const lines = [titles.length ? `Shopping list for ${titles.join(", ")}` : "Shopping list"];
     AISLE_ORDER.forEach((aisle) => {
-      const rows = currentRows.filter((r) => r.aisle === aisle && !checked.has(r.key) && !pantry.has(r.key))
+      const inAisle = rows.filter((r) => r.aisle === aisle && !checked.has(r.key) && !pantry.has(r.key))
         .map((row) => describe(row)).sort((a, b) => a.name.localeCompare(b.name));
-      if (!rows.length) return;
-      lines.push("", aisle.toUpperCase(), ...rows.map(({ amount, name }) => `- ${amount ? `${amount} ` : ""}${name}`));
+      if (!inAisle.length) return;
+      lines.push("", aisle.toUpperCase(), ...inAisle.map(({ amount, name }) => `- ${amount ? `${amount} ` : ""}${name}`));
     });
-    const stocked = currentRows.filter((r) => pantry.has(r.key)).map((row) => describe(row));
+    const stocked = rows.filter((r) => pantry.has(r.key)).map((row) => describe(row));
     if (stocked.length) lines.push("", `Have at home: ${pantryNames(stocked)}`);
     return lines.join("\n");
   };
@@ -740,7 +796,41 @@
     const copied = await copyText(text ? `${text}\n\nThe plan: ${url}` : url);
     toast(!copied ? "Couldn't copy that" : text ? "Shopping list and plan link copied" : "Plan link copied");
   };
-  page.querySelectorAll("[data-plan-share]").forEach((button) => button.addEventListener("click", () => share(button.dataset.planShare)));
+  // With classified recipes in the plan, say they stay behind first, and
+  // share from the dialog's own button (sharing needs a fresh tap).
+  const held = {
+    dialog: $("[data-plan-held-dialog]"),
+    title: $("[data-plan-held-title]"),
+    text: $("[data-plan-held-text]"),
+    cancel: $("[data-plan-held-cancel]"),
+    share: $("[data-plan-held-share]"),
+    what: null,
+  };
+  const listNames = (names) => (names.length === 1 ? names[0] : `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`);
+  const askFirst = (what) => {
+    const names = plan.recipes.filter((r) => bySlug.has(r.slug) && classifiedSlugs.has(r.slug)).map((r) => bySlug.get(r.slug).title);
+    if (!names.length) return share(what);
+    const rest = shared().length > 0 || plan.extras.length > 0;
+    held.what = what;
+    held.title.textContent = rest ? `${listNames(names)} won't be shared` : "Classified recipes can't be shared";
+    held.text.textContent = rest ? "Classified recipes stay on your device. Everything else goes." : "Classified recipes stay on your device. Add something else to share a plan.";
+    held.cancel.textContent = rest ? "Cancel" : "OK";
+    held.share.hidden = !rest;
+    held.dialog.showModal();
+  };
+  held.cancel.addEventListener("click", () => held.dialog.close());
+  held.share.addEventListener("click", () => {
+    held.dialog.close();
+    share(held.what);
+  });
+  // A tap outside the box is Cancel. (A tap on the box's own padding is inside.)
+  held.dialog.addEventListener("click", (event) => {
+    const r = held.dialog.getBoundingClientRect();
+    const outside = event.clientX < r.left || event.clientX > r.right || event.clientY < r.top || event.clientY > r.bottom;
+    if (event.target === held.dialog && outside) held.dialog.close();
+  });
+  HawkinsPage.onLeave(() => held.dialog.close()); // not left open for Back
+  page.querySelectorAll("[data-plan-share]").forEach((button) => button.addEventListener("click", () => askFirst(button.dataset.planShare)));
 
   $("[data-plan-print]").addEventListener("click", () => print());
 
@@ -748,7 +838,7 @@
   const parseShared = (value) => (value || "").split(",").filter(Boolean).map((part) => {
     const [slug, scale] = part.split(":");
     const n = Number(scale);
-    return { slug, scale: SCALES.includes(n) ? n : 1 };
+    return { slug, scale: SCALES.includes(n) ? n : 1, ...(classifiedSlugs.has(slug) && { classified: true }) };
   }).filter((r, i, all) => bySlug.has(r.slug) && all.findIndex((x) => x.slug === r.slug) === i);
   const parseExtras = (value) => (value || "").split("|").map((t) => t.trim()).filter(Boolean)
     .map((text, i) => ({ id: `s${i}${Date.now().toString(36)}`, text }));

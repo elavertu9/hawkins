@@ -9,7 +9,7 @@
 // after the site loads before it allows sound.
 //
 // cook.js uses window.HawkinsTimers:
-//   start({ key, seconds, recipe, url, step, title, time })
+//   start({ key, seconds, extra, recipe, url, step, title, time })
 //   isRunning(key), keys(), list(), secondsLeft(key), formatClock(seconds),
 //   open(timer) (go to its step, as tapping it does),
 //   onChange(fn) -> unsubscribe, tray (the element, so cook mode can hold it)
@@ -21,6 +21,10 @@
 // done"), with "Stop alarm" and "Go to step 2" buttons, until it's dismissed
 // with its ×, or you go back to its recipe. Stopping only silences it, so you
 // can finish what you're reading first (or carry on with the step you're on).
+//
+// A range ("**15–20 minutes**") rings at the low end, and
+// its extra seconds (5 minutes here) become a "+5 min" button between Stop and
+// the step, which runs it on to the high end. Tapping it also stops the alarm.
 (() => {
   const KEY = "hawkins:timers";
   const MAX_AGE_MS = 12 * 60 * 60 * 1000;
@@ -32,6 +36,13 @@
     const m = Math.floor((s % 3600) / 60);
     const sec = String(s % 60).padStart(2, "0");
     return h ? `${h}:${String(m).padStart(2, "0")}:${sec}` : `${m}:${sec}`;
+  };
+  // "5 min", "30 sec", "1 hr 30 min", for the +5 min button.
+  const formatLength = (seconds) => {
+    if (seconds < 60) return `${seconds} sec`;
+    const m = Math.round(seconds / 60);
+    const h = Math.floor(m / 60);
+    return h ? `${h} hr${m % 60 ? ` ${m % 60} min` : ""}` : `${m} min`;
   };
 
   const { store, wake } = HawkinsPage;
@@ -111,6 +122,7 @@
       '<span class="timer__time"></span><button class="timer__cancel" type="button">&times;</button>' +
       '<div class="timer__actions" hidden>' +
       '<button class="button timer__stop" type="button">Stop alarm</button>' +
+      '<button class="button timer__extend" type="button" hidden></button>' +
       '<button class="button timer__continue" type="button"></button>' +
       '</div>';
     const label = `Step ${timer.step}${timer.title ? `: ${timer.title}` : ""}`;
@@ -125,6 +137,13 @@
     const stopButton = el.querySelector(".timer__stop");
     stopButton.setAttribute("aria-label", `Stop the ${label} alarm`);
     stopButton.addEventListener("click", () => stop(timer.key));
+    const extendButton = el.querySelector(".timer__extend");
+    if (timer.extra > 0) {
+      stopButton.textContent = "Stop"; // three buttons share the row
+      extendButton.textContent = `+${formatLength(timer.extra)}`;
+      extendButton.setAttribute("aria-label", `Give ${label} up to ${formatLength(timer.extra)} more`);
+      extendButton.addEventListener("click", () => extend(timer.key));
+    }
     const continueButton = el.querySelector(".timer__continue");
     const continueText = `Go to step ${timer.step} ›`;
     continueButton.textContent = continueText;
@@ -135,7 +154,7 @@
       remove(timer.key);
       if (next) next.go(); else goTo(timer);
     });
-    return { el, timer, time: el.querySelector(".timer__time"), cancel, actions: el.querySelector(".timer__actions"), stopButton, continueButton, continueText, continueLabel, label, done: false, lastBeep: 0 };
+    return { el, timer, time: el.querySelector(".timer__time"), cancel, actions: el.querySelector(".timer__actions"), stopButton, extendButton, continueButton, continueText, continueLabel, label, done: false, lastBeep: 0 };
   };
 
   let tick = null;
@@ -155,6 +174,7 @@
         // Say which step it was for, so going off while you're on another
         // step (or page) makes sense: "Step 2 timer is done".
         view.el.querySelector(".timer__step").textContent = `Step ${timer.step} timer is done`;
+        view.extendButton.hidden = !(timer.extra > 0);
         view.el.querySelector(".timer__meta").textContent = [timer.title, timer.recipe].filter(Boolean).join(" · ");
         view.cancel.setAttribute("aria-label", `Dismiss ${view.label} timer`);
         if (navigator.vibrate && -left < 60 && !timer.stopped) navigator.vibrate([300, 150, 300, 150, 300]);
@@ -184,10 +204,16 @@
       if (!list.some((t) => t.key === key)) { view.el.remove(); els.delete(key); }
     });
     list.forEach((timer) => {
-      if (!els.has(timer.key)) {
+      const old = els.get(timer.key);
+      if (!old) {
         const view = buildEl(timer);
         els.set(timer.key, view);
         tray.append(view.el);
+      } else if (old.timer.end !== timer.end) {
+        // Run on to the end of its range (here or in another tab): counting again.
+        const view = buildEl(timer);
+        els.set(timer.key, view);
+        old.el.replaceWith(view.el);
       }
     });
     if (tray.hidden && list.length) tray.classList.add("is-in"); // slide in when it first appears
@@ -211,6 +237,13 @@
     render();
     const view = els.get(key);
     if (view) view.el.querySelector(".timer__continue").focus({ preventScroll: true });
+  };
+
+  // A range timer that rang at the low end runs on to the high end.
+  const extend = (key) => {
+    list = list.map((t) => (t.key === key ? { ...t, end: Date.now() + t.extra * 1000, extra: 0, stopped: false } : t));
+    write(list);
+    render();
   };
 
   const start = ({ seconds, ...timer }) => {

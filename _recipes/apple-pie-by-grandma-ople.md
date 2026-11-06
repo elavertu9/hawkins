@@ -64,12 +64,14 @@ steps:
     text: >-
       Pile the apple slices into the crust, mounding them slightly in the middle.
   - title: Weave the lattice
-    text: >-
-      Lay four strips across the pie in one direction, evenly spaced, with the
-      longest strips in the middle. Fold back the 1st and 3rd strips, lay a strip
-      across the other way, and fold them back down. Then fold back the 2nd and
-      4th strips, lay the next crosswise strip, and fold them down. Repeat until
-      all eight strips are woven in.
+    text: |-
+      - Lay four strips across the pie in one direction, evenly spaced, with the
+        longest strips in the middle.
+      - Fold back the 1st and 3rd strips, lay a strip across the other way, and fold
+        them back down.
+      - Then fold back the 2nd and 4th strips, lay the next crosswise strip, and
+        fold them down.
+      - Repeat until all eight strips are woven in.
   - title: Seal the edges
     text: >-
       Trim any extra pastry and pinch the edges together to seal.
@@ -79,11 +81,12 @@ steps:
       into the apples. Brush a little over the pastry, keeping it from running
       over the sides.
   - title: Bake hot, then lower the heat
-    text: >-
-      Bake for **15 minutes**. Lower the oven to **350°F (175°C)** and bake another
-      **35 to 45 minutes**, until the crust is golden, the filling is bubbling
-      through the lattice, and the apples are tender. If the edges brown too fast,
-      cover them loosely with foil.
+    text: |-
+      - Bake for **15 minutes**.
+      - Lower the oven to **350°F (175°C)** and bake another **35 to 45 minutes**,
+        until the crust is golden, the filling is bubbling through the lattice, and
+        the apples are tender.
+      - If the edges brown too fast, cover them loosely with foil.
   - title: Let it set
     text: >-
       Cool the pie on a wire rack for about **2 hours** before slicing so the

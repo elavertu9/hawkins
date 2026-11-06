@@ -50,10 +50,10 @@ steps:
   - title: Heat the oven
     text: Preheat the oven to **425°F**.
   - title: Make the crust
-    text: >-
-      Mix the Oreo crumbs with the melted butter. A small handful should hold
-      together when you squeeze it. If it crumbles, add water
-      **1 tablespoon** at a time until it does.
+    text: |-
+      - Mix the Oreo crumbs with the melted butter.
+      - A small handful should hold together when you squeeze it. If it crumbles,
+        add water **1 tablespoon** at a time until it does.
   - title: Press and bake
     text: >-
       Press the crumbs into the bottom and up the sides of a **10-inch** pie dish,

@@ -79,10 +79,11 @@ steps:
       cayenne, and season with salt and pepper. Bring just to a boil, then turn
       to **medium-low** and simmer **15 minutes**.
   - title: Purée some beans
-    text: >-
-      Drain and rinse the beans. Put **1 cup** of them in a food processor with
-      **¼ cup** of broth from the pot and purée until nearly smooth. Keep the rest
-      whole.
+    text: |-
+      - Drain and rinse the beans.
+      - Put **1 cup** of them in a food processor with **¼ cup** of broth from the
+        pot and purée until nearly smooth.
+      - Keep the rest whole.
   - title: Add the cheese, corn, and beans
     text: >-
       Stir the Neufchâtel, corn, whole beans, and puréed beans into the pot.
