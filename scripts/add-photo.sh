@@ -14,7 +14,8 @@
 #            already has one.
 #
 # Classified recipes work too: it updates _classified/<recipe>.md, and you run
-# ./classified.sh afterwards.
+# ./classified.sh afterwards. So do cocktails: for a file in _cocktails/, the
+# photo goes in assets/images/cocktails/ instead.
 #
 # Needs macOS (sips) and cwebp (brew install webp).
 
@@ -44,8 +45,11 @@ classified=0
 if [ -f "$SITE_DIR/_classified/$slug.md" ]; then
   recipe="$SITE_DIR/_classified/$slug.md"
   classified=1
+elif [ -f "$SITE_DIR/_cocktails/$slug.md" ]; then
+  recipe="$SITE_DIR/_cocktails/$slug.md"
+  OUT_DIR="$SITE_DIR/assets/images/cocktails"
 fi
-[ -f "$recipe" ] || { echo "No recipe called $slug in _recipes/." >&2; exit 1; }
+[ -f "$recipe" ] || { echo "No recipe called $slug in _recipes/ or _cocktails/." >&2; exit 1; }
 
 if [ -z "$alt" ]; then
   alt="$(sed -n 's/^#\{0,1\} \{0,1\}image_alt: *//p' "$recipe" | head -1)"
@@ -90,20 +94,20 @@ done
 
 # Point the recipe at it: replace image: / image_alt: (even commented-out ones),
 # or add them after added: (or category:).
-SLUG="$slug" ALT="$alt" python3 - "$recipe" <<'PY'
+IMAGE="/${OUT_DIR#"$SITE_DIR"/}/$slug.jpg" ALT="$alt" python3 - "$recipe" <<'PY'
 import json, os, re, sys
 path = sys.argv[1]
 text = open(path).read()
 head, sep, rest = text.partition("\n---\n")
 alt = os.environ["ALT"]
-image = f"image: /assets/images/recipes/{os.environ['SLUG']}.jpg"
+image = f"image: {os.environ['IMAGE']}"
 alt_line = "image_alt: " + (json.dumps(alt) if re.search(r"[:#]|^[\W]", alt) else alt)
 lines = [l for l in head.split("\n") if not re.match(r"#?\s?image_alt:", l)]
 i = next((n for n, l in enumerate(lines) if re.match(r"#?\s?image:", l)), None)
 if i is not None:
     lines[i] = image
 else:
-    after = next((n for n, l in enumerate(lines) if l.startswith(("added:", "category:"))), None)
+    after = next((n for n, l in enumerate(lines) if l.startswith(("added:", "category:", "spirit:"))), None)
     if after is None:
         sys.exit(f"Couldn't find where to put image: in {path}.")
     i = after + 1

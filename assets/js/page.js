@@ -234,6 +234,28 @@
     };
   });
 
+  // Esc on a recipe or cocktail page goes to its list (the breadcrumb's first
+  // link). Back, when you came from that list, so its filters and scroll come
+  // back too. Not while Esc means something else: cook mode or another dialog,
+  // the Menu or Cooking dropdown, or typing in a box.
+  const sitePath = (url) => {
+    try { const u = new URL(url); return u.origin === location.origin ? u.pathname : null; } catch (_) { return null; }
+  };
+  let previousPath = sitePath(document.referrer);
+  let currentPath = location.pathname;
+  document.addEventListener("turbo:load", () => {
+    if (location.pathname !== currentPath) { previousPath = currentPath; currentPath = location.pathname; }
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape" || event.defaultPrevented || event.repeat || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+    const list = document.querySelector(".breadcrumb a");
+    if (!list || document.querySelector("dialog[open], [data-nav-menu]:not([hidden]), [data-cooking-menu]:not([hidden])")) return;
+    if (event.target.closest && event.target.closest("input, textarea, select, [contenteditable]")) return;
+    event.preventDefault();
+    if (previousPath === new URL(list.href).pathname && !location.hash) history.back();
+    else HawkinsPage.visit(list.href);
+  });
+
   document.addEventListener("turbo:before-render", () => {
     const fns = cleanups;
     cleanups = [];

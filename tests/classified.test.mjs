@@ -92,7 +92,7 @@ check("locked recipe page: no + Add to meal plan", await ev("!document.querySele
 await submitCode(CODE);
 check(`unlocked: + Add to meal plan shows: "${await ev("document.querySelector('.button--plan').textContent")}"`, await ev("!document.querySelector('.button--plan').hidden"));
 await ev("document.querySelector('.button--plan').click()"); await sleep(200);
-check(`adds it, marked classified: ${await ev(`JSON.stringify(${planned})`)}`, await ev(`${planned}.some(r => r.slug === '${first}' && r.classified)`) && (await ev("document.querySelector('.button--plan').textContent")) === "✓ In meal plan");
+check(`adds it, marked classified: ${await ev(`JSON.stringify(${planned})`)}`, await ev(`${planned}.some(r => r.slug === '${first}' && r.classified)`) && (await ev("document.querySelector('.button--plan').textContent")) === "✓ In plan");
 check("header count", (await ev("document.querySelector('[data-plan-count]').textContent")) === "1");
 await go("/recipes/");
 check("unlocked: classified cards show + Plan", await ev(`${cardPlans}.every(b => !b.hidden)`) && (await ev(`${cardPlans}.find(b => b.dataset.planAdd === '${first}').textContent`)) === "✓ Planned");

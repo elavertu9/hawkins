@@ -1,0 +1,25 @@
+{%- comment -%}
+  A linked summary card for one cocktail, in the recipe cards' style without
+  tags or a favorite. + Plan adds it to the plan as a drink (plan.js).
+  Usage: {% include cocktail-card.html cocktail=doc %}
+{%- endcomment -%}
+{%- assign c = include.cocktail -%}
+<article class="card card--cocktail" data-slug="{{ c.slug }}">
+  <button class="card__plan" type="button" data-plan-add="{{ c.slug }}" data-plan-title="{{ c.title | escape }}" aria-pressed="false" hidden></button>
+  <div class="card__media{% if c.image %} is-photo{% endif %}">
+    {%- if c.image %}
+    {% include recipe-image.html recipe=c alt="" attrs='loading="lazy"' sizes="(max-width: 40rem) 7rem, 20rem" %}
+    {%- else %}
+    {%- comment %} No photo yet: a quiet tile with a cocktail glass, like the recipes' fork and knife. {% endcomment %}
+    <span class="card__placeholder" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16l-8 9zM12 13v7M8 20h8"/></svg>
+    </span>
+    {%- endif %}
+  </div>
+  <div class="card__body">
+    <p class="eyebrow">{{ c.spirit }}</p>
+    <h3 class="card__title"><a class="card__link" href="{{ c.url | relative_url }}">{{ c.title }}</a></h3>
+    <p class="card__summary">{{ c.summary }}</p>
+    <p class="card__meta"><span>{{ c.ingredients.size }} ingredients</span></p>
+  </div>
+</article>

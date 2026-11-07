@@ -30,7 +30,7 @@ const sectionLinks = "[...document.querySelectorAll('.site-nav__section a')]";
 // ---------- Phone: links hidden, Menu shown ----------
 await size(390, 844);
 await fresh("/recipes/");
-check("phone: the section links are hidden", await q(`${sectionLinks}.length === 3 && ${sectionLinks}.every(a => a.getBoundingClientRect().width === 0)`));
+check("phone: the section links are hidden", await q(`${sectionLinks}.length === 4 && ${sectionLinks}.every(a => a.getBoundingClientRect().width === 0)`));
 check("phone: Menu is shown, with an icon, the label and aria wiring", await q(shown("[data-nav-menu-toggle]")) && await q(`${toggle}.textContent.trim() === 'Menu' && ${toggle}.querySelector('svg[aria-hidden=true]') && ${toggle}.getAttribute('aria-expanded') === 'false' && ${toggle}.getAttribute('aria-controls') === 'nav-menu' && ${toggle}.type === 'button'`));
 check("phone: brand and Plan stay in the bar", await q(shown(".brand")) && await q(shown(".site-nav a[href=\"/plan/\"]")));
 check("phone: Menu is the last thing in the bar, after the pot", await q("document.querySelector('.site-nav > ul > li:last-child').classList.contains('nav-menu') && document.querySelector('.site-nav > ul > li:nth-last-child(2)').classList.contains('cooking-nav')"));
@@ -40,9 +40,9 @@ check("phone: the menu starts closed", !(await open_()) && !(await q(shown("[dat
 await tap("[data-nav-menu-toggle]");
 check("click opens it: aria-expanded true, list shown", (await open_()) && (await q(`${toggle}.getAttribute('aria-expanded')`)) === "true" && await q(shown("[data-nav-menu]")));
 check("opening focuses the first link", await q(`document.activeElement === ${menu}.querySelector('a')`));
-check("it lists Recipes, Packing, Caffeine with their file numbers", (await q(`[...${menu}.querySelectorAll('a')].map(a => a.querySelector('.nav-menu__file').textContent + ' ' + a.textContent.replace(/\\s+/g, ' ').trim().slice(3).trim()).join(' | ')`)).replace(/\s+/g, " ") === "001 Recipes | 002 Packing | 006 Caffeine"
-  && (await q(`[...${menu}.querySelectorAll('a')].map(a => a.getAttribute('href')).join()`)) === "/recipes/,/packing/,/caffeine/");
-check("Recipes is marked as the current page; the others aren't", await q(`[...${menu}.querySelectorAll('a')].map(a => a.getAttribute('aria-current')).join() === 'page,,'`));
+check("it lists Recipes, Packing, Cocktails, Caffeine with their file numbers", (await q(`[...${menu}.querySelectorAll('a')].map(a => a.querySelector('.nav-menu__file').textContent + ' ' + a.textContent.replace(/\\s+/g, ' ').trim().slice(3).trim()).join(' | ')`)).replace(/\s+/g, " ") === "001 Recipes | 002 Packing | 003 Cocktails | 004 Caffeine"
+  && (await q(`[...${menu}.querySelectorAll('a')].map(a => a.getAttribute('href')).join()`)) === "/recipes/,/packing/,/cocktails/,/caffeine/");
+check("Recipes is marked as the current page; the others aren't", await q(`[...${menu}.querySelectorAll('a')].map(a => a.getAttribute('aria-current')).join() === 'page,,,'`));
 check("the current row looks different, rows are tall enough to tap", await q(`(() => { const [a, b] = ${menu}.querySelectorAll('a'); return getComputedStyle(a).color !== getComputedStyle(b).color && getComputedStyle(a).borderLeftColor !== getComputedStyle(b).borderLeftColor && [...${menu}.querySelectorAll('a')].every(x => x.getBoundingClientRect().height >= 44); })()`));
 check("Plan isn't in the menu", await q(`!${menu}.querySelector('a[href="/plan/"]')`));
 await tap("[data-nav-menu-toggle]");
@@ -120,7 +120,7 @@ for (const theme of ["dark", "light"]) {
 await q("localStorage.removeItem('hawkins:theme')");
 
 // ---------- Desktop: links shown, no Menu ----------
-for (const w of [900, 1280]) {
+for (const w of [960, 1280]) {
   await size(w, 800);
   await fresh("/recipes/");
   check(`${w}px: the section links show and Menu doesn't`, await q(`${sectionLinks}.every(a => a.getBoundingClientRect().width > 0)`) && !(await q(shown(".nav-menu"))) && !(await q(shown("[data-nav-menu]"))));
@@ -139,7 +139,7 @@ const states = {
   "the pot": "document.querySelector('[data-cooking]').hidden = false;",
   "everything": "const p = document.querySelector('[data-plan-count]'); p.textContent = '12'; p.hidden = false; document.querySelector('[data-cooking]').hidden = false; document.querySelectorAll('[data-packing-count]').forEach(b => { b.textContent = '99%'; b.hidden = false }); document.querySelector('[data-nav-menu-toggle]').setAttribute('data-badge', '');",
 };
-for (const w of [320, 360, 375, 390, 430, 640, 641, 700, 768, 832, 833, 1024, 1280]) {
+for (const w of [320, 360, 375, 390, 430, 640, 641, 700, 768, 832, 833, 928, 929, 1024, 1280]) {
   await size(w, 800);
   const bad = [];
   for (const [name, js] of Object.entries(states)) {

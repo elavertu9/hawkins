@@ -33,7 +33,7 @@ const text = (sel) => `[...document.querySelectorAll(${JSON.stringify(sel)})].ma
 await size(390, 844);
 await go("/caffeine/");
 check(`title: ${await q("document.title")}`, (await q("document.title")) === "Caffeine · Hawkins");
-check("eyebrow, title and lede", (await q("document.querySelector('.eyebrow').textContent")) === "File 006 · Fuel" && (await q("document.querySelector('.page-title').textContent")) === "Caffeine"
+check("eyebrow, title and lede", (await q("document.querySelector('.eyebrow').textContent")) === "File 004 · Fuel" && (await q("document.querySelector('.page-title').textContent")) === "Caffeine"
   && (await q("document.querySelector('.page-head__lede').textContent")) === "Our favorite energy drink flavor combos, each with its own Hawkins name, and how to order it at Dutch Bros or Aroma Joe's.");
 check("5 cards, in file order, with their ids", (await q("[...document.querySelectorAll('.drink')].map(a => a.id).join()")) === "lifeguard,hawkins,demobat,the-upside-down,madmax");
 check("names are links to the card", (await q(text(".drink__name"))).join() === "Lifeguard,Hawkins,Demobat,The Upside Down,MADMAX" && (await q("[...document.querySelectorAll('.drink__name a')].map(a => a.getAttribute('href')).join()")) === "#lifeguard,#hawkins,#demobat,#the-upside-down,#madmax"
@@ -106,7 +106,7 @@ check("the placeholder fills the same 4:5 frame", await q("(() => { const m = do
 
 // ---------- The home page card, and the nav ----------
 await go("/");
-check("home: the Caffeine file card links to /caffeine/ and counts 5 drinks", await q(`(() => { const a = [...document.querySelectorAll('.files .file__link')].find(a => a.textContent === 'Caffeine'); if (!a) return false; const f = a.closest('.file'); return a.getAttribute('href') === '/caffeine/' && f.querySelector('.file__status').textContent.replace(/\\s+/g, ' ').trim() === '5 drinks →' && f.querySelector('.eyebrow').textContent === 'File 006'; })()`));
+check("home: the Caffeine file card links to /caffeine/ and counts 5 drinks", await q(`(() => { const a = [...document.querySelectorAll('.files .file__link')].find(a => a.textContent === 'Caffeine'); if (!a) return false; const f = a.closest('.file'); return a.getAttribute('href') === '/caffeine/' && f.querySelector('.file__status').textContent.replace(/\\s+/g, ' ').trim() === '5 drinks →' && f.querySelector('.eyebrow').textContent === 'File 004'; })()`));
 check("home: Caffeine isn't in Coming soon any more", await q("![...document.querySelectorAll('.soon-list__item')].some(e => e.textContent.includes('Caffeine'))"));
 await go("/caffeine/");
 check("the menu marks Caffeine as the current page", await q("document.querySelector('[data-nav-menu] a[href=\"/caffeine/\"]').getAttribute('aria-current') === 'page'"));

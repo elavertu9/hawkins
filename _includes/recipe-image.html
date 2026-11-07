@@ -5,7 +5,8 @@
   the full JPG; any that exist are offered to the browser.
 
   recipe: the recipe (page or card); sizes: how wide it shows (the sizes attribute);
-  alt: text for the placeholder; attrs: extra <img> attributes (loading, fetchpriority).
+  alt: text for the placeholder; attrs: extra <img> attributes (loading, fetchpriority);
+  placeholder: another "Missing" image (cocktails use theirs, "Have you seen this drink?").
 {%- endcomment -%}
 {%- assign image = include.recipe.image -%}
 {%- if image -%}
@@ -28,6 +29,6 @@
          width="1200" height="800" decoding="async" {{ include.attrs }}>
   </picture>
 {%- else -%}
-  <img src="{{ site.recipe_placeholder | relative_url }}" alt="{{ include.alt }}"
+  <img src="{{ include.placeholder | default: site.recipe_placeholder | relative_url }}" alt="{{ include.alt }}"
        width="1200" height="800" decoding="async" {{ include.attrs }}>
 {%- endif -%}

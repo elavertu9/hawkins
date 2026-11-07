@@ -1,0 +1,74 @@
+---
+layout: default
+---
+{%- comment -%}
+  One cocktail (from _cocktails/). The recipe page's pieces, smaller: the
+  hero, the ingredients, and the steps, without cook mode or servings. + Plan
+  adds it to the plan as a drink (plan.js). Esc goes back to the list (page.js).
+{%- endcomment -%}
+<article class="recipe cocktail-page">
+  <div class="container">
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ol>
+        <li><a href="{{ '/cocktails/' | relative_url }}" aria-keyshortcuts="Escape">Cocktails</a></li>
+        <li aria-current="page">{{ page.title }}</li>
+      </ol>
+    </nav>
+
+    <header class="recipe-hero">
+      <div class="recipe-hero__text">
+        <p class="eyebrow">Cocktail</p>
+        <h1 class="recipe-hero__title">{{ page.title }}</h1>
+        <p class="recipe-hero__summary">{{ page.summary }}</p>
+        {%- comment %} A row of three, like a recipe's Prep, Cook, and Total. {% endcomment %}
+        <dl class="stats">
+          <div class="stat"><dt>Spirit</dt><dd>{{ page.spirit }}</dd></div>
+          <div class="stat"><dt>Glass</dt><dd>{{ page.glass }}</dd></div>
+          <div class="stat"><dt>Makes</dt><dd>1 drink</dd></div>
+        </dl>
+        <div class="recipe-hero__actions">
+          <button class="button button--plan" type="button" data-plan-add="{{ page.slug }}" data-plan-title="{{ page.title | escape }}" aria-pressed="false" hidden></button>
+        </div>
+      </div>
+
+      {%- comment %} The same 3:2 frame as a recipe photo, so on phones no photo yet is the same short strip. {% endcomment %}
+      <figure class="recipe-hero__media{% if page.image %} is-photo{% endif %}">
+        {% include recipe-image.html recipe=page alt="Photo coming soon" placeholder="/assets/images/placeholder-cocktail.svg" attrs='fetchpriority="high"' sizes="(min-width: 56rem) 34rem, 100vw" %}
+      </figure>
+    </header>
+
+    <div class="recipe-body">
+      <aside class="ingredients" aria-labelledby="ingredients-title">
+        <div class="panel">
+          <div class="section-head">
+            <h2 id="ingredients-title">Ingredients</h2>
+            <span class="section-head__count">{{ page.ingredients.size }} items</span>
+          </div>
+          <ul class="cocktail-ingredients">
+            {%- for ingredient in page.ingredients %}
+            <li>{% if ingredient.qty != "" %}<span class="qty">{{ ingredient.qty }}</span> {% endif %}{{ ingredient.item }}</li>
+            {%- endfor %}
+          </ul>
+        </div>
+      </aside>
+
+      <section class="directions" aria-labelledby="directions-title">
+        <div class="section-head">
+          <h2 id="directions-title">Directions</h2>
+          <span class="section-head__count">{{ page.steps.size }} steps</span>
+        </div>
+        <ol class="steps">
+          {%- for step in page.steps %}
+          <li class="step">
+            <span class="step__num" aria-hidden="true">{{ forloop.index }}</span>
+            <div class="step__body"><div class="step__text">{{ step | markdownify }}</div></div>
+          </li>
+          {%- endfor %}
+        </ol>
+        {%- if page.from %}
+        <p class="source">From {{ page.from }}.</p>
+        {%- endif %}
+      </section>
+    </div>
+  </div>
+</article>

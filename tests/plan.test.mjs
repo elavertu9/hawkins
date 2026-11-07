@@ -17,7 +17,7 @@ check(`card add: badge ${await q(badge)}, label "${await q("document.querySelect
 check("recipes page fits", await q(fits));
 await shot("plan-cards");
 await go("/recipes/goulash/");
-check(`hero button: "${await q("document.querySelector('.button--plan').textContent")}"`, (await q("document.querySelector('.button--plan').textContent")) === "+ Add to meal plan");
+check(`hero button: "${await q("document.querySelector('.button--plan').textContent")}"`, (await q("document.querySelector('.button--plan').textContent")) === "+ Add to plan");
 await q("document.querySelector('.button--plan').click()"); await sleep(200);
 check(`hero added: "${await q("document.querySelector('.button--plan').textContent")}", badge ${await q(badge)}`, (await q(badge)) === "2");
 check("recipe page fits", await q(fits));

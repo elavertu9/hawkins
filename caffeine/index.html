@@ -7,7 +7,7 @@ description: Our favorite energy drink flavor combos, each with its own Hawkins 
 
 <div class="container">
   <header class="page-head">
-    <p class="eyebrow">File 006 · Fuel</p>
+    <p class="eyebrow">File {{ site.data.sections | where: "id", "caffeine" | map: "file" | first }} · Fuel</p>
     <h1 class="page-title">Caffeine</h1>
     <p class="page-head__lede">{{ page.description }}</p>
   </header>

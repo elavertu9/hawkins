@@ -82,18 +82,19 @@
         void badge.offsetWidth; // restart the animation
         badge.classList.add("is-bumped");
       }
-      badge.parentElement.setAttribute("aria-label", count ? `Meal plan, ${count} recipe${count === 1 ? "" : "s"}` : "Meal plan");
+      badge.parentElement.setAttribute("aria-label", count ? `Plan, ${count} planned` : "Plan");
     }
     lastCount = count;
 
     addButtons.forEach((button) => {
       const added = inPlan(button.dataset.planAdd);
       const short = button.classList.contains("card__plan");
-      button.textContent = added ? (short ? "✓ Planned" : "✓ In meal plan") : (short ? "+ Plan" : "+ Add to meal plan");
+      // "Plan", not "meal plan": drinks go in it too.
+      button.textContent = added ? (short ? "✓ Planned" : "✓ In plan") : (short ? "+ Plan" : "+ Add to plan");
       button.setAttribute("aria-pressed", String(added));
       button.setAttribute("aria-label", added
-        ? `Remove ${button.dataset.planTitle} from meal plan`
-        : `Add ${button.dataset.planTitle} to meal plan`);
+        ? `Remove ${button.dataset.planTitle} from the plan`
+        : `Add ${button.dataset.planTitle} to the plan`);
     });
 
     renderPage();
@@ -168,8 +169,9 @@
   const $ = (sel) => page.querySelector(sel);
 
   // Volume units add up across teaspoons, tablespoons, and cups, and weights
-  // across ounces and pounds. Each is stored in its smallest unit.
-  const VOLUME = { tsp: 1, tbsp: 3, cup: 48 };
+  // across ounces and pounds. Each is stored in its smallest unit. A drink's
+  // "oz" is fluid ounces (floz), a volume, so bourbon never adds up to pounds.
+  const VOLUME = { tsp: 1, tbsp: 3, floz: 6, cup: 48 };
   const WEIGHT = { oz: 1, lb: 16 };
   const KNOWN_UNITS = [
     [/^(teaspoons?|tsp\.?)(?=\s|$)/i, "tsp"],
@@ -184,6 +186,7 @@
     cup: ["cup", "cups"],
     lb: ["pound", "pounds"],
     oz: ["ounce", "ounces"],
+    floz: ["oz", "oz"],
   };
   const SIZE_WORDS = /^(large|medium|small|whole)$/i;
 
@@ -191,7 +194,7 @@
   const pluralUnit = (unit) => unit.replace(/^([^(]*?)(\S+)(\s*\(.*\))?$/, (_, before, last, note = "") =>
     `${before}${SIZE_WORDS.test(last) ? last : plural(last)}${note}`);
 
-  const parseQty = (qty) => {
+  const parseQty = (qty, drink = false) => {
     const parts = split(qty);
     if (!parts) return null;
     const { lo, hi } = parts;
@@ -199,7 +202,7 @@
     let rest = parts.rest.replace(/\s*\(\s*\d[\d.,]*\s*m?l\s*\)/i, "").replace(/\s+each\)/i, ")").trim();
     if (/\bper\b/i.test(rest)) return null; // "½ can per can of consommé" doesn't add up
     for (const [re, unit] of KNOWN_UNITS) {
-      if (re.test(rest)) return { lo, hi, unit, label: unit };
+      if (re.test(rest)) return drink && unit === "oz" ? { lo, hi, unit: "floz", label: "floz" } : { lo, hi, unit, label: unit };
     }
     if (SIZE_WORDS.test(rest)) rest = ""; // "1 large" egg counts as 1 egg
     const label = rest.replace(/^([^(]*?)(\S+)(\s*\(.*\))?$/, (_, before, last, note = "") => `${before}${singular(last)}${note}`);
@@ -209,7 +212,7 @@
   // Item names: "garlic, minced (1 tablespoon)" -> "garlic". A list of
   // ingredients ("salt, pepper, and dried basil, to taste") keeps its list
   // and loses only the prep notes.
-  const PREP_NOTE = /^(as (needed|desired)|more\b|to (taste|serve)|for\b|mixed|shredded|plus\b|about\b|depending\b|peeled|washed|halved|cut|finely|thinly|very|lightly|chopped|diced|sliced|minced|melted|softened|thawed|drained|divided|seeded|beaten|grated|zested|undrained|room|casings|juice|filling|crushed|broken|pounded|cubed|packed|tempered|optional|mashed)/i;
+  const PREP_NOTE = /^(such as\b|as (needed|desired)|more\b|to (taste|serve)|for\b|mixed|shredded|plus\b|about\b|depending\b|peeled|washed|halved|cut|finely|thinly|very|lightly|chopped|diced|sliced|minced|melted|softened|thawed|drained|divided|seeded|beaten|grated|zested|undrained|room|casings|juice|filling|crushed|broken|pounded|cubed|packed|tempered|optional|mashed)/i;
   const cleanName = (item) => {
     let name = item.replace(/^skinless, boneless /i, "boneless skinless ");
     name = name.replace(/(?!^)\s*\([^)]*\)/g, ""); // keep a leading "(26-ounce)"
@@ -237,7 +240,7 @@
   const AISLES = [
     ["skip", /^(boiling |hot |cold |ice )?water$/],
     ["Frozen", /\bfrozen\b|whipped topping|puff pastry/],
-    ["Drinks & Alcohol", /\bwine\b|sherry|marsala|crème de|creme de|liqueur|vodka|\brum\b|beer/],
+    ["Drinks & Alcohol", /\bwine\b|sherry|marsala|crème de|creme de|liqueur|vodka|\brum\b|beer|bourbon|whiske?y|tequila|bitters|grenadine|jim beam|red stag|lemon-lime soda|club soda|tonic water|ginger ale/],
     ["Baking", /jell-o|gelatin|pudding|cake mix|muffin mix/],
     ["Spices & Seasonings", /\bsalt\b|black pepper|^pepper$|cayenne|paprika|cumin|cinnamon|ground (cloves|ginger|coriander)|oregano|thyme|marjoram|dried basil|italian seasoning|chili powder|garlic powder|onion powder|celery seed|bay lea|red pepper flakes|seasoning|ranch|^accent|sesame seeds|dried minced onion/],
     ["Oils, Vinegar & Sauces", /\boil\b|vinegar|soy sauce|tamari|hoisin|worcestershire|mustard|mayonnaise|ketchup|horseradish|chili sauce|cooking spray/],
@@ -276,7 +279,7 @@
         names.forEach((name, i) => lines.push([i ? "" : qty, String(name), shopAisle]));
       });
       lines.forEach(([qty, name, shopAisle]) => {
-        const amount = qty ? parseQty(qty) : null;
+        const amount = qty ? parseQty(qty, recipe.drink) : null;
         const aisle = shopAisle || aisleFor(name, amount ? amount.unit : qty.toLowerCase());
         if (aisle === "skip") return;
         const key = `${aisle}|${mergeKey(name)}`;
@@ -320,6 +323,7 @@
     lb: [0, 1 / 4, 1 / 2, 3 / 4],
     tsp: FRACTIONS.map((f) => f[0]),
     oz: FRACTIONS.map((f) => f[0]),
+    floz: FRACTIONS.map((f) => f[0]),
   };
   const fits = (n) => {
     const { whole, value } = nearest(n);
@@ -349,7 +353,9 @@
     let unitlessTotal = 0;
     for (const [unitKey, slot] of row.amounts) {
       if (unitKey === "volume") {
-        parts.push(measure(slot, VOLUME, [["cup", 0.25], ["tbsp", 1], ["tsp", 0]]));
+        // Only drinks: in ounces, the way a bar measures. With a recipe's cups, the usual units.
+        const order = [...slot.units].every((u) => u === "floz") ? [["floz", 0]] : [["cup", 0.25], ["tbsp", 1], ["tsp", 0]];
+        parts.push(measure(slot, VOLUME, order));
       } else if (unitKey === "weight") {
         parts.push(measure(slot, WEIGHT, [["lb", 1], ["oz", 0]]));
       } else if (!unitKey) {
@@ -365,7 +371,7 @@
     let name = row.names.reduce((a, b) => (b.length < a.length ? b : a)); // "sugar" over "white sugar"
     if (unitlessTotal > 1 && row.amounts.size === 1 && !/^\(|\b(jars?|cans?|packages?|box(es)?|bags?)\b/i.test(name)) {
       const pluralName = row.names.find((n) => /s$/i.test(n));
-      name = pluralName || name.replace(/(\S+)$/, (w) => (/[sy]$/i.test(w) ? w : plural(w)));
+      name = pluralName || name.replace(/(\S+)$/, (w) => (/[^aeiou]y$/i.test(w) ? `${w.slice(0, -1)}ies` : /[sy]$/i.test(w) ? w : plural(w))); // cherry -> cherries
     }
     return { amount: parts.join(" + "), name };
   };
@@ -375,6 +381,8 @@
     shared: page.querySelector("[data-plan-shared]"),
     main: $("[data-plan-ui]"),
     list: $("[data-plan-list]"),
+    drinks: $("[data-plan-drinks]"),
+    drinksTitle: $("[data-plan-drinks-title]"),
     empty: $("[data-plan-empty]"),
     recipeCount: $("[data-plan-recipe-count]"),
     select: $("[data-plan-select]"),
@@ -429,8 +437,17 @@
     return base ? formatRange(base.lo * scale, base.hi * scale) : null;
   };
   const amountLabel = (recipe, scale) => {
+    if (recipe.drink) return `${formatNumber(scale)} drink${scale === 1 ? "" : "s"}`;
     const serves = servingsOf(recipe, scale);
     return serves ? `serves ${serves}` : `${formatNumber(scale)}×`;
+  };
+  // A drink is made whole: 1 to 4 of them, never half.
+  const scalesFor = (recipe) => (recipe.drink ? SCALES.filter((n) => n >= 1) : SCALES);
+  // "2 recipes", "1 drink", or "2 recipes, 1 drink".
+  const plannedCount = (entries) => {
+    const drinks = entries.filter((r) => bySlug.get(r.slug).drink).length;
+    const dishes = entries.length - drinks;
+    return [dishes && `${dishes} recipe${dishes === 1 ? "" : "s"}`, drinks && `${drinks} drink${drinks === 1 ? "" : "s"}`].filter(Boolean).join(", ");
   };
   let currentRows = [];
 
@@ -447,7 +464,7 @@
     ui.summary.setAttribute("aria-expanded", String(!folded));
     ui.recipesBody.hidden = folded;
     ui.summaryDone.hidden = !(narrow.matches && count > 0 && editing);
-    ui.summaryCount.textContent = `${count} recipe${count === 1 ? "" : "s"}:`;
+    ui.summaryCount.textContent = `${plannedCount(plan.recipes.filter((r) => bySlug.has(r.slug)))}:`;
     ui.summaryNames.textContent = plan.recipes.filter((r) => bySlug.has(r.slug)).map((r) => bySlug.get(r.slug).title).join(", ");
   };
   ui.summary.addEventListener("click", () => { editing = true; renderFold(); ui.recipesBody.querySelector("h2").scrollIntoView({ block: "nearest" }); });
@@ -456,8 +473,10 @@
   HawkinsPage.onLeave(() => narrow.removeEventListener("change", renderFold));
 
   const renderRecipes = () => {
-    ui.list.replaceChildren(...plan.recipes.filter((r) => bySlug.has(r.slug)).map(({ slug, scale }) => {
+    const planned = plan.recipes.filter((r) => bySlug.has(r.slug));
+    const item = ({ slug, scale }) => {
       const recipe = bySlug.get(slug);
+      const scales = scalesFor(recipe);
       const li = document.createElement("li");
       li.className = "plan-item";
       li.innerHTML = `
@@ -477,22 +496,24 @@
       const link = li.querySelector(".plan-item__title");
       link.href = recipe.url;
       link.textContent = recipe.title;
+      // A drink has no cook mode: its link opens the drink, and it makes some number of drinks.
       const cook = li.querySelector(".plan-item__cook");
-      cook.href = `${recipe.url}#cook`;
-      cook.setAttribute("aria-label", `Cook ${recipe.title}`);
+      cook.href = recipe.drink ? recipe.url : `${recipe.url}#cook`;
+      cook.textContent = recipe.drink ? "Make" : "Cook";
+      cook.setAttribute("aria-label", `${recipe.drink ? "Make" : "Cook"} ${recipe.title}`);
       const serves = servingsOf(recipe, scale);
-      li.querySelector(".plan-item__serves").textContent = serves ? "Serves" : "";
+      li.querySelector(".plan-item__serves").textContent = recipe.drink ? "Makes" : serves ? "Serves" : "";
       li.querySelector(".stepper").setAttribute("aria-label", `${recipe.title}: ${amountLabel(recipe, scale)}`);
-      li.querySelector(".stepper__value").textContent = serves || `${formatNumber(scale)}×`;
+      li.querySelector(".stepper__value").textContent = recipe.drink ? formatNumber(scale) : serves || `${formatNumber(scale)}×`;
       const [less, more] = li.querySelectorAll("[data-step]");
       less.setAttribute("aria-label", `Less ${recipe.title}`);
       more.setAttribute("aria-label", `More ${recipe.title}`);
-      less.disabled = scale <= SCALES[0];
-      more.disabled = scale >= SCALES[SCALES.length - 1];
+      less.disabled = scale <= scales[0];
+      more.disabled = scale >= scales[scales.length - 1];
       li.querySelectorAll("[data-step]").forEach((button) => button.addEventListener("click", () => {
         const entry = plan.recipes.find((r) => r.slug === slug);
-        const i = SCALES.indexOf(entry.scale);
-        entry.scale = SCALES[Math.max(0, Math.min(SCALES.length - 1, (i === -1 ? 1 : i) + Number(button.dataset.step)))];
+        const i = scales.indexOf(entry.scale);
+        entry.scale = scales[Math.max(0, Math.min(scales.length - 1, (i === -1 ? scales.indexOf(1) : i) + Number(button.dataset.step)))];
         save();
       }));
       const remove = li.querySelector(".plan-item__remove");
@@ -504,10 +525,14 @@
         toast(`Removed ${recipe.title}`, restore(before));
       });
       return li;
-    }));
+    };
+    // Recipes, then drinks under their own heading.
+    ui.list.replaceChildren(...planned.filter((r) => !bySlug.get(r.slug).drink).map(item));
+    ui.drinks.replaceChildren(...planned.filter((r) => bySlug.get(r.slug).drink).map(item));
+    ui.drinksTitle.hidden = ui.drinks.children.length === 0;
 
-    const count = ui.list.children.length;
-    ui.recipeCount.textContent = count ? `${count} recipe${count === 1 ? "" : "s"}` : "";
+    const count = planned.length;
+    ui.recipeCount.textContent = count ? plannedCount(planned) : "";
     ui.empty.hidden = count > 0;
     [...ui.select.options].forEach((option) => { if (option.value) option.disabled = inPlan(option.value); });
 
@@ -838,7 +863,8 @@
   const parseShared = (value) => (value || "").split(",").filter(Boolean).map((part) => {
     const [slug, scale] = part.split(":");
     const n = Number(scale);
-    return { slug, scale: SCALES.includes(n) ? n : 1, ...(classifiedSlugs.has(slug) && { classified: true }) };
+    const drink = bySlug.get(slug)?.drink; // half a drink isn't a thing
+    return { slug, scale: SCALES.includes(n) && !(drink && n < 1) ? n : 1, ...(classifiedSlugs.has(slug) && { classified: true }) };
   }).filter((r, i, all) => bySlug.has(r.slug) && all.findIndex((x) => x.slug === r.slug) === i);
   const parseExtras = (value) => (value || "").split("|").map((t) => t.trim()).filter(Boolean)
     .map((text, i) => ({ id: `s${i}${Date.now().toString(36)}`, text }));

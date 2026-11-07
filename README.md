@@ -20,9 +20,13 @@ automatically on every push to `main`. There is no build step to run yourself.
 | `packing/index.html` | The packing page: trip setup and the checklist. |
 | `_data/drinks.yml` | The Caffeine drinks and the shops' names for things. See "Caffeine" below. |
 | `caffeine/index.html` | The Caffeine page: a card per drink, made entirely by Liquid. |
+| `_cocktails/` | One Markdown file per cocktail, data in the front matter, like recipes. See "Cocktails" below. |
+| `_layouts/cocktail.html` | The page every cocktail uses: the recipe page's hero, ingredients, and steps, without cook mode. |
+| `cocktails/index.html` | The Cocktails list: the Upside Bar banner and a card per cocktail (`_includes/cocktail-card.html`). |
 | `assets/js/` | `nav.js` for the phone Menu button in the header (every page); `recipe.js` for checklists and Keep screen on; `cook.js` for cook mode; `timers.js` for kitchen timers, which follow you to every page; `plan.js` for the meal plan and shopping list; `packing.js` for the packing lists (only loaded on `/packing/`); `packing-status.js` for the Packing badge in the header and the trip on the home page (every page); `lights.js` for the home page lights; `upside-down.js` for the easter egg; `page.js` (page changes, plus shared storage and screen-on helpers) and `lib/turbo.min.js` for in-place page changes (see below). |
 | `assets/images/recipes/` | Recipe photos. |
 | `assets/images/drinks/` | Drink photos (4:5). |
+| `assets/images/cocktails/` | Cocktail photos (3:2) and the Cocktails banner (`upside-bar`). |
 | `tests/` | Browser tests for the site's features. `tests/run.sh` runs them. |
 | `scripts/` | Tools: `add-photo.sh` for recipe photos, `add-drink-photo.sh` for drink photos, `classified.rb` (run by `./classified.sh`), and `hooks/pre-commit`. |
 | `.github/workflows/test.yml` | Runs the checks and tests on GitHub after every push. |
@@ -194,6 +198,43 @@ That's the drink's id, the photo (straight from a phone is fine), where to crop 
 photos) and alt text. It saves a JPG and WebP copies in `assets/images/drinks/`, with all metadata
 (location, camera) stripped. It needs macOS and `brew install webp`.
 
+## Cocktails
+
+Cocktails we've had out, written up to make at home. The list is at `/cocktails/` and each one has its
+own page, like a recipe but smaller (no cook mode or servings). One file per cocktail in
+`_cocktails/`, and the file name is the URL: `_cocktails/demogorgon.md` is `/cocktails/demogorgon/`.
+The menus they came from don't give amounts, so the amounts are estimates.
+
+```yaml
+title: Demogorgon
+spirit: Bourbon                 # the eyebrow on the card, and a box on the page
+summary: One line, shown on the card and under the title.
+glass: Rocks glass              # short: it's a box beside Spirit and Makes
+from: "The Upside Bar at Stranger Things: The Experience"   # optional: "From ..." under the steps
+image: /assets/images/cocktails/demogorgon.jpg              # optional, 3:2 like a recipe's
+image_alt: Amber old fashioned with a stroopwafel on top
+ingredients:
+  - { qty: "2 oz", item: "bourbon, such as WhistlePig" }   # quote an item with a comma
+steps:
+  - Shake hard with ice until the shaker is frosty, about **15 seconds**.
+```
+
+**Planning drinks.** + Plan on a cocktail's card or page puts it in the meal plan, under its own
+Drinks heading below the recipes, as "Makes 1" (up to 4, never half). Its ingredients join the
+shopping list: a cocktail's "oz" is fluid ounces, so 2 drinks' bourbon reads "4 oz", never pounds.
+Liquor, bitters, grenadine, and mixers sort into Drinks & Alcohol. For anything else, `shop:` and
+`shop_aisle:` work as they do in a recipe (`{ qty: "1", item: orange slice, shop: orange }`). A
+cocktail's file name can't match a recipe's, since the plan knows both by name.
+
+Photos work like recipe photos: 3:2, made by the same script, which saves them in
+`assets/images/cocktails/` and sets `image:` and `image_alt:` for you. Without one, the card shows a
+cocktail-glass tile and the page shows "Missing" ("Have you seen this drink?"), a short strip on
+phones. The Upside Bar banner at the top of the list is `assets/images/cocktails/upside-bar`.
+
+```sh
+scripts/add-photo.sh black-cherry-mule ~/Downloads/IMG_1234.HEIC 50 "Black cherry mule in a copper mug"
+```
+
 ## Add a new section (e.g. a watchlist)
 
 1. In `_data/sections.yml`, the section's entry is already there with `status: soon`.
@@ -204,8 +245,9 @@ photos) and alt text. It saves a JPG and WebP copies in `assets/images/drinks/`,
    If the title is long, add `nav:` with a shorter name for the header (Packing Lists shows as "Packing").
    On phones the header has no room for the section links, so they move into a Menu button's
    dropdown (`nav.js`); it lists the same live sections, in the same order.
-   The header puts the Plan link after the section marked `group_with_plan: true` (Recipes), and
-   each live section after the first starts a new group, set off by a thin divider.
+   The header lists the sections first, in file order, then the tools after a thin line: Plan
+   (an outlined pill, since recipes and drinks both use it) and the cooking pot while you're cooking.
+   Give a new live section the next file number, and move the "soon" ones up past it.
 
 ## Scripts and page changes (Turbo)
 

@@ -642,27 +642,34 @@ check(`an item can't be both: packed wins (${(await saved()).checked} / ${(await
   && !(await q("document.querySelector('[data-pack-setup-body]').hidden")) && (await saved()).progress.packed === 1 && (await saved()).progress.skipped === 1 && (await saved()).setupFolded === false && (await saved()).skipped.join() === "rain-jacket");
 
 // ---------- The header: nav order, the divider, and the Packing badge ----------
-// Recipes · Plan │ Packing │ Caffeine, then the cooking pot while there is one, then the phone Menu
-// (which only shows on phones). The links only show beyond phone width, so this part is on a desktop.
+// The case files (Recipes, Packing, Cocktails, Caffeine) in file order, then a thin line and the tools:
+// Plan, the cooking pot while there is one, then the phone Menu (which only shows on phones). The links
+// only show beyond phone width, so this part is on a desktop.
 await send("Emulation.setDeviceMetricsOverride", { width: 1280, height: 800, deviceScaleFactor: 1, mobile: false });
 const navHrefs = "[...document.querySelectorAll('.site-nav > ul > li')].map(li => li.classList.contains('nav-menu') ? 'menu' : li.classList.contains('cooking-nav') ? 'cooking' : li.querySelector('a').getAttribute('href')).join()";
-const navCss = readFileSync(new URL("../_data/sections.yml", import.meta.url), "utf8");
-check("sections.yml says which section Plan goes with, so the nav is data-driven", /- id: recipes[\s\S]*?group_with_plan: true[\s\S]*?- id: packing/.test(navCss) && (navCss.match(/group_with_plan: true/g) || []).length === 1);
-for (const path of ["/", "/recipes/", "/plan/", "/packing/"]) {
+const sectionsYml = readFileSync(new URL("../_data/sections.yml", import.meta.url), "utf8");
+check("sections.yml no longer ties Plan to a section", !/group_with_plan/.test(sectionsYml));
+for (const path of ["/", "/recipes/", "/plan/", "/packing/", "/cocktails/"]) {
   await go(path);
-  check(`${path}: nav is Recipes, Plan, Packing, Caffeine, then the pot and Menu: ${await q(navHrefs)}`, (await q(navHrefs)) === "/recipes/,/plan/,/packing/,/caffeine/,cooking,menu");
+  check(`${path}: nav is Recipes, Packing, Cocktails, Caffeine, then Plan, the pot, and Menu: ${await q(navHrefs)}`, (await q(navHrefs)) === "/recipes/,/packing/,/cocktails/,/caffeine/,/plan/,cooking,menu");
 }
 await go("/packing/");
-check("a thin divider starts the Packing group and the Caffeine group, and nothing else", await q(`(() => {
+check("one thin line, between the files and the tools, and nothing else", await q(`(() => {
   const li = [...document.querySelectorAll('.site-nav > ul > li')];
   const t = document.createElement('i'); t.style.borderLeft = '1px solid var(--line-strong)'; document.body.append(t);
   const line = getComputedStyle(t).borderLeftColor; t.remove();
   const own = li.map((x) => getComputedStyle(x).borderLeftWidth);
-  return own.join() === '0px,0px,1px,1px,0px,0px' && li[2].classList.contains('site-nav__group-start') && getComputedStyle(li[2]).borderLeftColor === line && li[2].getBoundingClientRect().left > li[1].getBoundingClientRect().right;
+  return own.join() === '0px,0px,0px,0px,1px,0px,0px' && li[4].classList.contains('site-nav__tools') && getComputedStyle(li[4]).borderLeftColor === line && li[4].getBoundingClientRect().left > li[3].getBoundingClientRect().right;
+})()`));
+check("Plan is an outlined pill, as tall as the section links", await q(`(() => {
+  const plan = document.querySelector('.site-nav a[href="/plan/"]'), recipes = document.querySelector('.site-nav a[href="/recipes/"]');
+  const s = getComputedStyle(plan);
+  return s.borderTopWidth === '1px' && parseFloat(s.borderTopLeftRadius) > 100 && Math.round(plan.getBoundingClientRect().height) === Math.round(recipes.getBoundingClientRect().height);
 })()`));
 check("the current page is marked: Packing here, Plan on its page", await q("document.querySelector('.site-nav a[href=\"/packing/\"]').getAttribute('aria-current') === 'page' && !document.querySelector('.site-nav a[href=\"/plan/\"]').hasAttribute('aria-current')"));
 await go("/plan/");
-check("and Recipes isn't marked on /plan/", await q("document.querySelector('.site-nav a[href=\"/plan/\"]').getAttribute('aria-current') === 'page' && !document.querySelector('.site-nav a[href=\"/recipes/\"]').hasAttribute('aria-current')"));
+check("and Recipes isn't marked on /plan/; Plan's outline turns red instead of an underline", await q("document.querySelector('.site-nav a[href=\"/plan/\"]').getAttribute('aria-current') === 'page' && !document.querySelector('.site-nav a[href=\"/recipes/\"]').hasAttribute('aria-current')")
+  && await q("(() => { const a = document.querySelector('.site-nav a[href=\"/plan/\"]'); return getComputedStyle(a).borderTopColor !== getComputedStyle(document.querySelector('.site-nav a[href=\"/recipes/\"]')).color && getComputedStyle(a.querySelector('.plan-link__label')).textDecorationLine === 'none'; })()"));
 await send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
 
 // The badge: the percent decided, from what packing.js saved. Not a trip, nothing to count, or all done: hidden.

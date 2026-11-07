@@ -7,7 +7,7 @@ description: Pick the days and the kind of trip, and get one checklist that reme
 
 <div class="container pack-page" data-pack-page>
   <header class="page-head">
-    <p class="eyebrow">File 002 · Field kit</p>
+    <p class="eyebrow">File {{ site.data.sections | where: "id", "packing" | map: "file" | first }} · Field kit</p>
     <h1 class="page-title">Packing Lists</h1>
     <p class="page-head__lede">{{ page.description }}</p>
   </header>

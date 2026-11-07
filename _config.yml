@@ -13,6 +13,9 @@ collections:
   recipes:
     output: true
     permalink: /recipes/:name/
+  cocktails:
+    output: true
+    permalink: /cocktails/:name/
 
 defaults:
   - scope:
@@ -20,6 +23,11 @@ defaults:
       type: recipes
     values:
       layout: recipe
+  - scope:
+      path: ""
+      type: cocktails
+    values:
+      layout: cocktail
 
 # Every recipe without its own photo uses this image.
 recipe_placeholder: /assets/images/placeholder-recipe.svg

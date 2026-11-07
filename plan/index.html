@@ -7,10 +7,11 @@ description: Pick a few recipes and get one shopping list, sorted by aisle.
 {%- assign recipes = site.recipes | where_exp: "r", "r.classified != true" | sort: "title" -%}
 {%- assign classified = site.recipes | where: "classified", true | sort: "title" -%}
 {%- assign categories = recipes | map: "category" | uniq | sort -%}
+{%- assign cocktails = site.cocktails | sort: "title" -%}
 
 <div class="container plan-page" data-plan-page>
   <header class="page-head">
-    <p class="eyebrow">File 001 · Supply run</p>
+    <p class="eyebrow">File {{ site.data.sections | where: "id", "recipes" | map: "file" | first }} · Supply run</p>
     <h1 class="page-title">Meal Plan</h1>
     <p class="page-head__lede">{{ page.description }}</p>
   </header>
@@ -43,6 +44,8 @@ description: Pick a few recipes and get one shopping list, sorted by aisle.
           </div>
 
           <ul class="plan-list" data-plan-list></ul>
+          <h3 class="ingredients__group plan-drinks__title" data-plan-drinks-title hidden>Drinks</h3>
+          <ul class="plan-list" data-plan-drinks></ul>
 
           <div class="plan-empty" data-plan-empty hidden>
             <p class="empty__title">Nothing planned yet.</p>
@@ -65,6 +68,12 @@ description: Pick a few recipes and get one shopping list, sorted by aisle.
                 {%- endif %}{% endfor %}
               </optgroup>
               {%- endfor %}
+              {%- comment %} Cocktails plan as drinks, under their own heading (plan.js). {% endcomment %}
+              <optgroup label="Drinks">
+                {%- for c in cocktails %}
+                <option value="{{ c.slug }}">{{ c.title }}</option>
+                {%- endfor %}
+              </optgroup>
             </select>
           </label>
         </div>
@@ -148,6 +157,21 @@ description: Pick a few recipes and get one shopping list, sorted by aisle.
         {%- for ingredient in group.items %}
       [{{ ingredient.qty | default: "" | jsonify }}, {{ ingredient.item | strip | jsonify }}, {{ ingredient.shop | jsonify }}, {{ ingredient.shop_aisle | jsonify }}]{% unless outer_last and forloop.last %},{% endunless %}
         {%- endfor %}
+      {%- endfor %}
+    ]
+  }{% unless forloop.last and cocktails.size == 0 %},{% endunless %}
+{%- endfor %}
+{%- comment %} Cocktails: one drink each, ingredients in one flat list. drink: their "oz" is fluid ounces, and the plan says "Makes 2" rather than "Serves 2". {% endcomment %}
+{%- for c in cocktails %}
+  {
+    "slug": {{ c.slug | jsonify }},
+    "title": {{ c.title | jsonify }},
+    "url": {{ c.url | relative_url | jsonify }},
+    "servings": 1,
+    "drink": true,
+    "ingredients": [
+      {%- for ingredient in c.ingredients %}
+      [{{ ingredient.qty | default: "" | jsonify }}, {{ ingredient.item | strip | jsonify }}, {{ ingredient.shop | jsonify }}, {{ ingredient.shop_aisle | jsonify }}]{% unless forloop.last %},{% endunless %}
       {%- endfor %}
     ]
   }{% unless forloop.last %},{% endunless %}

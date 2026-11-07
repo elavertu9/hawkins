@@ -28,7 +28,7 @@
   const HOUR = 60 * 60 * 1000;
   const UNDO_MS = 5000;
   const HINT_KEY = "hawkins:cooking-hint";
-  const narrow = matchMedia("(max-width: 52rem)");
+  const narrow = matchMedia("(max-width: 58rem)");
 
   const pathOf = (url) => new URL(url, location.href).pathname;
   const progressLabel = (r) => (r.steps.length ? `Step ${r.next} of ${r.total}` : "Getting ingredients");

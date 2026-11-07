@@ -413,12 +413,23 @@ p { margin: 0; }
   border-radius: var(--radius-sm);
 }
 .site-nav a:hover { color: var(--text); }
-/* A new group of links (Recipes · Plan │ Packing): a thin line before it. */
-.site-nav .site-nav__group-start {
-  margin-left: 0.25rem;
-  padding-left: 0.25rem;
+/* The case files, then the tools (Plan, the pot) after one thin line. */
+.site-nav .site-nav__tools {
+  margin-left: 0.5rem;
+  padding-left: 0.75rem;
   border-left: 1px solid var(--line-strong);
 }
+/* Plan is a tool, not a section: an outlined pill (the border comes out of
+   the padding, so it's no taller than the links). The current page is a red
+   outline rather than the sections' underline. */
+.site-nav .plan-link--tool {
+  padding-block: calc(0.5rem - 1px);
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+}
+.site-nav .plan-link--tool:hover { border-color: var(--text-muted); }
+.site-nav .plan-link--tool[aria-current] { border-color: var(--red-bright); }
+.site-nav .plan-link--tool[aria-current] .plan-link__label { text-decoration: none; }
 .site-nav a[aria-current] {
   color: var(--text);
   text-decoration: underline;
@@ -498,8 +509,11 @@ p { margin: 0; }
 .nav-menu__file { font-weight: 400; letter-spacing: 0.04em; color: var(--text-faint); }
 /* The pot's first-time note sits over the same spot: it waits while Menu is open. */
 body:has(.nav-menu__toggle[aria-expanded="true"]) .cooking-hint { display: none; }
-@media (max-width: 52rem) {
+/* 58rem: five section links, Plan, the pot, and their badges need about 56rem. */
+@media (max-width: 58rem) {
   .site-nav__section { display: none; }
+  /* No sections beside it, so no line before Plan. */
+  .site-nav .site-nav__tools { margin-left: 0; padding-left: 0; border-left: 0; }
   .nav-menu { display: flex; }
   .nav-menu__list:not([hidden]) { display: grid; }
 }
@@ -578,6 +592,30 @@ body:has(.nav-menu__toggle[aria-expanded="true"]) .cooking-hint { display: none;
   font-size: 0.875rem;
   color: var(--text-faint);
 }
+
+/* ---------- Cocktails (see cocktails/index.html, _cocktails/ and _layouts/cocktail.html) ---------- */
+/* The list is recipe cards (_includes/cocktail-card.html) and each page is a
+   recipe page without cook mode: the same 3:2 photos and "Missing" strip. */
+/* The Upside Bar banner: the whole sign on wide screens; on phones, "THE
+   UPSIDE" in the middle (it sits a little right of the photo's center). */
+.cocktail-banner {
+  margin: 0 0 clamp(1.5rem, 4vw, 2.5rem);
+  aspect-ratio: 1600 / 350;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--surface-2);
+}
+.cocktail-banner img { width: 100%; height: 100%; object-fit: cover; }
+@media (max-width: 40rem) {
+  .cocktail-banner { aspect-ratio: 5 / 2; }
+  .cocktail-banner img { object-position: 55% 50%; }
+}
+/* The steps aren't buttons here: no cook mode to mark them done. */
+.cocktail-page .step__num { cursor: default; }
+.cocktail-page .step__num:hover { box-shadow: 0 0 12px var(--red-glow-soft), inset 0 0 8px var(--red-glow-inset); }
+.cocktail-page .step__body { cursor: default; }
+.cocktail-ingredients { display: grid; gap: 0.6rem; margin-top: 0.75rem; }
 
 /* ---------- Footer ---------- */
 .site-footer {
@@ -955,6 +993,7 @@ a.tag:hover { border-color: var(--amber); }
 .card__media {
   position: relative;
   aspect-ratio: var(--media-ratio);
+  min-height: 0; /* the frame sets the size, so a photo can't stretch it past a "no photo" tile */
   background: var(--surface-2);
   border-bottom: 1px solid var(--line);
 }
@@ -2126,7 +2165,7 @@ body:has(> .timers:not([hidden])) { padding-bottom: 8rem; }
 .cooking-link .plan-link__count { color: #1a1408; background: var(--amber-fill); box-shadow: 0 0 10px var(--amber-glow); }
 /* Phones: no room for the word, so a glowing pot (the count, when there's
    more than one, on its corner). The label stays for screen readers. */
-@media (max-width: 52rem) {
+@media (max-width: 58rem) {
   .cooking-link { position: relative; padding: 0.5rem 0.4rem; }
   .cooking-link__icon { display: block; }
   .cooking-link__label {

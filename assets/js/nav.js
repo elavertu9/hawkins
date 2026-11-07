@@ -10,7 +10,7 @@
 // This script runs once per visit (like cooking.js); the header is new on every
 // page, so everything listens on the document and looks the menu up each time.
 (() => {
-  const narrow = matchMedia("(max-width: 52rem)");
+  const narrow = matchMedia("(max-width: 58rem)");
 
   const parts = () => ({
     toggle: document.querySelector("[data-nav-menu-toggle]"),

@@ -1,16 +1,17 @@
 # Top-level sections of the site, in display order.
 # Live sections appear in the header nav and as links on the home page.
 # Sections marked "soon" show on the home page as "Coming soon" with no link.
+# file: the case file number. Live sections come first, numbered in order, and
+#   the ones still coming get the numbers after them. Each page's "File 00X"
+#   eyebrow reads it from here.
 # nav: a shorter name for the header, where a long title wouldn't fit on a phone.
-# group_with_plan: the Plan link follows this section in the header, as part of its group.
-#   Each live section after the first starts a new group, set off by a thin divider.
+# The header lists the live sections in this order, then the tools (Plan, the pot) after a thin line.
 - id: recipes
   title: Recipes
   file: "001"
   url: /recipes/
   blurb: Dinners, desserts, and family favorites, written out step by step.
   status: live
-  group_with_plan: true
 
 - id: packing
   title: Packing Lists
@@ -20,31 +21,31 @@
   blurb: What to bring, so nothing gets left behind in the Upside Down.
   status: live
 
-- id: watchlist
-  title: Watchlist
+- id: cocktails
+  title: Cocktails
   file: "003"
-  url: /watchlist/
-  blurb: TV shows and movies worth watching, rated from the couch in the basement.
-  status: soon
-
-- id: drinks
-  title: Cocktails & Drinks
-  file: "004"
-  url: /drinks/
-  blurb: Cocktails and drinks to mix up, from Starcourt slushies to grown-up nightcaps.
-  status: soon
-
-- id: fast-food
-  title: Healthy Fast Food
-  file: "005"
-  url: /fast-food/
-  blurb: Low-calorie drive-thru orders, for the nights nobody's cooking.
-  status: soon
+  url: /cocktails/
+  blurb: Cocktails we've had out, written up to mix at home, from the Upside Bar on down.
+  status: live
 
 - id: caffeine
   title: Caffeine
-  file: "006"
+  file: "004"
   url: /caffeine/
   nav: Caffeine
   blurb: Energy drink flavor combos worth the stop, and how to order them.
   status: live
+
+- id: watchlist
+  title: Watchlist
+  file: "005"
+  url: /watchlist/
+  blurb: TV shows and movies worth watching, rated from the couch in the basement.
+  status: soon
+
+- id: fast-food
+  title: Healthy Fast Food
+  file: "006"
+  url: /fast-food/
+  blurb: Low-calorie drive-thru orders, for the nights nobody's cooking.
+  status: soon

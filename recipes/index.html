@@ -16,7 +16,7 @@ description: Dinners, desserts, and family favorites, written out step by step.
 
 <div class="container">
   <header class="page-head">
-    <p class="eyebrow">File 001</p>
+    <p class="eyebrow">File {{ site.data.sections | where: "id", "recipes" | map: "file" | first }}</p>
     <div class="page-head__row">
       <h1 class="page-title">Recipes</h1>
       <button class="button button--gate" type="button" data-random hidden>Surprise me</button>
