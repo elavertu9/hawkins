@@ -39,7 +39,13 @@ fi
 # Serve _site unless something is already serving it on this port.
 server=""
 if ! curl -s -o /dev/null "http://127.0.0.1:$PORT/"; then
-  python3 -m http.server "$PORT" --bind 127.0.0.1 --directory "$SITE_DIR/_site" >/dev/null 2>&1 &
+  # Python's plain http.server queues only 5 waiting connections and drops the
+  # rest, which several Chromes at once can exceed (a page then loads without
+  # one of its scripts). Same server, with room for 128.
+  python3 -c 'import functools, http.server as h, sys
+class Server(h.ThreadingHTTPServer): request_queue_size = 128
+h.test(HandlerClass=functools.partial(h.SimpleHTTPRequestHandler, directory=sys.argv[2]), ServerClass=Server, port=int(sys.argv[1]), bind="127.0.0.1")' \
+    "$PORT" "$SITE_DIR/_site" >/dev/null 2>&1 &
   server=$!
   disown "$server" # no "Terminated" message when it's stopped at the end
   for _ in $(seq 50); do curl -s -o /dev/null "http://127.0.0.1:$PORT/" && break; sleep 0.1; done

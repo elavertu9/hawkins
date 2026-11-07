@@ -75,6 +75,9 @@ export async function open() {
     const loaded = new Promise((r) => { onLoad.push(r); setTimeout(r, 5000); });
     await send("Page.navigate", { url: BASE + path });
     await loaded;
+    // A busy machine (several test files at once) can take longer than that:
+    // wait for the page to finish loading, deferred scripts and all.
+    for (let i = 0; i < 100 && (await ev("document.readyState")) !== "complete"; i++) await sleep(100);
     await sleep(250); // let deferred scripts settle
   };
   // Waits until a page expression is truthy (or the timeout passes), and returns its value.
