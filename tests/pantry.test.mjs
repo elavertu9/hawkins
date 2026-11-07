@@ -1,7 +1,7 @@
 // The "you have at home" pantry summary on the shopping list.
 import { BASE, open } from "./lib.mjs";
 
-const { send, ev, go, sleep, check, shot, errors, finish } = await open();
+const { send, ev, go, until, sleep, check, shot, errors, finish } = await open();
 await send("Browser.grantPermissions", { origin: BASE, permissions: ["clipboardReadWrite", "clipboardSanitizedWrite"] });
 await send("Page.bringToFront");
 await send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
@@ -13,6 +13,8 @@ check(`summary: ${summary}`, /^Skipping \d+ you have at home: .*olive oil \(¼ c
 await ev("document.querySelector('.shopping').scrollIntoView()"); await sleep(200);
 await shot("pantry-summary");
 await ev("document.querySelector('[data-plan-pantry-review]').click()"); await sleep(800);
+// It scrolls smoothly, which takes longer on a busy machine: wait until it stops.
+await until("(() => { const y = scrollY; return new Promise((r) => setTimeout(() => r(scrollY === y), 150)); })()", 4000);
 const top = await ev("document.querySelector('.pantry').getBoundingClientRect().top");
 console.log("scrollY", await ev("scrollY"), "max", await ev("document.documentElement.scrollHeight - innerHeight"));
 check(`review opens + scrolls: open=${await ev("document.querySelector('.pantry').open")} top=${Math.round(top)}`, (await ev("document.querySelector('.pantry').open")) && top >= 0 && (top < 200 || (await ev("scrollY")) >= (await ev("document.documentElement.scrollHeight - innerHeight")) - 2));

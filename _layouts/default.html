@@ -9,6 +9,10 @@
     {{ content }}
   </main>
   {% include footer.html %}
+  {%- comment %} The home-screen app has no Safari toolbar: Back, bottom left (app.css; page.js goes up a level). Not on the home page, where there's nowhere up to go. {% endcomment %}
+  {%- unless page.url == "/" %}
+  <button class="app-back" type="button" aria-label="Back" data-app-back><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+  {%- endunless %}
   <script src="{{ '/assets/js/plan.js' | relative_url }}?v={{ site.time | date: '%s' }}" defer></script>
 </body>
 </html>

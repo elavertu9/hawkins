@@ -8,7 +8,7 @@ classified: true
 summary: Contents redacted. Level 4 clearance required to open this file.
 image: "/assets/images/recipes/lobster-bisque.jpg"
 image_alt: Creamy lobster bisque simmering in a steel pot
-built_from: c7aeb34d55b1
+built_from: 8803a2d67446
 cipher:
   iterations: 310000
   salt: z/nzUh5YhHgtIBTq/g14JA==

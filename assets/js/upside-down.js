@@ -1,16 +1,15 @@
 // Easter egg: flips the site into the Upside Down.
-// Keyboard: type 011 (Eleven's tattoo). Touch: tap one blank spot 4 times quickly.
-// Do it again to get back. It lasts for the browser session, so the whole
+// Keyboard: type 011 (Eleven's tattoo). Touch: twist two fingers half a turn,
+// like turning the world upside down. (It used to be 4 quick taps on one spot,
+// which was too easy to do by accident, like tapping the side of a cook-mode
+// step to turn the page.) Do it again to get back. It lasts for the browser session, so the whole
 // site stays flipped as you click around. Runs once per visit to the site
 // (from <head>; see page.js).
 (() => {
   const root = document.documentElement;
   const STORAGE_KEY = "hawkins:upside-down";
   const CODE = "011";
-  const TAPS = 4; // 3 was too easy to do by accident
-  const TAP_GAP_MS = 450; // max time between taps
-  const TAP_SLOP_PX = 30; // max finger movement for a tap
-  const TAP_SPOT_PX = 40; // max distance between taps, so they land in one spot
+  const TWIST_DEG = 150; // about half a turn: far past what a pinch-zoom turns
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   let typed = "";
@@ -43,7 +42,7 @@
     window.scrollTo({ top: Math.max(0, maxScroll() - y), behavior: "instant" });
     remember(on);
     announce(on
-      ? "You're in the Upside Down. Enter the code again to get out."
+      ? "You're in the Upside Down. Do it again to get out."
       : "You made it back. Friends don't lie.");
   };
 
@@ -83,28 +82,33 @@
     }
   });
 
-  let start = null;
-  let taps = 0;
-  let lastTap = 0;
-  let lastSpot = null;
+  // The twist: the angle of the line between the two fingers, followed as they
+  // move and added up, so it can turn either way. A third finger, or lifting
+  // one, starts over.
+  let twist = null;
+  const angleOf = (touches) => {
+    const [a, b] = twist.ids.map((id) => [...touches].find((t) => t.identifier === id));
+    return a && b ? (Math.atan2(b.clientY - a.clientY, b.clientX - a.clientX) * 180) / Math.PI : null;
+  };
   document.addEventListener("touchstart", (e) => {
-    start = e.touches.length === 1 ? { x: e.touches[0].clientX, y: e.touches[0].clientY } : null;
+    twist = e.touches.length === 2 ? { ids: [e.touches[0].identifier, e.touches[1].identifier], turned: 0 } : null;
+    if (twist) twist.last = angleOf(e.touches);
   }, { passive: true });
-  document.addEventListener("touchend", (e) => {
-    if (!start) return;
-    const end = { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY };
-    const moved = Math.hypot(end.x - start.x, end.y - start.y);
-    start = null;
-    // Scrolls, and taps on links and buttons, reset the count.
-    if (moved > TAP_SLOP_PX || e.target.closest("a, button, label, input")) return (taps = 0);
-    const now = Date.now();
-    const sameSpot = lastSpot && Math.hypot(end.x - lastSpot.x, end.y - lastSpot.y) <= TAP_SPOT_PX;
-    taps = sameSpot && now - lastTap < TAP_GAP_MS ? taps + 1 : 1;
-    lastTap = now;
-    lastSpot = end;
-    if (taps === TAPS) {
-      taps = 0;
+  document.addEventListener("touchmove", (e) => {
+    if (!twist || e.touches.length !== 2) return;
+    const angle = angleOf(e.touches);
+    if (angle === null) return (twist = null);
+    let step = angle - twist.last;
+    if (step > 180) step -= 360; // across the -180/180 line
+    if (step < -180) step += 360;
+    twist.turned += step;
+    twist.last = angle;
+    if (Math.abs(twist.turned) >= TWIST_DEG) {
+      twist = null;
       toggle();
     }
   }, { passive: true });
+  const stop = (e) => { if (e.touches.length < 2) twist = null; };
+  document.addEventListener("touchend", stop, { passive: true });
+  document.addEventListener("touchcancel", stop, { passive: true });
 })();

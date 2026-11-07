@@ -92,6 +92,15 @@ reference for how each part works; this file is how to work on it without breaki
   `oz` is fluid ounces in the shopping list.
 - Esc on a recipe or cocktail page goes back to the list in its breadcrumb (`page.js`). Anything else
   that uses Esc (dialogs, dropdowns) must keep working first.
+- Home-screen app mode: `head.html` adds `.is-app` to `<html>` when the site runs as a web app (no
+  Safari toolbar). Then a round Back button sits bottom-left (`HawkinsPage.up()`, the same as Esc;
+  `_includes/css/app.css`). The status bar is iPhone's default, on purpose. Anything new pinned
+  to the bottom of a phone screen must leave Back its corner. Nothing important may be app-only:
+  shared links open in Safari, and the app keeps its own saved plans and trips.
+- Cook mode: swipe, or tap the left or right third of the step, to change steps. Buttons inside a
+  step (timers) must keep working as buttons.
+- The Upside Down easter egg is typing 011, or a two-finger half-turn twist on a phone. Never a
+  tap pattern: taps are for real controls (four quick taps used to flip it by accident in cook mode).
 
 ## Tests
 

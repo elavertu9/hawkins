@@ -221,6 +221,41 @@ await swipe(320, 120);
 check(`long swipe left -> ${await q(count)}`, (await q(count)) === "Step 5 of 5");
 await swipe(100, 300);
 check(`swipe right -> ${await q(count)}`, (await q(count)) === "Step 4 of 5");
+// Tapping: the left third of the step goes back, the right third on, the
+// middle does nothing; a button in the step still works as a button.
+await sleep(500); // a swipe just ended: the tap zones wait it out
+// The tap lands on plain text or empty space, never on a button in the step
+// (a timer), which works as a button instead.
+const plainSpot = (fraction) => q(`(() => {
+  const r = document.querySelector('[data-cook-stage]').getBoundingClientRect(), x = r.left + r.width * ${fraction};
+  for (const f of [0.5, 0.4, 0.6, 0.3, 0.7, 0.2, 0.8, 0.9]) {
+    const y = r.top + r.height * f, e = document.elementFromPoint(x, y);
+    if (e && e.closest('[data-cook-stage]') && !e.closest('button, a, input, label, select, textarea, [role=button]')) return { x, y };
+  }
+  return null;
+})()`);
+const tapAt = async (fraction, touch = false) => {
+  const { x, y } = await plainSpot(fraction);
+  if (touch) {
+    await send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x, y }] });
+    await send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
+  } else {
+    for (const type of ["mousePressed", "mouseReleased"]) await send("Input.dispatchMouseEvent", { type, x, y, button: "left", clickCount: 1 });
+  }
+  await sleep(400);
+};
+await tapAt(0.85);
+check(`tap the right side -> ${await q(count)}`, (await q(count)) === "Step 5 of 5");
+await tapAt(0.15);
+check(`tap the left side -> ${await q(count)}`, (await q(count)) === "Step 4 of 5");
+await tapAt(0.5);
+check(`tap the middle: stays on ${await q(count)}`, (await q(count)) === "Step 4 of 5");
+await tapAt(0.85, true);
+check(`a finger tap on the right works too -> ${await q(count)}`, (await q(count)) === "Step 5 of 5");
+await tapAt(0.15, true);
+await swipe(320, 120);
+check(`a swipe moves one step, never a swipe and a tap: ${await q(count)}`, (await q(count)) === "Step 5 of 5");
+await swipe(100, 300); await sleep(500);
 // Finishing: the check draws, and the recipe can be saved as a favorite.
 await q("document.querySelector('[data-cook-next]').click()"); await sleep(200);
 await q("document.querySelector('[data-cook-next]').click()"); await sleep(400);

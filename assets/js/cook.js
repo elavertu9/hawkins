@@ -354,6 +354,7 @@
   // your finger, and springs back if you let go early (or there's no step
   // that way). Scrolling up and down still scrolls.
   let touch = null;
+  let swipedAt = 0; // a sideways drag just ended: the tap zones below ignore it
   const settle = (animate) => {
     ui.step.style.transition = animate && !reduceMotion.matches ? "transform 0.2s ease-out" : "";
     ui.step.style.transform = "";
@@ -379,11 +380,24 @@
     const dx = t.clientX - touch.x;
     const sideways = touch.sideways;
     touch = null;
+    if (sideways) swipedAt = Date.now();
     if (!sideways || Math.abs(dx) < 60 || (dx > 0 && current === 0)) { settle(true); return; }
     settle(false);
     if (dx < 0) next(); else prev();
   });
   ui.stage.addEventListener("touchcancel", () => { touch = null; settle(true); });
+
+  // Or tap: the left third of the step goes back a step, the right third on,
+  // like turning a page. The middle third is for reading, so it does nothing.
+  // Buttons in the step (a timer) work as usual, and so does selecting text.
+  ui.stage.addEventListener("click", (event) => {
+    if (event.target.closest("button, a, input, label, select, textarea, [role=button]")) return;
+    if (Date.now() - swipedAt < 500 || String(getSelection())) return;
+    const box = ui.stage.getBoundingClientRect();
+    const x = (event.clientX - box.left) / box.width;
+    if (x < 1 / 3) prev();
+    else if (x > 2 / 3) next();
+  });
 
   ui.next.addEventListener("click", next);
   ui.prev.addEventListener("click", prev);

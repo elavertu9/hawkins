@@ -33,4 +33,5 @@
 {% include css/classified.css %}
 {% include css/page-transitions.css %}
 {% include css/upside-down.css %}
+{% include css/app.css %}
 {% include css/motion-and-print.css %}
