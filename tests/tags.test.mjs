@@ -30,7 +30,7 @@ const type = async (text) => { for (const ch of text) await send("Input.insertTe
 
 await send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
 await go("/recipes/");
-check(`initial: ${await ev(status)}, suggestions closed`, (await ev(status)) === "48 recipes" && !(await ev(suggestOpen)));
+check(`initial: ${await ev(status)}, suggestions closed`, (await ev(status)) === "51 recipes" && !(await ev(suggestOpen)));
 check(`grouped by dish: ${await ev(groups)}`, /^Dinner \d+ \| Soup \d+ \| Side \d+ \| Appetizer \d+ \| Breakfast \d+ \| Dessert \d+ \| Sauce \d+$/.test(await ev(groups)));
 
 await tap("#recipe-search");
@@ -73,21 +73,21 @@ check(`-> pill ${await ev(tokens)}, search "${await ev("document.querySelector('
 
 // From the URL: an old single-tag link, and a dead end.
 await go("/recipes/?tag=low-calorie");
-check(`?tag=low-calorie: ${await ev(visible)} | pill ${await ev(tokens)}`, (await ev(visible)).join() === "Lavash Bread Pizza,Cottage Cheese Bagels" && (await ev(tokens)) === "Low Calorie");
+check(`?tag=low-calorie: ${await ev(visible)} | pill ${await ev(tokens)}`, (await ev(visible)).join() === "Chicken Cheesesteak Skillet,Chicken Enchiladas,Easy Egg Roll in a Bowl,Egg Roll in a Bowl,Lavash Bread Pizza,Cottage Cheese Bagels" && (await ev(tokens)) === "Low Calorie");
 await go("/recipes/?tag=slow-cooker&tag=low-calorie");
 check(`dead end: ${await ev("document.querySelector('[data-empty-text]').textContent")}`, !(await ev("document.querySelector('[data-empty]').hidden")) && /Slow Cooker \+ Low Calorie/.test(await ev("document.querySelector('[data-empty-text]').textContent")));
 await tap("[data-clear]");
-check(`clear resets everything: ${await ev(status)} | ${await ev(tokens) || "no pills"}`, (await ev(status)) === "48 recipes" && (await ev(tokens)) === "");
+check(`clear resets everything: ${await ev(status)} | ${await ev(tokens) || "no pills"}`, (await ev(status)) === "51 recipes" && (await ev(tokens)) === "");
 
 // Search still finds recipes by tag name, and recipe pages link to their tags.
 await go("/recipes/?q=low+calorie");
-check(`search "low calorie": ${await ev(visible)}`, (await ev(visible)).join() === "Lavash Bread Pizza,Cottage Cheese Bagels");
+check(`search "low calorie": ${await ev(visible)}`, (await ev(visible)).join() === "Chicken Cheesesteak Skillet,Chicken Enchiladas,Easy Egg Roll in a Bowl,Egg Roll in a Bowl,Lavash Bread Pizza,Cottage Cheese Bagels");
 await go("/recipes/cottage-cheese-bagels/");
 check(`recipe eyebrow: ${await ev("document.querySelector('.recipe-hero .eyebrow').textContent.replace(/\\s+/g,' ').trim()")}`, /Breakfast Low Calorie/.test(await ev("document.querySelector('.recipe-hero .eyebrow').textContent.replace(/\\s+/g,' ').trim()")));
 check(`calories: ${await ev("[...document.querySelectorAll('.stat')].map(s => s.textContent.replace(/\\s+/g,' ').trim()).join(' | ')")}`, /CALORIES 186/i.test(await ev("[...document.querySelectorAll('.stat')].map(s => s.textContent.replace(/\\s+/g,' ').trim()).join(' | ')")));
 await shot("bagels-mobile");
 await ev("document.querySelector('.recipe-hero .tag').click()"); await sleep(1300);
-check(`tag link -> ${await ev("location.pathname + location.search")}: ${await ev(visible)}`, (await ev(visible)).join() === "Lavash Bread Pizza,Cottage Cheese Bagels");
+check(`tag link -> ${await ev("location.pathname + location.search")}: ${await ev(visible)}`, (await ev(visible)).join() === "Chicken Cheesesteak Skillet,Chicken Enchiladas,Easy Egg Roll in a Bowl,Egg Roll in a Bowl,Lavash Bread Pizza,Cottage Cheese Bagels");
 check("fits", await ev("document.documentElement.scrollWidth <= document.documentElement.clientWidth"));
 
 await send("Emulation.setDeviceMetricsOverride", { width: 1280, height: 900, deviceScaleFactor: 1, mobile: false });

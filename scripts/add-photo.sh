@@ -55,6 +55,12 @@ fi
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT
 
+# Phone photos are often stored sideways with a "rotate" tag, which cwebp
+# ignores. Saving as BMP turns the pixels upright and leaves all metadata
+# (camera, date, location) behind.
+sips -s format bmp "$photo" --out "$tmp/upright.bmp" >/dev/null
+photo="$tmp/upright.bmp"
+
 # Crop to 3:2 around the focus point.
 read -r width height < <(sips -g pixelWidth -g pixelHeight "$photo" | awk '/pixelWidth/ {w=$2} /pixelHeight/ {h=$2} END {print w, h}')
 if [ $((width * 2)) -gt $((height * 3)) ]; then

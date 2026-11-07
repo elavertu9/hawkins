@@ -146,7 +146,8 @@ layout: default
         {%- if page.source %}
         <p class="source">
           Adapted from
-          <a href="{{ page.source.url }}" rel="noopener">{{ page.title }}</a>{% if page.source.author %}
+          {%- comment %} A source without a url (a meal plan behind a login) is credited by name only. {% endcomment %}
+          {% if page.source.url %}<a href="{{ page.source.url }}" rel="noopener">{{ page.title }}</a>{% else %}{{ page.title }}{% endif %}{% if page.source.author %}
           by {{ page.source.author }}{% endif %} on {{ page.source.name }}.
         </p>
         {%- endif %}

@@ -8,7 +8,7 @@ classified: true
 summary: Contents redacted. Level 4 clearance required to open this file.
 image: "/assets/images/recipes/peggies-mediterranean-rice.jpg"
 image_alt: Pot of browned rice with green peppers and mushrooms
-built_from: 53180e4e0215
+built_from: 2c4506bf442e
 cipher:
   iterations: 310000
   salt: sSpwb4w1aAdBiemsxi+/ZQ==

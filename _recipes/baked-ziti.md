@@ -6,8 +6,8 @@ summary: >-
 category: Dinner
 tags: [Make Ahead, Crowd]
 added: 2026-10-24
-# image: /assets/images/recipes/baked-ziti.jpg
-# image_alt: Baked ziti with melted cheese in a baking dish
+image: /assets/images/recipes/baked-ziti.jpg
+image_alt: Baked ziti in a glass baking dish, topped with meat sauce and shredded cheese
 time:
   prep: 30
   cook: 60

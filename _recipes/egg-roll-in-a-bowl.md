@@ -1,10 +1,11 @@
 ---
 title: Egg Roll in a Bowl
 summary: >-
-  All the flavor of an egg roll without the wrapper: ground pork, cabbage, and
-  carrots in a sesame-hoisin sauce, in one skillet and 20 minutes.
+  The full takeout flavor of an egg roll without the wrapper: ground pork,
+  cabbage, and carrots in a sesame-hoisin sauce. Feeds 4, in one skillet and 20
+  minutes.
 category: Dinner
-tags: [Quick]
+tags: [Low Calorie, Quick]
 added: 2026-10-24
 # image: /assets/images/recipes/egg-roll-in-a-bowl.jpg
 # image_alt: Skillet of ground pork and cabbage stir-fry
@@ -79,4 +80,5 @@ notes:
   - Don't skip the toasted sesame oil. It's what makes it taste like an egg roll.
   - Good add-ins are diced celery, bell peppers, snap peas, snow peas, or baby corn.
   - Reheat single servings in the microwave for about 1 minute.
+  - For a simpler single serving with ground turkey and hot sauce, see [Easy Egg Roll in a Bowl](/recipes/easy-egg-roll-in-a-bowl/).
 ---
