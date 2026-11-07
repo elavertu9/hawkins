@@ -61,30 +61,25 @@ check("triple tap does nothing", !(await ev(flipped)));
 for (let n = 0; n < 4; n++) await touch(tap[0] + n * 50, tap[1], tap[0] + n * 50, tap[1]);
 await sleep(1200);
 check("4 taps in different spots do nothing", !(await ev(flipped)));
-for (let n = 0; n < 4; n++) await touch(tap[0] + n * 5, tap[1], tap[0] + n * 5, tap[1]);
+for (let n = 0; n < 5; n++) await touch(tap[0] + n * 5, tap[1], tap[0] + n * 5, tap[1]);
 await sleep(1200);
-check("4 quick taps in one spot do nothing now (cook mode's page-turn taps)", !(await ev(flipped)));
-for (let n = 0; n < 8; n++) await touch(tap[0], tap[1], tap[0], tap[1]);
+check("5 quick taps in one spot do nothing", !(await ev(flipped)));
+for (let n = 0; n < 6; n++) await touch(tap[0] + n * 5, tap[1], tap[0] + n * 5, tap[1]);
 await sleep(1200);
-check("nor do 8", !(await ev(flipped)));
-// Two fingers turning around a point: from `from` to `to` degrees, in small steps.
-const twist = async (from, to, steps = 12) => {
-  const cx = 195, cy = 420, r = 90;
-  const points = (deg) => { const a = (deg * Math.PI) / 180; return [{ x: cx + r * Math.cos(a), y: cy + r * Math.sin(a), id: 1 }, { x: cx - r * Math.cos(a), y: cy - r * Math.sin(a), id: 2 }]; };
-  await send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: points(from) });
-  for (let i = 1; i <= steps; i++) await send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: points(from + ((to - from) * i) / steps) });
-  await send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
-  await sleep(1200);
-};
-await twist(0, 40);
-check("a pinch that turns a little does nothing", !(await ev(flipped)));
-await twist(0, 100);
-check("a quarter turn does nothing", !(await ev(flipped)));
-await twist(0, 180);
-check("a two-finger twist, half a turn, flips", await ev(flipped));
+check("6 quick taps in one spot flip", await ev(flipped));
 check("no horizontal overflow", await ev("document.documentElement.scrollWidth <= document.documentElement.clientWidth"));
 await sleep(400); await shot("ud-index-mobile");
-await twist(160, -20); // the other way, across the -180/180 line
-check("twisting again (either way) flips back", !(await ev(flipped)));
+// Flipped, the title is somewhere else on screen: tap it there.
+const flippedTap = await ev(`(() => { const r = document.querySelector('.page-title, h1').getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; })()`);
+for (let n = 0; n < 6; n++) await touch(flippedTap[0], flippedTap[1], flippedTap[0], flippedTap[1]);
+await sleep(1200);
+check("6 more flip back", !(await ev(flipped)));
+// Cook mode: tapping the side of a step turns the page, so taps there never count.
+await go("/recipes/beef-and-broccoli/");
+await ev("document.querySelector('[data-cook]').click()"); await sleep(500);
+const side = await ev("(() => { const r = document.querySelector('[data-cook-stage]').getBoundingClientRect(); return [r.left + r.width * 0.9, r.top + 40]; })()");
+for (let n = 0; n < 6; n++) await touch(side[0], side[1], side[0], side[1]);
+await sleep(1200);
+check("6 quick taps in cook mode do nothing", !(await ev(flipped)));
 check("no JS errors " + JSON.stringify(errors), errors.length === 0);
 finish();

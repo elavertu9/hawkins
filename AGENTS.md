@@ -99,8 +99,10 @@ reference for how each part works; this file is how to work on it without breaki
   shared links open in Safari, and the app keeps its own saved plans and trips.
 - Cook mode: swipe, or tap the left or right third of the step, to change steps. Buttons inside a
   step (timers) must keep working as buttons.
-- The Upside Down easter egg is typing 011, or a two-finger half-turn twist on a phone. Never a
-  tap pattern: taps are for real controls (four quick taps used to flip it by accident in cook mode).
+- The Upside Down easter egg is typing 011, or 6 quick taps on one blank spot on a phone. Taps on
+  links, buttons, and inside cook mode (or any dialog) never count: 4 taps used to flip it by
+  accident while tapping through cook-mode steps. A two-finger twist was tried and doesn't work on
+  iPhone: Safari keeps two fingers for pinch-zoom.
 
 ## Tests
 
