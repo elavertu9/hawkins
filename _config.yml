@@ -35,6 +35,7 @@ recipe_placeholder: /assets/images/placeholder-recipe.svg
 exclude:
   - README.md
   - CLAUDE.md
+  - AGENTS.md
   - Gemfile
   - Gemfile.lock
   - serve.sh

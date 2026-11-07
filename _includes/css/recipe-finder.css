@@ -1,0 +1,287 @@
+/* ---------- Recipe finder: search, filters, and dish groups (see assets/js/recipes.js) ---------- */
+/* Search, category chips, and result count above the recipe grid.
+   The search reads like a typewriter prompt on a case file. */
+.finder {
+  display: grid;
+  gap: 1.25rem;
+  margin-bottom: 1.75rem;
+}
+.finder__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.75rem 1.5rem;
+}
+.search {
+  position: relative;
+  flex: 1 1 18rem;
+  max-width: 28rem;
+}
+.search__prompt {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 1.125rem;
+  color: var(--red-bright);
+  text-shadow: 0 0 10px var(--red-glow);
+  pointer-events: none;
+}
+.search__input {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  padding: 0.55rem 0.25rem 0.55rem 1.5rem;
+  font-family: var(--font-body);
+  font-size: 1rem; /* 16px keeps iOS from zooming in on focus */
+  color: var(--text);
+  caret-color: var(--red-bright);
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--line-strong);
+  border-radius: 0;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.search__input::placeholder {
+  color: var(--text-faint);
+}
+.search__input:focus {
+  outline: none;
+  border-bottom-color: var(--red-bright);
+  box-shadow: 0 1px 0 var(--red-bright), 0 10px 18px -14px var(--red-glow);
+}
+.search__input::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  width: 0.875rem;
+  height: 0.875rem;
+  cursor: pointer;
+  background: linear-gradient(45deg, transparent 43%, var(--red-bright) 43% 57%, transparent 57%),
+              linear-gradient(-45deg, transparent 43%, var(--red-bright) 43% 57%, transparent 57%);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.chip__count {
+  min-width: 1.5em;
+  font-family: var(--font-body);
+  font-weight: 600;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+  padding: 0.05rem 0.4rem;
+  border-radius: 999px;
+  background: var(--line);
+  font-size: 0.75rem;
+  text-align: center;
+}
+.chip[aria-pressed="true"] .chip__count { background: rgba(0, 0, 0, 0.25); }
+
+/* The recipe search holds the picked filters as pills, in front of the text. */
+.search--tokens {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0;
+  border-bottom: 1px solid var(--line-strong);
+  cursor: text;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.search--tokens:focus-within {
+  border-bottom-color: var(--red-bright);
+  box-shadow: 0 1px 0 var(--red-bright), 0 10px 18px -14px var(--red-glow);
+}
+.search--tokens .search__prompt { position: static; transform: none; margin-right: 0.1rem; }
+.search--tokens .search__input { flex: 1 1 6rem; width: auto; min-width: 6rem; padding: 0.25rem; border-bottom: 0; }
+.search--tokens .search__input:focus { box-shadow: none; }
+.search__tokens { display: contents; list-style: none; }
+.search__tokens li { display: flex; }
+.token {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 2rem;
+  padding: 0.2rem 0.35rem 0.2rem 0.7rem;
+  font-family: var(--font-body);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #fff;
+  background: var(--red);
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.token--tag { color: #1a1408; background: var(--amber-fill); }
+.token--fave::before { content: "♥\FE0E"; }
+.chip--fave { color: var(--red-bright); border-color: var(--red-line); }
+.chip--fave .fave-icon { fill: currentColor; stroke: none; }
+.token__x {
+  display: grid;
+  place-items: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  font-size: 1rem;
+  line-height: 1;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.25);
+}
+.token:hover .token__x { background: rgba(0, 0, 0, 0.45); }
+.token:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+
+/* Suggestions open under the search while you're in it. Chips wrap, so
+   there's nothing hidden off to the side however many tags there are. */
+.suggest {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.suggest__group { display: grid; gap: 0.5rem; }
+.suggest__label {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+.suggest .chip { min-height: 2.5rem; }
+
+/* Tags (like Low Calorie) sit on top of the category: amber instead of red. */
+.chip--tag { border-style: dashed; border-color: var(--amber-line); color: var(--amber); }
+.chip--tag:hover { border-color: var(--amber); box-shadow: 0 0 16px var(--amber-glow); color: var(--amber); }
+.chip--tag[aria-pressed="true"] { background: var(--amber-fill); border-color: var(--amber-fill); border-style: solid; color: #1a1408; }
+.tag {
+  display: inline-block;
+  margin-left: 0.5rem;
+  padding: 0 0.45rem;
+  font-size: 0.6875rem;
+  line-height: 1.6;
+  font-family: var(--font-body);
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--amber);
+  text-decoration: none;
+  vertical-align: 0.1em;
+  border: 1px solid var(--amber-line);
+  border-radius: 999px;
+}
+/* A category with several tags wraps into neat rows instead of indenting. */
+.eyebrow:has(> .tag) {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.5rem;
+}
+.eyebrow:has(> .tag) > .tag { margin-left: 0; }
+a.tag:hover { border-color: var(--amber); }
+
+/* The count and sort sit right above the cards they describe. */
+.results {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+}
+.results__count { margin: 0; font-size: 0.9375rem; color: var(--text-muted); }
+.results__sort {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+.select {
+  padding: 0.45rem 2rem 0.45rem 0.75rem;
+  font: inherit;
+  font-family: var(--font-body);
+  font-size: 1rem; /* 16px keeps iOS from zooming in */
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--text);
+  /* A small chevron drawn with two gradients */
+  background:
+    linear-gradient(45deg, transparent 50%, var(--red-bright) 50%) right 1rem center / 0.3rem 0.3rem no-repeat,
+    linear-gradient(-45deg, transparent 50%, var(--red-bright) 50%) right 0.7rem center / 0.3rem 0.3rem no-repeat,
+    var(--surface-2);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  -webkit-appearance: none;
+  appearance: none;
+  cursor: pointer;
+}
+.select:hover { border-color: var(--red-bright); }
+.select:focus-visible { outline: 2px solid var(--red-bright); outline-offset: 2px; }
+.select option { background: var(--surface); color: var(--text); }
+.button--gate {
+  padding: 0.5rem 1.1rem;
+  font-size: 0.8125rem;
+  margin-left: auto;
+}
+.button--gate.is-opening {
+  color: #fff;
+  background: var(--red);
+  box-shadow: 0 0 22px var(--red-glow);
+  animation: gate-flicker 0.45s steps(2) 1;
+}
+@keyframes gate-flicker {
+  0%, 40%, 80% { opacity: 1; }
+  20%, 60% { opacity: 0.35; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .button--gate.is-opening { animation: none; }
+}
+/* Phones: a tighter finder, with the search full width. */
+@media (max-width: 40rem) {
+  .finder { gap: 1rem; }
+  .search { flex: 1 1 auto; max-width: none; min-width: 0; }
+  .button--gate { flex: none; padding-inline: 0.9rem; }
+}
+
+.empty {
+  padding: clamp(2rem, 6vw, 3.5rem) 1.5rem;
+  text-align: center;
+  color: var(--text-muted);
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius);
+}
+.empty__title {
+  margin-bottom: 0.25rem;
+  font-family: var(--font-display);
+  font-size: 1.375rem;
+  color: var(--text);
+}
+.empty .button { margin-top: 1.25rem; }
+
+/* Recipes grouped by dish, each under its own heading. */
+.dish-group + .dish-group { margin-top: clamp(2rem, 5vw, 3rem); }
+.dish-group__title {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  margin: 0 0 1rem;
+  font-family: var(--font-display);
+  font-size: 1.375rem;
+}
+/* The heading already names the dish, so the cards under it don't repeat it. */
+.dish-group .card__body > .eyebrow { display: none; }
+.dish-group__count {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  font-weight: 400;
+  color: var(--text-faint);
+}

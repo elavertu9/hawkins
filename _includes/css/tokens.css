@@ -1,0 +1,154 @@
+/* ---------- Tokens ---------- */
+:root {
+  color-scheme: dark;
+
+  --bg: #060608;
+  --surface: #111015;
+  --surface-2: #18161c;
+  --line: rgba(255, 255, 255, 0.08);
+  --line-strong: rgba(255, 255, 255, 0.16);
+
+  --text: #ede6da;
+  --text-muted: #a8a196;
+  --text-faint: #8a847c; /* 4.5:1 or better on every surface */
+
+  --red: #e3242b;
+  --red-bright: #ff4040;
+  --red-glow: rgba(255, 42, 42, 0.5);
+  --red-wash: rgba(255, 42, 42, 0.08);
+  --amber: #ffc857;
+  --amber-fill: #ffc857; /* behind dark text; the same in both themes */
+  --glass: rgba(6, 6, 8, 0.85); /* see-through bars over the page */
+
+  /* Neon on black. Light mode swaps these for ink on paper, where glows read
+     as smudges: no halos, darker lines, buttons outlined in ink. */
+  --hover-ink: #fff; /* text on hover */
+  --button-line: var(--red-bright); /* outlined buttons */
+  --page-glow: rgba(255, 30, 30, 0.12); /* the red haze at the top of the page */
+  --neon-halo: rgba(255, 20, 20, 0.45); /* around neon lettering */
+  --title-glow: rgba(255, 42, 42, 0.3); /* around page titles */
+  --red-glow-soft: rgba(255, 42, 42, 0.25);
+  --red-glow-inset: rgba(255, 42, 42, 0.15);
+  --lift: rgba(255, 30, 30, 0.14); /* the shadow under a card you point at */
+  --red-line-strong: rgba(255, 64, 64, 0.55);
+  --red-line: rgba(255, 64, 64, 0.45);
+  --red-line-soft: rgba(255, 64, 64, 0.3);
+  --red-line-faint: rgba(255, 64, 64, 0.2);
+  --seg-hover: rgba(255, 42, 42, 0.45); /* cook mode's step bar */
+  --seg-done: rgba(227, 36, 43, 0.5);
+  --amber-line: rgba(255, 200, 87, 0.45);
+  --amber-line-strong: rgba(255, 200, 87, 0.6);
+  --amber-wash: rgba(255, 200, 87, 0.1);
+  --amber-wash-strong: rgba(255, 200, 87, 0.2);
+  --amber-glow: rgba(255, 200, 87, 0.35);
+  --amber-ring: rgba(255, 200, 87, 0.25);
+  --photo-glow: rgba(255, 20, 20, 0.12); /* under the recipe photo */
+  --wall-letter: #cfc6b6; /* Joyce's alphabet wall, on the home page */
+  --bulb-off: 0.18;
+
+  --font-display: "Libre Baskerville", Georgia, "Times New Roman", serif;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "Courier Prime", "Courier New", ui-monospace, monospace;
+
+  --radius: 12px;
+  --radius-sm: 8px;
+  --container: 72rem;
+  --gutter: clamp(1rem, 4vw, 2rem);
+  --header-h: 3.75rem;
+  --media-ratio: 3 / 2; /* every recipe image, everywhere */
+}
+
+/* Light theme, for a bright kitchen: a case file on manila paper instead of a
+   dark room. It follows the phone or computer's setting (Auto), unless Light
+   or Dark is picked at the bottom of the page (page.js sets data-theme). The
+   same colors are listed twice: once for Auto, once for Light. */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    color-scheme: light;
+
+    --bg: #f3ede1;
+    --surface: #fbf8f2;
+    --surface-2: #efe7d8;
+    --line: rgba(40, 25, 10, 0.12);
+    --line-strong: rgba(40, 25, 10, 0.24);
+
+    --text: #1f1a14;
+    --text-muted: #554b41;
+    --text-faint: #685d52; /* 4.5:1 or better on every surface */
+
+    --red: #c8151c;
+    --red-bright: #b3121a;
+    --red-wash: rgba(200, 20, 28, 0.06);
+    --glass: rgba(243, 237, 225, 0.88);
+
+    --amber: #8f4a00;
+    --hover-ink: var(--text);
+    --button-line: var(--line-strong);
+    --red-glow: transparent;
+    --page-glow: transparent;
+    --neon-halo: transparent;
+    --title-glow: transparent;
+    --red-glow-soft: transparent;
+    --red-glow-inset: transparent;
+    --lift: rgba(40, 25, 10, 0.12);
+    --red-line-strong: rgba(179, 18, 26, 0.5);
+    --red-line: rgba(179, 18, 26, 0.4);
+    --red-line-soft: rgba(179, 18, 26, 0.28);
+    --red-line-faint: rgba(179, 18, 26, 0.2);
+    --seg-hover: rgba(200, 21, 28, 0.45);
+    --seg-done: rgba(200, 21, 28, 0.75);
+    --amber-line: rgba(143, 74, 0, 0.4);
+    --amber-line-strong: rgba(143, 74, 0, 0.55);
+    --amber-wash: rgba(143, 74, 0, 0.07);
+    --amber-wash-strong: rgba(143, 74, 0, 0.14);
+    --amber-glow: transparent;
+    --amber-ring: rgba(143, 74, 0, 0.25);
+    --photo-glow: rgba(40, 25, 10, 0.16);
+    --wall-letter: #3a3029;
+    --bulb-off: 0.45;
+  }
+}
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  --bg: #f3ede1;
+  --surface: #fbf8f2;
+  --surface-2: #efe7d8;
+  --line: rgba(40, 25, 10, 0.12);
+  --line-strong: rgba(40, 25, 10, 0.24);
+
+  --text: #1f1a14;
+  --text-muted: #554b41;
+  --text-faint: #685d52; /* 4.5:1 or better on every surface */
+
+  --red: #c8151c;
+  --red-bright: #b3121a;
+  --red-wash: rgba(200, 20, 28, 0.06);
+  --glass: rgba(243, 237, 225, 0.88);
+
+  --amber: #8f4a00;
+  --hover-ink: var(--text);
+  --button-line: var(--line-strong);
+  --red-glow: transparent;
+  --page-glow: transparent;
+  --neon-halo: transparent;
+  --title-glow: transparent;
+  --red-glow-soft: transparent;
+  --red-glow-inset: transparent;
+  --lift: rgba(40, 25, 10, 0.12);
+  --red-line-strong: rgba(179, 18, 26, 0.5);
+  --red-line: rgba(179, 18, 26, 0.4);
+  --red-line-soft: rgba(179, 18, 26, 0.28);
+  --red-line-faint: rgba(179, 18, 26, 0.2);
+  --seg-hover: rgba(200, 21, 28, 0.45);
+  --seg-done: rgba(200, 21, 28, 0.75);
+  --amber-line: rgba(143, 74, 0, 0.4);
+  --amber-line-strong: rgba(143, 74, 0, 0.55);
+  --amber-wash: rgba(143, 74, 0, 0.07);
+  --amber-wash-strong: rgba(143, 74, 0, 0.14);
+  --amber-glow: transparent;
+  --amber-ring: rgba(143, 74, 0, 0.25);
+  --photo-glow: rgba(40, 25, 10, 0.16);
+  --wall-letter: #3a3029;
+  --bulb-off: 0.45;
+}

@@ -1,0 +1,170 @@
+/* ---------- Header ---------- */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  padding-top: env(safe-area-inset-top, 0px);
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--line);
+}
+.site-header::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 -1px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--red-bright) 30%, var(--red-bright) 70%, transparent);
+  opacity: 0.6;
+  box-shadow: 0 0 10px var(--red-glow);
+}
+.site-header__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: var(--header-h);
+}
+
+.brand {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--red-bright);
+  text-shadow: 0 0 10px var(--red-glow);
+}
+@supports (-webkit-text-stroke: 1px red) {
+  .brand { color: transparent; -webkit-text-stroke: 1px var(--red-bright); }
+  .brand:hover { color: var(--red-wash); }
+}
+
+.site-nav ul {
+  display: flex;
+  gap: 0.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.site-nav a {
+  display: block;
+  padding: 0.5rem 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--text-muted);
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+}
+.site-nav a:hover { color: var(--text); }
+/* The case files, then the tools (Plan, the pot) after one thin line. */
+.site-nav .site-nav__tools {
+  margin-left: 0.5rem;
+  padding-left: 0.75rem;
+  border-left: 1px solid var(--line-strong);
+}
+/* Plan is a tool, not a section: an outlined pill (the border comes out of
+   the padding, so it's no taller than the links). The current page is a red
+   outline rather than the sections' underline. */
+.site-nav .plan-link--tool {
+  padding-block: calc(0.5rem - 1px);
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+}
+.site-nav .plan-link--tool:hover { border-color: var(--text-muted); }
+.site-nav .plan-link--tool[aria-current] { border-color: var(--red-bright); }
+.site-nav .plan-link--tool[aria-current] .plan-link__label { text-decoration: none; }
+.site-nav a[aria-current] {
+  color: var(--text);
+  text-decoration: underline;
+  text-decoration-color: var(--red-bright);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.45em;
+}
+
+/* Phones: the section links don't fit beside Plan and the pot, so they move
+   into a Menu button's dropdown (nav.js). Wider screens never see either. */
+.nav-menu,
+.nav-menu__list { display: none; }
+.nav-menu__toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  background: none;
+  border: 0;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+.nav-menu__toggle:hover,
+.nav-menu__toggle[aria-expanded="true"] { color: var(--text); }
+/* Packing is in progress: a small red dot, as the Cooking pot has. */
+.nav-menu__dot {
+  display: none;
+  flex: none;
+  width: 0.45rem;
+  height: 0.45rem;
+  background: var(--red-bright);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--red-glow);
+}
+.nav-menu__toggle[data-badge] { padding-right: 1rem; }
+.nav-menu__toggle[data-badge] .nav-menu__dot { display: block; position: absolute; top: 0.45rem; right: 0.25rem; }
+/* The dropdown: under the header, like the Cooking menu. */
+.nav-menu__list {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + var(--header-h) + 0.35rem);
+  right: var(--gutter);
+  z-index: 70;
+  width: min(16rem, calc(100% - 2 * var(--gutter)));
+  padding: 0.35rem;
+  background: var(--surface-2);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+  animation: cooking-menu-in 0.18s ease-out;
+}
+.nav-menu__list a {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 2.75rem;
+  padding: 0.5rem 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  text-decoration: none;
+  border-left: 2px solid transparent;
+  border-radius: 6px;
+}
+.nav-menu__list a:hover,
+.nav-menu__list a:focus-visible { color: var(--text); background: var(--line); outline: none; }
+.nav-menu__list a[aria-current] { color: var(--red-bright); border-left-color: var(--red-bright); }
+.nav-menu__file { font-weight: 400; letter-spacing: 0.04em; color: var(--text-faint); }
+/* The pot's first-time note sits over the same spot: it waits while Menu is open. */
+body:has(.nav-menu__toggle[aria-expanded="true"]) .cooking-hint { display: none; }
+/* 58rem: five section links, Plan, the pot, and their badges need about 56rem. */
+@media (max-width: 58rem) {
+  .site-nav__section { display: none; }
+  /* No sections beside it, so no line before Plan. */
+  .site-nav .site-nav__tools { margin-left: 0; padding-left: 0; border-left: 0; }
+  .nav-menu { display: flex; }
+  .nav-menu__list:not([hidden]) { display: grid; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nav-menu__list { animation: none; }
+}

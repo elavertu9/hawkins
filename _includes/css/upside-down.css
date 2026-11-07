@@ -1,0 +1,78 @@
+/* ---------- Upside Down (easter egg, see upside-down.js) ---------- */
+/* Flipping each part and reversing their order looks the same as flipping the
+   whole page, but leaves body untransformed so fixed overlays still work. */
+.upside-down body { flex-direction: column-reverse; }
+.upside-down body > :is(.site-header, .site-main, .site-footer) {
+  transform: rotate(180deg);
+  filter: saturate(0.55) brightness(0.88) contrast(1.05);
+}
+.upside-down .site-header { top: auto; bottom: 0; }
+.upside-down .ingredients { position: static; max-height: none; overflow: visible; }
+
+/* Cold blue haze and drifting spores over everything. */
+.upside-down body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  background:
+    radial-gradient(1.5px 1.5px at 12% 18%, rgba(220, 230, 255, 0.55), transparent),
+    radial-gradient(1px 1px at 34% 72%, rgba(220, 230, 255, 0.45), transparent),
+    radial-gradient(2px 2px at 58% 40%, rgba(220, 230, 255, 0.4), transparent),
+    radial-gradient(1px 1px at 76% 86%, rgba(220, 230, 255, 0.5), transparent),
+    radial-gradient(1.5px 1.5px at 90% 24%, rgba(220, 230, 255, 0.45), transparent),
+    radial-gradient(ellipse at 50% 120%, rgba(60, 90, 140, 0.28), transparent 70%),
+    rgba(30, 50, 90, 0.16);
+  background-size: 320px 320px, 260px 260px, 400px 400px, 300px 300px, 360px 360px, 100% 100%, 100% 100%;
+  animation: spores 18s linear infinite;
+}
+@keyframes spores {
+  to { background-position: 40px -320px, -30px -260px, 60px -400px, -20px -300px, 30px -360px, 0 0, 0 0; }
+}
+
+/* Lights flicker out during the flip. */
+.upside-flicker body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  pointer-events: none;
+  background: #000;
+  animation: lights-out 0.9s steps(1, end) forwards;
+}
+@keyframes lights-out {
+  0%, 20%, 34% { opacity: 0; }
+  10%, 26% { opacity: 0.7; }
+  42%, 62% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+.upside-toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 1.5rem);
+  z-index: 80;
+  width: max-content;
+  max-width: calc(100vw - 2rem);
+  margin: 0;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--red);
+  border-radius: var(--radius-sm);
+  background: var(--glass);
+  box-shadow: 0 0 18px var(--red-glow);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 0.9375rem;
+  text-align: center;
+  opacity: 0;
+  transform: translate(-50%, 0.5rem);
+  pointer-events: none;
+}
+.upside-toast.is-shown { animation: toast 4.5s ease forwards; }
+.upside-down .upside-toast { bottom: auto; top: calc(env(safe-area-inset-top, 0px) + 1.5rem); }
+@keyframes toast {
+  0% { opacity: 0; transform: translate(-50%, 0.5rem); }
+  8%, 85% { opacity: 1; transform: translate(-50%, 0); }
+  100% { opacity: 0; transform: translate(-50%, 0); }
+}

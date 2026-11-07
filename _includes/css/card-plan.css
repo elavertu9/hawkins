@@ -1,0 +1,67 @@
+/* ---------- Cards: + Plan over the photo, and the phone list layout ---------- */
+/* "+ Plan" on recipe cards, over the photo. */
+.card__plan {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  z-index: 2;
+  padding: 0.35rem 0.75rem;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--glass); /* dark or cream, with the theme */
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  transition: border-color 0.15s, background-color 0.15s, box-shadow 0.15s;
+}
+.card__plan:hover { border-color: var(--red-bright); box-shadow: 0 0 14px var(--red-glow); }
+.card__plan[aria-pressed="true"] { background: var(--red); border-color: var(--red); color: #fff; }
+/* With a mouse, "+ Plan" waits for hover or focus. Planned cards keep it, so you can see what's in. */
+@media (hover: hover) and (pointer: fine) {
+  .card__plan { opacity: 0; transition: opacity 0.15s; }
+  .card:hover .card__plan,
+  .card:focus-within .card__plan,
+  .card__plan[aria-pressed="true"] { opacity: 1; }
+}
+
+/* On phones the cards become a list: thumbnail on the left, details on the
+   right, so several recipes fit on a screen. */
+@media (max-width: 40rem) {
+  .card-grid { gap: 0.75rem; }
+  .card { flex-direction: row; }
+  .card:hover, .card:focus-within { transform: none; }
+  /* A 3:2 thumbnail pinned to the top left, with + Plan underneath it. */
+  .card__media {
+    flex: none;
+    align-self: flex-start;
+    width: 6.75rem;
+    margin: 0.75rem 0 0.75rem 0.75rem;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+  }
+  .card:has(> .card__plan:not([hidden])) { min-height: 8.25rem; }
+  .card__body { gap: 0.35rem; padding: 0.85rem 1rem 0.85rem 0.9rem; }
+  .card__title { font-size: 1.0625rem; }
+  .card__summary { display: none; }
+  .card__tags { margin-top: 0.15rem; padding-top: 0; }
+  .card__meta { margin-top: auto; padding-top: 0.15rem; }
+  .card__plan {
+    top: 5.75rem;
+    left: 0.75rem;
+    right: auto;
+    width: 6.75rem;
+    padding: 0.25rem 0;
+    font-size: 0.6875rem;
+    text-align: center;
+  }
+  .card .card__stamp {
+    padding: 0.15rem 0.35rem;
+    font-size: 0.625rem;
+    letter-spacing: 0.1em;
+    border-width: 2px;
+  }
+}

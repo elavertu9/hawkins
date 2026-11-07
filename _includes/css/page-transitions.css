@@ -1,0 +1,11 @@
+/* ---------- Page transitions ---------- */
+/* Opening a recipe from its card, the photo and title glide into place
+   (page.js names the card you tapped; the recipe page names its own). */
+.recipe-hero__media { view-transition-name: recipe-media; }
+.recipe-hero__title { view-transition-name: recipe-title; }
+::view-transition-group(*) { animation-duration: 0.3s; }
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) { animation: none !important; }
+}

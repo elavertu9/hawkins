@@ -1,0 +1,562 @@
+/* ---------- Cook mode (see cook.js) ---------- */
+
+.is-cooking { overflow: hidden; }
+.cook {
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  color: var(--text);
+  background:
+    radial-gradient(ellipse 90% 60% at 50% 0%, var(--page-glow), transparent 70%),
+    var(--bg);
+  border: 0;
+}
+.cook[open] {
+  display: grid;
+  grid-template-rows: auto auto 1fr auto;
+  grid-template-columns: minmax(0, 1fr);
+}
+.cook::backdrop { background: var(--bg); }
+
+.cook__bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: calc(env(safe-area-inset-top, 0px) + 0.75rem) var(--gutter) 0.75rem;
+  border-bottom: 1px solid var(--line);
+}
+.cook__heading { flex: 1; min-width: 0; }
+.cook__recipe {
+  margin: 0;
+  overflow: hidden;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+/* "Step 3 of 8 ▾": opens the step list. */
+.cook__count {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0.2rem 0 0 -0.6rem;
+  padding: 0.3rem 0.6rem;
+  font-family: var(--font-body);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--red-bright);
+  background: transparent;
+  border: 1px solid var(--red-line-soft);
+  border-radius: 999px;
+  cursor: pointer;
+}
+.cook__count:hover,
+.cook__count[aria-expanded="true"] { border-color: var(--red-bright); box-shadow: 0 0 14px var(--red-glow); }
+.cook__close {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  font-size: 1.75rem;
+  line-height: 1;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid var(--line-strong);
+  border-radius: 50%;
+  cursor: pointer;
+}
+.cook__close:hover { border-color: var(--red-bright); box-shadow: 0 0 16px var(--red-glow); }
+
+/* One segment per step. The button is a tall tap target; the bar is drawn
+   inside it, so the row still reads as a thin progress line. */
+.cook__segments {
+  display: flex;
+  gap: 3px;
+  padding: 0 var(--gutter);
+  border-bottom: 1px solid var(--line);
+}
+/* Done steps are dim red, the current one bright with its number above, and
+   steps still to come gray. The whole height is tappable, however thin. */
+.cook__seg {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  height: 2.5rem;
+  padding: 0;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.cook__seg::before {
+  content: "";
+  position: absolute;
+  inset: 68% 0 auto;
+  height: 4px;
+  margin-top: -2px;
+  background: var(--line-strong);
+  border-radius: 2px;
+  transition: background 0.2s ease, height 0.2s ease, margin 0.2s ease, box-shadow 0.2s ease;
+}
+.cook__seg:hover::before { background: var(--seg-hover); }
+.cook__seg.is-done::before { background: var(--seg-done); }
+.cook__seg.is-current::before {
+  height: 8px;
+  margin-top: -4px;
+  background: var(--red-bright);
+  box-shadow: 0 0 12px var(--red-glow);
+}
+.cook__seg-num {
+  position: absolute;
+  top: 0.2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--text);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.cook__seg.is-current .cook__seg-num { opacity: 1; }
+.cook__seg:focus-visible { outline: none; }
+.cook__seg:focus-visible::before { box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--text); }
+/* A step with a running timer gets an amber dot. */
+.cook__seg.has-timer::after {
+  content: "";
+  position: absolute;
+  top: 68%;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  margin: -3px 0 0 -3px;
+  background: var(--amber-fill);
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px var(--bg), 0 0 8px var(--amber-glow);
+}
+
+.cook__stage {
+  grid-row: 3;
+  grid-column: 1;
+  min-height: 0;
+  overflow-y: auto;
+  touch-action: pan-y; /* sideways drags move between steps (cook.js) */
+  overscroll-behavior: contain;
+  display: grid;
+  align-items: center;
+  padding: clamp(1.5rem, 5vh, 3rem) var(--gutter);
+}
+.cook__step {
+  width: 100%;
+  max-width: 44rem;
+  margin: 0 auto;
+}
+.cook__num {
+  margin: 0 0 0.5rem;
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 12vw, 5rem);
+  line-height: 1;
+  color: transparent;
+  -webkit-text-stroke: 1.5px var(--red-bright);
+  text-shadow: 0 0 24px var(--red-glow);
+}
+.cook__title {
+  margin: 0 0 0.75rem;
+  font-size: clamp(1.375rem, 4vw, 2rem);
+}
+.cook__text {
+  font-size: clamp(1.25rem, 3.4vw, 1.625rem);
+  line-height: 1.55;
+}
+.cook__text p { margin: 0; }
+.cook__text p + p { margin-top: 1rem; }
+.cook__text strong { font-weight: 600; color: var(--amber); }
+.cook__text li + li { margin-top: 0.6rem; }
+.cook__text p + ul,
+.cook__text ul + p { margin-top: 1rem; }
+.cook__text a { color: var(--text); }
+
+.cook__step.is-enter-next { animation: cook-in-next 0.28s ease; }
+.cook__step.is-enter-prev { animation: cook-in-prev 0.28s ease; }
+@keyframes cook-in-next { from { opacity: 0; transform: translateX(2rem); } }
+@keyframes cook-in-prev { from { opacity: 0; transform: translateX(-2rem); } }
+
+/* A bold time in cook mode: tap to start a timer. */
+.timer-start {
+  display: inline;
+  padding: 0 0.35em;
+  font: inherit;
+  font-weight: 600;
+  color: var(--amber);
+  background: var(--amber-wash);
+  border: 1px dashed var(--amber-line-strong);
+  border-radius: 6px;
+  cursor: pointer;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+.timer-start::before { content: "⏱\FE0E "; font-size: 0.85em; }
+.timer-start::after {
+  content: "\25B6\FE0E  Start";
+  margin-left: 0.45em;
+  padding: 0.1em 0.45em;
+  font-family: var(--font-body);
+  font-size: 0.65em;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  vertical-align: 0.15em;
+  color: #1a1408;
+  background: var(--amber-fill);
+  border-radius: 4px;
+}
+.timer-start:hover { background: var(--amber-wash-strong); }
+.timer-start.is-running { border-style: solid; background: var(--amber-wash-strong); }
+/* Running, it counts down in place of Start (cook.js keeps data-left current). */
+.timer-start.is-running::after { content: attr(data-left); color: var(--amber); background: transparent; box-shadow: inset 0 0 0 1px var(--amber); }
+.timer-start.is-finished::after { content: "\2713\FE0E  Done"; color: #1a1408; background: var(--amber-fill); box-shadow: none; }
+/* Until the first timer is started: a gentle pulse and a one-line hint. */
+.timer-start.is-new { animation: timer-pulse 2s ease-in-out 3; }
+@keyframes timer-pulse { 50% { box-shadow: 0 0 0 4px var(--amber-ring), 0 0 18px var(--amber-glow); } }
+.cook__text .cook__hint {
+  margin-top: 1.25rem;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* Ingredients: covers the whole step view (see showPanel in recipe.js). */
+.cook__ingredients-toggle {
+  padding: 0.6rem 1rem;
+  font-size: 0.875rem;
+  color: var(--amber);
+  border-color: var(--amber);
+  background: var(--amber-wash);
+}
+.cook__ingredients-toggle:hover { color: var(--amber); border-color: var(--amber); box-shadow: 0 0 16px var(--amber-glow); }
+
+.cook__sheet {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  background: var(--bg);
+}
+.cook__sheet[hidden] { display: none; }
+.cook__panel-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: calc(env(safe-area-inset-top, 0px) + 0.75rem) var(--gutter) 0.75rem;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+}
+.cook__panel-list {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 1rem var(--gutter) 2rem;
+  background: var(--surface);
+}
+.cook:has(.timers:not([hidden])) .cook__panel-list { padding-bottom: 6rem; }
+.cook__panel-list > * { max-width: 44rem; margin-left: auto; margin-right: auto; }
+.cook__panel-title {
+  flex: 1;
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.9375rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--amber);
+}
+.cook__panel-nav {
+  display: grid;
+  padding: 0.75rem var(--gutter) calc(env(safe-area-inset-bottom, 0px) + 0.75rem);
+  border-top: 1px solid var(--line);
+}
+.cook__panel-nav .button { justify-content: center; padding: 1rem; font-size: 1rem; }
+.cook__ingredients .check { font-size: 1.125rem; }
+
+/* Start over, at the bottom of the step list: there, but quiet. */
+.cook__restart {
+  display: block;
+  margin-top: 1.5rem;
+  padding: 0.75rem 1rem;
+  font: inherit;
+  font-size: 0.9375rem;
+  color: var(--text-muted);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.cook__restart:hover { color: var(--text); }
+.cook__restart[hidden] { display: none; }
+
+/* "Welcome back" and "All done" cards. */
+.cook__notice {
+  grid-template-rows: none;
+  place-items: center;
+  padding: var(--gutter);
+}
+.cook__notice-card {
+  width: 100%;
+  max-width: 26rem;
+  padding: 2rem 1.5rem 1.5rem;
+  text-align: center;
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  box-shadow: 0 0 40px var(--red-glow);
+}
+/* "All done": a check that draws itself, then a heart to save the recipe. */
+.cook__check { display: block; margin: 0 auto 1rem; fill: none; stroke: var(--red-bright); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.cook__check circle { --len: 151; stroke-dasharray: 151; opacity: 0.35; }
+.cook__check path { --len: 36; stroke-dasharray: 36; }
+.cook__check.is-drawn circle { animation: check-draw 0.5s ease-out both; }
+.cook__check.is-drawn path { animation: check-draw 0.35s 0.35s ease-out both; }
+@keyframes check-draw { from { stroke-dashoffset: var(--len); } }
+@media (prefers-reduced-motion: reduce) {
+  .cook__check.is-drawn circle,
+  .cook__check.is-drawn path { animation: none; }
+}
+.cook__fave { margin-top: 1rem; }
+.cook__notice-kicker {
+  margin: 0 0 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--amber);
+}
+.cook__notice-title {
+  margin: 0 0 0.5rem;
+  font-family: var(--font-display);
+  font-size: 1.625rem;
+  line-height: 1.25;
+}
+.cook__notice-text { margin: 0 0 1.5rem; color: var(--text-muted); }
+.cook__notice-actions { display: grid; gap: 0.75rem; }
+.cook__notice-actions .button { justify-content: center; padding: 1rem; font-size: 1rem; }
+.cook__notice-back { margin: 0.75rem auto 0; }
+
+/* The step list. */
+.cook__step-list { display: grid; gap: 0.5rem; margin: 0; padding: 0; list-style: none; }
+.cook__pick {
+  display: grid;
+  grid-template-columns: 2.75rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.85rem 1rem;
+  font: inherit;
+  text-align: left;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.cook__pick:hover { border-color: var(--red-bright); box-shadow: 0 0 16px var(--red-glow); }
+.cook__pick-num {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  line-height: 1;
+  color: transparent;
+  -webkit-text-stroke: 1px var(--red-bright);
+}
+.cook__pick-title { font-size: 1.0625rem; font-weight: 600; }
+.cook__pick-state {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--text-muted);
+}
+.cook__pick.is-done .cook__pick-title { color: var(--text-muted); }
+.cook__pick.is-done .cook__pick-num { color: var(--red); -webkit-text-stroke: 0; }
+.cook__pick.has-timer .cook__pick-state { color: var(--amber); }
+.cook__pick[aria-current] {
+  background: var(--red-wash);
+  border-color: var(--red-bright);
+  box-shadow: inset 4px 0 0 var(--red-bright);
+}
+.cook__pick[aria-current] .cook__pick-state { color: var(--red-bright); }
+
+.cook__nav {
+  display: grid;
+  grid-row: 4;
+  grid-template-columns: 1fr 2fr;
+  gap: 0.75rem;
+  padding: 0.75rem var(--gutter) calc(env(safe-area-inset-bottom, 0px) + 0.75rem);
+  border-top: 1px solid var(--line);
+}
+.cook__nav .button { justify-content: center; padding: 1rem; font-size: 1rem; }
+.cook__next { background: var(--red); border-color: var(--red); color: #fff; }
+.cook__next:hover { background: var(--red-bright); }
+.cook__prev:disabled { opacity: 0.35; cursor: default; box-shadow: none; color: var(--text); border-color: var(--line-strong); }
+
+/* Running timers: one frosted panel at the bottom of the page, a row each
+   (like a Live Activity). It sits just above the Back / Next buttons while
+   cook mode is open. */
+.timers {
+  position: fixed;
+  right: var(--gutter);
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 1rem);
+  z-index: 60;
+  display: grid;
+  width: min(20rem, calc(100% - 2 * var(--gutter)));
+  overflow: hidden;
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  backdrop-filter: blur(20px) saturate(1.4);
+  border: 1px solid var(--line-strong);
+  border-radius: 1.4rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+.timers[hidden] { display: none; }
+.timers.is-in { animation: tray-in 0.3s ease-out; } /* appearing, not on every page */
+/* Phones: the full width of the page, like the other bars at the bottom. */
+@media (max-width: 40rem) {
+  .timers { left: var(--gutter); width: auto; }
+}
+.cook .timers { bottom: calc(env(safe-area-inset-bottom, 0px) + 5.5rem); }
+.cook:has(.timers:not([hidden])) .cook__stage { padding-bottom: 8rem; }
+/* A thin line between rows. */
+.timers > :not([hidden]) ~ :not([hidden]) { border-top: 1px solid var(--line); }
+@keyframes tray-in { from { opacity: 0; transform: translateY(0.5rem); } }
+
+/* Sound can't start until you tap: a quiet row, not a shout. */
+.timers__sound {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  padding: 0 1rem;
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-align: left;
+  color: var(--amber);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.timers__sound[hidden] { display: none; }
+.timers__sound:hover { text-decoration: underline; }
+
+/* A timer: tap the name to go back to that step. */
+.timer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 0.25rem 0.5rem;
+  min-height: 3.5rem;
+  padding: 0.35rem 0.25rem 0.35rem 1rem;
+}
+.timer[hidden] { display: none; }
+.timer__open {
+  display: grid;
+  min-width: 0;
+  padding: 0;
+  font: inherit;
+  line-height: 1.3;
+  text-align: left;
+  color: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.timer__open:hover .timer__step { text-decoration: underline; }
+.timer__step::after { content: " ›"; color: var(--amber); }
+.timer__step,
+.timer__meta {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.timer__step { font-size: 0.875rem; font-weight: 600; color: var(--text); }
+.timer__meta { font-size: 0.75rem; color: var(--text-muted); }
+.timer__time {
+  font-family: var(--font-mono);
+  font-size: 1.125rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--amber);
+}
+/* × as a plain glyph, with a full-size tap area. */
+.timer__cancel {
+  min-width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  font-size: 1.375rem;
+  line-height: 1;
+  color: var(--text-muted);
+  background: none;
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.timer__cancel:hover { color: var(--text); }
+.timer__cancel:focus-visible { outline: 2px solid var(--red-bright); outline-offset: -4px; }
+.timer__cancel[hidden] { display: none; }
+/* Gone off: the row turns red, with its buttons right there. */
+.timer.is-done {
+  padding-bottom: 0.75rem;
+  background: rgba(255, 64, 64, 0.14);
+  animation: timer-alarm 1s steps(2) infinite;
+}
+.timer.is-done .timer__time { font-size: 0.875rem; white-space: nowrap; color: var(--red-bright); }
+.timer.is-done.is-stopped { animation: none; background: none; }
+.timer.is-done.is-stopped .timer__time { color: var(--text-muted); }
+.timer__actions {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: 0.5rem;
+  padding-right: 0.75rem;
+}
+.timer__actions[hidden] { display: none; }
+.timer__actions:has(.timer__stop:not([hidden])),
+.timer__actions:has(.timer__extend:not([hidden])) { grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr); }
+/* Stop, +5 min, and the step: a range timer that just rang. */
+.timer__actions:has(.timer__stop:not([hidden])):has(.timer__extend:not([hidden])) { grid-template-columns: minmax(0, 0.8fr) minmax(0, 0.9fr) minmax(0, 1.5fr); gap: 0.4rem; }
+.timer__actions:has(.timer__extend:not([hidden])) > .button { padding-inline: 0.5rem; }
+.timer__stop,
+.timer__extend,
+.timer__continue {
+  justify-content: center;
+  padding: 0.75rem 0.75rem;
+  font-size: 0.875rem;
+  white-space: nowrap;
+}
+.timer__stop { background: var(--surface-2); }
+.timer__extend { color: var(--amber); background: var(--surface-2); border-color: var(--amber-line); }
+.timer__continue {
+  color: #fff;
+  background: var(--red);
+  border-color: var(--red);
+}
+.timer__continue:hover { background: var(--red-bright); }
+@keyframes timer-alarm { 50% { background: rgba(255, 64, 64, 0.32); } }
+
+/* Room at the bottom of the page so the tray never hides the end of it. */
+body:has(> .timers:not([hidden])) { padding-bottom: 8rem; }
+
+@media (prefers-reduced-motion: reduce) {
+  .cook__step.is-enter-next,
+  .cook__step.is-enter-prev,
+  .timer-start.is-new,
+  .timer.is-done,
+  .timers.is-in { animation: none; }
+}

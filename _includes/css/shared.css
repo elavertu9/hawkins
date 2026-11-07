@@ -1,0 +1,109 @@
+/* ---------- Shared bits ---------- */
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--red-bright);
+}
+
+/* Serves 4 [-/+], under the ingredients heading. */
+.servings {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  margin: -0.5rem 0 1.25rem;
+}
+.servings__label { font-weight: 600; color: var(--text-muted); }
+.servings .stepper button { width: 2.75rem; height: 2.75rem; }
+.servings .stepper__value { min-width: 3rem; font-size: 1rem; }
+.servings__note { flex-basis: 100%; margin: 0; font-size: 0.875rem; color: var(--text-faint); }
+
+.section-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem 1rem;
+  margin-bottom: 1.25rem;
+}
+.section-head h2 {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+}
+.section-head__count {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  color: var(--text-faint);
+}
+.section-head__link,
+.section-head__actions { margin-left: auto; }
+.section-head__link {
+  font-family: var(--font-mono);
+  font-size: 0.9375rem;
+  color: var(--text-muted);
+  text-decoration: none;
+}
+.section-head__link:hover { color: var(--red-bright); }
+.section-head__actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+
+/* Buttons and chips read in plain sentence case, so they're quick to take in.
+   The typewriter face is for labels and headings. */
+.button,
+.toggle,
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-body);
+  font-weight: 600;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: border-color 0.15s, color 0.15s, background-color 0.15s, box-shadow 0.15s;
+}
+.button { padding: 0.75rem 1.5rem; font-size: 0.9375rem; border-color: var(--button-line); }
+.toggle,
+.chip { padding: 0.4rem 0.9rem; font-size: 0.8125rem; }
+/* Filter chips come in long rows, so they're a little tighter than buttons. */
+.chip { gap: 0.4rem; padding-inline: 0.8rem; }
+.button:hover,
+.toggle:hover,
+.chip:hover {
+  color: var(--hover-ink);
+  border-color: var(--red-bright);
+  box-shadow: 0 0 16px var(--red-glow);
+}
+.toggle[aria-pressed="true"],
+.chip[aria-pressed="true"] {
+  background: var(--red);
+  border-color: var(--red);
+  color: #fff;
+}
+
+/* Neon outline lettering, like the show's title card */
+.neon-title {
+  font-family: var(--font-display);
+  font-size: clamp(3.25rem, 15vw, 9rem);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1;
+  color: var(--red-bright);
+  text-shadow: 0 0 12px var(--red-glow), 0 0 42px var(--neon-halo);
+  animation: flicker 7s infinite;
+}
+@supports (-webkit-text-stroke: 1px red) {
+  .neon-title {
+    color: transparent;
+    -webkit-text-stroke: clamp(1.5px, 0.25vw, 2.5px) var(--red-bright);
+  }
+}
+
+@keyframes flicker {
+  0%, 18%, 22%, 25%, 53%, 57%, 100% { opacity: 1; }
+  20%, 24%, 55% { opacity: 0.4; }
+}

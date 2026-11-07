@@ -1,0 +1,21 @@
+/* ---------- 404 ---------- */
+.lost {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding-block: clamp(1rem, 6vw, 4rem);
+  text-align: center;
+}
+.lost__code {
+  font-family: var(--font-display);
+  font-size: clamp(5rem, 22vw, 10rem);
+  line-height: 1;
+  color: var(--red-bright);
+  text-shadow: 0 0 16px var(--red-glow), 0 0 48px var(--neon-halo);
+  transform: rotate(180deg);
+  animation: flicker 5s infinite;
+}
+.lost .page-title { text-wrap: balance; }
+.lost__text { max-width: 32rem; color: var(--text-muted); }
+.lost .button { margin-top: 1rem; }

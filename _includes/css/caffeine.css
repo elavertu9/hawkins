@@ -1,0 +1,71 @@
+/* ---------- Caffeine (see caffeine/index.html and _data/drinks.yml) ---------- */
+.drink-grid {
+  display: grid;
+  gap: clamp(1rem, 2.5vw, 1.5rem);
+}
+@media (min-width: 40rem) {
+  .drink-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (min-width: 64rem) {
+  .drink-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+.drink {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+/* Every drink photo is 4:5 (tall, like a cup). */
+.drink__media {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--line);
+}
+.drink__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.drink__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+  padding: 1.125rem 1.25rem 1.25rem;
+}
+.drink__name {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  line-height: 1.3;
+}
+.drink__name a { text-decoration: none; }
+.drink__name a:hover { color: var(--red-bright); }
+.drink__flavors { color: var(--text); }
+.drink__style {
+  font-size: 0.9375rem;
+  color: var(--text-muted);
+}
+/* How to order it: a small shop label over each order line. */
+.drink__orders {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0.5rem 0 0;
+  padding-top: 0.75rem;
+  border-top: 1px dashed var(--line-strong);
+}
+.drink__orders dt {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+.drink__orders dd { margin: 0.1rem 0 0; }
+.drink__orders .drink__extra {
+  margin-top: 0.2rem;
+  font-size: 0.875rem;
+  color: var(--text-faint);
+}

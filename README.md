@@ -14,7 +14,8 @@ automatically on every push to `main`. There is no build step to run yourself.
 | `_layouts/recipe.html` | The template every recipe page uses, so they all look the same. |
 | `_data/sections.yml` | Top-level sections (Recipes, Packing Lists, ...) for the nav and home page. |
 | `_includes/` | Shared pieces: head, header, footer, recipe card, recipe image, ingredient list, duration formatter. |
-| `assets/css/main.css` | All styles, including colors and fonts as variables at the top. |
+| `assets/css/main.css` | The one stylesheet visitors get. Jekyll joins it from the pieces in `_includes/css/`, in the order it lists them. |
+| `_includes/css/` | The styles, one file per part of the site (`tokens.css` has the colors and fonts as variables, then `header.css`, `recipe-page.css`, `plan-page.css`, ...). Order matters (later rules win ties), so add to the piece a rule belongs with. |
 | `plan/index.html` | The meal plan page: pick recipes, get one shopping list sorted by aisle. |
 | `_data/packing.yml` | The packing lists: kits and their items, and the preset trips. See "Packing lists" below. |
 | `packing/index.html` | The packing page: trip setup and the checklist. |
@@ -141,7 +142,7 @@ JPG plus smaller WebP copies in `assets/images/recipes/` so phones download far 
 and sets `image:` and `image_alt:` in the recipe. If the crop is off, run it again
 with a different number. It needs macOS and `brew install webp`.
 
-Photos get a light grade and vignette in the stylesheet (`.is-photo` in `main.css`)
+Photos get a light grade and vignette in the stylesheet (`.is-photo` in `_includes/css/recipe-page.css`)
 so they sit in the dark theme. Recipes without an `image:` show the "Missing"
 placeholder.
 

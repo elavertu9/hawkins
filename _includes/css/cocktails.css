@@ -1,0 +1,23 @@
+/* ---------- Cocktails (see cocktails/index.html, _cocktails/ and _layouts/cocktail.html) ---------- */
+/* The list is recipe cards (_includes/cocktail-card.html) and each page is a
+   recipe page without cook mode: the same 3:2 photos and "Missing" strip. */
+/* The Upside Bar banner: the whole sign on wide screens; on phones, "THE
+   UPSIDE" in the middle (it sits a little right of the photo's center). */
+.cocktail-banner {
+  margin: 0 0 clamp(1.5rem, 4vw, 2.5rem);
+  aspect-ratio: 1600 / 350;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--surface-2);
+}
+.cocktail-banner img { width: 100%; height: 100%; object-fit: cover; }
+@media (max-width: 40rem) {
+  .cocktail-banner { aspect-ratio: 5 / 2; }
+  .cocktail-banner img { object-position: 55% 50%; }
+}
+/* The steps aren't buttons here: no cook mode to mark them done. */
+.cocktail-page .step__num { cursor: default; }
+.cocktail-page .step__num:hover { box-shadow: 0 0 12px var(--red-glow-soft), inset 0 0 8px var(--red-glow-inset); }
+.cocktail-page .step__body { cursor: default; }
+.cocktail-ingredients { display: grid; gap: 0.6rem; margin-top: 0.75rem; }

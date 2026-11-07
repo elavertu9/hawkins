@@ -1,0 +1,343 @@
+/* ---------- Plan page (see plan.js) ---------- */
+.plan-layout { display: grid; gap: clamp(2rem, 5vw, 3rem); align-items: start; }
+/* Let long lines (the folded recipe summary) shorten instead of widening the page. */
+.plan-layout > * { min-width: 0; }
+
+.plan-list { margin: 0; padding: 0; list-style: none; }
+.plan-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 0;
+  border-top: 1px dashed var(--line);
+}
+.plan-item:first-child { border-top: 0; padding-top: 0.25rem; }
+.plan-item__main { display: grid; min-width: 0; }
+.plan-item__amount { display: flex; align-items: center; gap: 0.5rem; }
+.plan-item__serves { font-size: 0.8125rem; color: var(--text-faint); }
+.plan-item__title { font-weight: 600; line-height: 1.35; text-decoration: none; }
+.plan-item__title:hover { color: var(--red-bright); }
+.plan-item__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  color: var(--text-faint);
+}
+.plan-item__cook {
+  color: var(--red-bright);
+  font-weight: 600;
+  text-decoration: none;
+}
+.plan-item__cook::after { content: " ›"; }
+.plan-item__cook:hover { text-decoration: underline; }
+
+.stepper {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+}
+.stepper button {
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  font-size: 1.125rem;
+  line-height: 1;
+  color: var(--text);
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+}
+.stepper button:hover:not(:disabled) { color: var(--red-bright); }
+.stepper button:disabled { opacity: 0.3; cursor: default; }
+.stepper__value {
+  min-width: 2.25rem;
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-align: center;
+  color: var(--amber);
+}
+.plan-item__remove {
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  font-size: 1.25rem;
+  line-height: 1;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  cursor: pointer;
+}
+.plan-item__remove:hover { color: var(--red-bright); border-color: var(--line-strong); }
+
+.plan-empty { padding: 0.5rem 0 0.25rem; color: var(--text-muted); }
+.plan-empty p { margin: 0; }
+.plan-empty p + p { margin-top: 0.25rem; }
+
+.plan-add { display: block; margin-top: 1rem; }
+.plan-add select {
+  width: 100%;
+  padding: 0.7rem 2.25rem 0.7rem 0.9rem;
+  font-family: var(--font-mono);
+  font-size: 1rem; /* 16px keeps iOS from zooming in */
+  color: var(--text);
+  /* A small chevron drawn with two gradients */
+  background:
+    linear-gradient(45deg, transparent 50%, var(--red-bright) 50%) right 1.15rem center / 0.3rem 0.3rem no-repeat,
+    linear-gradient(-45deg, transparent 50%, var(--red-bright) 50%) right 0.85rem center / 0.3rem 0.3rem no-repeat,
+    var(--surface-2);
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-sm);
+  -webkit-appearance: none;
+  appearance: none;
+  cursor: pointer;
+}
+.plan-add select:hover,
+.plan-add select:focus { border-color: var(--red-bright); outline: none; }
+.plan-add option { background: var(--surface); color: var(--text); }
+
+/* Phones: the recipes folded into one line above the shopping list. */
+.plan-summary {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  padding: 0;
+  font: inherit;
+  text-align: left;
+  color: var(--text-muted);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.plan-summary__text { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.plan-summary__text strong { color: var(--text); }
+.plan-summary__edit { flex: none; font-weight: 600; color: var(--red-bright); }
+.plan-recipes__done { margin-left: auto; }
+.panel:has(> .plan-summary:not([hidden])) { padding-block: 0.9rem; }
+
+/* Favorites to add with one tap. */
+.plan-faves { display: grid; gap: 0.5rem; margin-top: 1rem; }
+.plan-faves .suggest__label { margin: 0; }
+
+/* The Share and … menus. */
+.menu { position: relative; }
+.menu__toggle { letter-spacing: 0.1em; }
+.menu__list {
+  position: absolute;
+  top: calc(100% + 0.4rem);
+  right: 0;
+  z-index: 40;
+  display: grid;
+  min-width: 15rem;
+  padding: 0.35rem;
+  background: var(--surface-2);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+}
+/* No room to the left (on a phone, where the buttons wrap): open rightward. */
+.menu__list.is-start { right: auto; left: 0; }
+.menu__list button {
+  padding: 0.6rem 0.75rem;
+  font: inherit;
+  font-weight: 500;
+  text-align: left;
+  color: var(--text);
+  background: none;
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.menu__list button:hover,
+.menu__list button:focus-visible { background: var(--line); outline: none; }
+.menu__list .menu__danger { color: var(--red-bright); }
+.menu__list small { display: block; font-size: 0.8125rem; font-weight: 400; color: var(--text-faint); }
+@media (max-width: 40rem) {
+  .menu__list { max-width: calc(100vw - 2 * var(--gutter)); }
+}
+
+.plan-shared {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1.5rem;
+  margin-bottom: 2rem;
+  padding: 1rem 1.25rem;
+  background: var(--red-wash);
+  border: 1px solid var(--red-line-soft);
+  border-left: 3px solid var(--red-bright);
+  border-radius: var(--radius-sm);
+}
+.plan-shared p { margin: 0; }
+.plan-shared__actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.plan-shared .button { padding: 0.5rem 1.1rem; font-size: 0.8125rem; }
+
+.plan-extra {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  max-width: 32rem;
+  margin: 0 0 1.5rem;
+}
+.plan-extra .search__input { flex: 1; }
+.plan-extra .search__input::placeholder { text-transform: none; letter-spacing: 0.02em; }
+
+.shopping__aisles { display: grid; gap: 0.5rem; }
+.shopping__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  column-gap: 0.5rem;
+}
+.shopping__row .check { padding-bottom: 0; }
+.shopping__row .shopping__from { grid-column: 1; padding: 0 0 0.6rem 2rem; }
+/* "Have at home" (or "Need it", or × on your own items): quiet words, not a button
+   shouting from every row. The tap area is full size, without an outline
+   (which on a phone sticks around after the tap). */
+.shopping__action {
+  min-height: 2.75rem;
+  margin-top: -0.1rem;
+  padding: 0 0.25rem 0 0.75rem;
+  font-family: var(--font-body);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  white-space: nowrap;
+  color: var(--text-faint);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+.shopping__action:focus-visible { outline: 2px solid var(--red-bright); outline-offset: -2px; border-radius: 6px; }
+@media (hover: hover) {
+  .shopping__action:hover { color: var(--text); text-decoration: underline; }
+}
+.shopping__action--remove { font-size: 1.125rem; line-height: 1; padding: 0 0.5rem; }
+.shopping__from a { color: inherit; text-decoration: none; }
+.shopping__from a:hover { color: var(--red-bright); text-decoration: underline; }
+.shopping__row:has(input:checked) .shopping__from { opacity: 0.6; }
+
+.pantry-summary {
+  margin: -0.25rem 0 1.25rem;
+  padding: 0.6rem 0.9rem;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+  background: var(--surface);
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-sm);
+}
+.pantry-summary__review {
+  margin-left: 0.25rem;
+  padding: 0;
+  font-family: var(--font-body);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--red-bright);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.pantry-summary__review::after { content: " ›"; }
+.pantry-summary__review:hover { text-decoration: underline; }
+/* "At home": a folded list under the shopping list. */
+.pantry {
+  scroll-margin-top: calc(var(--header-h) + 1rem);
+  margin-top: 1.5rem;
+  padding: 0.75rem 1rem;
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-sm);
+}
+.pantry summary {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.pantry[open] summary { margin-bottom: 0.5rem; }
+.pantry__hint { margin: 0 0 0.25rem; font-size: 0.875rem; color: var(--text-faint); }
+.pantry .shopping__name { color: var(--text-muted); }
+/* At home rows have nothing to tick: the name lines up with the hint. */
+.shopping__item { margin: 0; padding: 0.6rem 0 0; }
+.pantry .shopping__from { padding-left: 0; }
+.aisle .ingredients__group { margin-top: 1rem; }
+.aisle:first-child .ingredients__group { margin-top: 0.5rem; }
+.shopping__from {
+  display: block;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: var(--text-faint);
+}
+
+.plan-toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 1.5rem);
+  z-index: 70;
+  margin: 0;
+  padding: 0.55rem 0.6rem 0.55rem 1.1rem;
+  font-family: var(--font-body);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  line-height: 1.35;
+  color: var(--text);
+  background: var(--surface-2);
+  border: 1px solid var(--red-bright);
+  /* Rounded enough to read as a pill on one line, and still hold a long
+     ingredient name that wraps to two. */
+  border-radius: 1.4rem;
+  box-shadow: 0 0 20px var(--red-glow);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: max-content;
+  max-width: min(28rem, calc(100% - 2 * var(--gutter)));
+  opacity: 0;
+  visibility: hidden;
+  transform: translate(-50%, 0.75rem);
+  transition: opacity 0.2s, transform 0.2s, visibility 0s 0.2s;
+}
+.plan-toast.is-shown { opacity: 1; visibility: visible; transform: translate(-50%, 0); transition: opacity 0.2s, transform 0.2s; }
+.plan-toast [data-plan-toast-text],
+.plan-toast [data-pack-toast-text] {
+  flex: 1;
+  min-width: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.plan-toast__undo {
+  flex: none;
+  padding: 0.35rem 0.9rem;
+  font: inherit;
+  font-weight: 600;
+  color: #fff;
+  background: var(--red);
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+@media (min-width: 56rem) {
+  .plan-layout { grid-template-columns: minmax(18rem, 24rem) minmax(0, 1fr); }
+  .plan-recipes {
+    position: sticky;
+    top: calc(var(--header-h) + env(safe-area-inset-top, 0px) + 1.5rem);
+  }
+  .shopping__aisles { grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr)); column-gap: 2rem; align-items: start; }
+}
+@media (max-width: 40rem) {
+  .shopping .section-head__actions { width: 100%; margin-left: 0; }
+}

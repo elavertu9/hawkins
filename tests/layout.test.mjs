@@ -1,17 +1,22 @@
 // Recipes page layout: sorting, the results bar, the phone list, the + Plan
 // button on mouse and touch screens, and the home page.
 import { open } from "./lib.mjs";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 
 // The stylesheet's braces balance: a stray } makes the browser drop the rule
-// after it, without any error.
-{
+// after it, without any error. main.css is joined from _includes/css/, so each
+// piece balances on its own, and a problem names its file.
+const cssDir = new URL("../_includes/css/", import.meta.url);
+const cssPieces = readdirSync(cssDir).filter((f) => f.endsWith(".css"));
+const cssProblems = cssPieces.flatMap((file) => {
   let depth = 0, at = 0;
-  readFileSync(new URL("../assets/css/main.css", import.meta.url), "utf8").replace(/\/\*[\s\S]*?\*\//g, "").split("\n").forEach((line, i) => {
+  readFileSync(new URL(file, cssDir), "utf8").replace(/\/\*[\s\S]*?\*\//g, "").split("\n").forEach((line, i) => {
     for (const ch of line) { depth += ch === "{" ? 1 : ch === "}" ? -1 : 0; if (depth < 0 && !at) at = i + 1; }
   });
-  var cssBalanced = [depth, at];
-}
+  return depth || at ? [`${file} (depth ${depth}${at ? `, stray } near line ${at}` : ""})`] : [];
+});
+// Every piece is listed in main.css, and nothing else is.
+const cssListed = [...readFileSync(new URL("../assets/css/main.css", import.meta.url), "utf8").matchAll(/\{% include css\/([\w-]+\.css) %\}/g)].map((m) => m[1]);
 
 const { send, ev, go, sleep, check, shot, errors, finish } = await open();
 const titles = (n = 4) => ev(`[...document.querySelectorAll('.card:not([hidden]) .card__title')].slice(0, ${n}).map(e => e.textContent.trim()).join(' | ')`);
@@ -19,7 +24,8 @@ const sortBy = (value) => ev(`(() => { const s = document.querySelector('[data-s
 const planOpacity = "getComputedStyle(document.querySelector('.card__plan')).opacity";
 const fits = "document.documentElement.scrollWidth <= document.documentElement.clientWidth";
 
-check(`main.css braces balance (depth ${cssBalanced[0]}${cssBalanced[1] ? `, stray } near line ${cssBalanced[1]}` : ""})`, cssBalanced[0] === 0 && !cssBalanced[1]);
+check(`the ${cssPieces.length} CSS pieces' braces balance${cssProblems.length ? ": " + cssProblems.join("; ") : ""}`, cssProblems.length === 0);
+check(`main.css lists every piece once (${cssListed.length} of ${cssPieces.length})`, cssListed.length === cssPieces.length && new Set(cssListed).size === cssListed.length && cssListed.every((f) => cssPieces.includes(f)));
 // Desktop, with a mouse.
 await send("Emulation.setDeviceMetricsOverride", { width: 1280, height: 900, deviceScaleFactor: 1, mobile: false });
 await go("/recipes/"); await ev("localStorage.clear()"); await go("/recipes/");

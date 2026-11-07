@@ -1,0 +1,24 @@
+/* ---------- Header counts: Plan's and Packing's badges (see plan.js, packing-status.js) ---------- */
+.plan-link { display: inline-flex !important; align-items: center; gap: 0.4rem; }
+/* The current-page underline goes under the word only, not the count. */
+.site-nav .plan-link[aria-current] { text-decoration: none; }
+.plan-link[aria-current] .plan-link__label {
+  text-decoration: underline;
+  text-decoration-color: var(--red-bright);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.45em;
+}
+.plan-link__count {
+  min-width: 1.35rem;
+  padding: 0.05rem 0.35rem;
+  font-size: 0.75rem;
+  line-height: 1.3;
+  text-align: center;
+  color: #fff;
+  background: var(--red);
+  border-radius: 999px;
+  box-shadow: 0 0 10px var(--red-glow);
+}
+.plan-link__count.is-bumped { animation: plan-bump 0.4s ease; }
+/* Packing's percent is quieter than Plan's count: a progress note, not a to-do. */
+.plan-link__count--quiet { color: var(--text-muted); background: transparent; box-shadow: inset 0 0 0 1px var(--line-strong); }

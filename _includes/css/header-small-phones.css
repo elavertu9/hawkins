@@ -1,0 +1,17 @@
+/* ---------- Header on small phones (320px) ---------- */
+@media (max-width: 30rem) {
+  /* Brand, Plan, the pot and Menu fit a small phone (320px) at full size.
+     Plan's count or the Cooking pot need the tighter type, so only then does it shrink. */
+  .site-header:has([data-plan-count]:not([hidden]), [data-cooking]:not([hidden])) {
+    --nav-pad: 0.15rem; --nav-size: 0.75rem; --nav-track: 0.02em; --brand-size: 0.875rem; --brand-track: 0.04em;
+    --header-gap: 0.375rem; --pot-pad: 0.25rem; --count-min: 1.2rem; --count-pad: 0.3rem; --count-size: 0.6875rem;
+  }
+  .site-nav a { padding: 0.5rem var(--nav-pad, 0.3rem); font-size: var(--nav-size, 0.8125rem); letter-spacing: var(--nav-track, 0.04em); }
+  .brand { font-size: var(--brand-size, 1.25rem); letter-spacing: var(--brand-track, 0.14em); }
+  .site-header__inner { gap: var(--header-gap, 0.5rem); }
+  .site-nav ul { gap: 0.125rem; }
+  .plan-link { gap: 0.25rem; }
+  .plan-link__count { min-width: var(--count-min, 1.35rem); padding-inline: var(--count-pad, 0.35rem); font-size: var(--count-size, 0.75rem); }
+  .cooking-link { padding-inline: var(--pot-pad, 0.4rem); }
+  .nav-menu__toggle { padding-inline: var(--pot-pad, 0.4rem); }
+}

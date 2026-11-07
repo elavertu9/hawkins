@@ -1,0 +1,21 @@
+/* ---------- Recipe page on wider screens ---------- */
+@media (min-width: 56rem) {
+  .recipe-hero {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    align-items: center;
+  }
+  .recipe-body { grid-template-columns: minmax(17rem, 22rem) minmax(0, 1fr); }
+  .ingredients {
+    position: sticky;
+    top: calc(var(--header-h) + env(safe-area-inset-top, 0px) + 1.5rem);
+    max-height: calc(100vh - var(--header-h) - 3rem);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    border-radius: var(--radius);
+  }
+  .step { grid-template-columns: 3rem 1fr; gap: 1.25rem; }
+  .step__num { width: 3rem; height: 3rem; }
+}
+
+/* Turbo's loading bar, shown when a page takes a moment (see page.js). */
+.turbo-progress-bar { height: 3px; background: var(--red-bright); box-shadow: 0 0 10px var(--red-glow); }

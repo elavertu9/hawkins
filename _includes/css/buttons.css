@@ -1,0 +1,44 @@
+/* ---------- Page actions: the filled button, + Add to plan, Start cooking ---------- */
+.recipe-hero__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; margin-top: 0.5rem; }
+/* The one filled button on a page: what you came to do. */
+.button--primary { color: #fff; background: var(--red); border-color: var(--red); }
+.button--primary:hover { background: var(--red-bright); border-color: var(--red-bright); }
+.button--plan,
+.button--fave { padding: 0.6rem 1.2rem; font-size: 0.875rem; }
+.fave-icon { fill: none; stroke: currentColor; stroke-width: 2; stroke-linejoin: round; }
+.button--fave[aria-pressed="true"] { color: var(--red-bright); border-color: var(--red-bright); }
+.button--fave[aria-pressed="true"] .fave-icon { fill: currentColor; }
+/* Start cooking, with Start over beside it once there's progress. */
+.cook-start { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.75rem; }
+.button--quiet { padding-inline: 0.75rem; color: var(--text-muted); border-color: transparent; }
+.button--quiet:hover { color: var(--text); border-color: var(--line-strong); box-shadow: none; }
+/* On phones it waits at the bottom of the screen, out of the way of the timer
+   tray when one is running. With Start over, the two share one bar, like a
+   toolbar: Start over as plain text on the left. */
+@media (max-width: 40rem) {
+  .cook-start {
+    position: fixed;
+    left: var(--gutter);
+    right: var(--gutter);
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 1rem);
+    z-index: 50;
+    flex-wrap: nowrap;
+    gap: 0.25rem;
+    border-radius: 999px;
+  }
+  .cook-start .button--cook { flex: 1; justify-content: center; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5); }
+  .cook-start:has(.button--quiet:not([hidden])) {
+    padding: 0.3rem;
+    background: var(--glass);
+    border: 1px solid var(--line-strong);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+  }
+  .cook-start:has(.button--quiet:not([hidden])) .button--cook { box-shadow: none; }
+  .cook-start .button--quiet { order: -1; flex: none; padding-inline: 1rem; }
+  body:has(.button--cook:not([hidden])) { padding-bottom: 5rem; }
+  body:has(> .timers:not([hidden])) .cook-start { position: static; padding: 0; background: none; border: 0; box-shadow: none; }
+  body:has(> .timers:not([hidden])) .cook-start .button--cook { flex: none; }
+}
+.button--plan[aria-pressed="true"] { background: var(--red); border-color: var(--red); color: #fff; }

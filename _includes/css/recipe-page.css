@@ -1,0 +1,265 @@
+/* ---------- Recipe page ---------- */
+.breadcrumb ol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0 0 1.5rem;
+  padding: 0;
+  list-style: none;
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  color: var(--text-faint);
+}
+.breadcrumb li + li::before { content: "/"; margin-right: 0.5rem; }
+.breadcrumb a { color: var(--text-muted); text-decoration: none; }
+.breadcrumb a:hover { color: var(--red-bright); }
+
+.recipe-hero {
+  display: grid;
+  gap: clamp(1.5rem, 4vw, 3rem);
+  margin-bottom: clamp(2rem, 6vw, 3.5rem);
+}
+.recipe-hero__text { display: flex; flex-direction: column; gap: 0.75rem; }
+.recipe-hero__title {
+  font-family: var(--font-display);
+  font-size: clamp(2.125rem, 5.5vw, 3.25rem);
+  color: var(--red-bright);
+  text-shadow: 0 0 24px var(--title-glow);
+  text-wrap: balance;
+}
+.recipe-hero__summary {
+  max-width: 36rem;
+  font-size: 1.125rem;
+  color: var(--text-muted);
+}
+.recipe-hero__media {
+  margin: 0;
+  aspect-ratio: var(--media-ratio);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--surface-2);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.4), 0 20px 60px var(--photo-glow);
+}
+.recipe-hero__media img { width: 100%; height: 100%; object-fit: cover; }
+/* Phones and tablets (below the two-column hero): a recipe with no photo yet
+   shows a short strip of the placeholder, just MISSING and its line, so the
+   ingredients aren't pushed down a screen. Cards keep the full 3:2 frame. */
+@media (max-width: 55.99rem) {
+  .recipe-hero__media:not(.is-photo) { aspect-ratio: 4 / 1; }
+  .recipe-hero__media:not(.is-photo) img { object-position: 50% 48%; }
+}
+
+/* Real photos get a light grade so they sit in the dark theme: a touch darker
+   and warmer, with a soft vignette that pulls bright edges (white plates,
+   countertops) toward the page. The food itself keeps its own colors. */
+.is-photo { position: relative; }
+/* <picture> only picks the file; the <img> inside is what's laid out. */
+.is-photo picture { display: contents; }
+.is-photo img { filter: brightness(0.92) contrast(1.06) saturate(1.08) sepia(0.06); }
+.is-photo::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 75% 70% at 50% 50%, transparent 55%, rgba(5, 4, 8, 0.55) 100%),
+    linear-gradient(to top, rgba(120, 10, 14, 0.18), transparent 45%);
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(6.5rem, 1fr));
+  gap: 0.5rem;
+  margin: 0.75rem 0 0;
+}
+.stat {
+  padding: 0.7rem 0.9rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+}
+.stat dt {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+.stat dd { margin: 0.15rem 0 0; font-weight: 600; }
+.stat--wide { grid-column: span 2; }
+.stat--total { border-color: var(--red-line); }
+.stat--total dd { color: var(--amber); }
+/* Calories we estimated ourselves, because the source didn't list them */
+.stat--estimated { border-style: dashed; border-color: var(--amber-line); }
+.stat__flag {
+  margin-left: 0.25rem;
+  padding: 0 0.3rem;
+  border: 1px solid currentColor;
+  border-radius: 3px;
+  font-size: 0.625rem;
+  color: var(--amber);
+}
+
+.recipe-body { display: grid; gap: clamp(2rem, 5vw, 3rem); align-items: start; }
+
+/* Ingredients */
+.panel {
+  padding: 1.25rem 1.25rem 1.5rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.ingredients__group {
+  margin: 1.25rem 0 0.25rem;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--red-bright);
+}
+.ingredients .section-head + .ingredients__group { margin-top: 0; }
+
+.checklist { margin: 0; padding: 0; list-style: none; }
+.checklist li + li { border-top: 1px dashed var(--line); }
+
+.check {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1.25rem 1fr;
+  gap: 0.75rem;
+  align-items: start;
+  padding: 0.6rem 0;
+  cursor: pointer;
+}
+.check input {
+  position: absolute;
+  opacity: 0;
+  width: 1.25rem;
+  height: 1.25rem;
+  margin: 0.2rem 0 0;
+}
+.check__box {
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-top: 0.2rem;
+  border: 1.5px solid var(--line-strong);
+  border-radius: 5px;
+  transition: background-color 0.15s, border-color 0.15s;
+}
+.check:hover .check__box { border-color: var(--red-bright); }
+.check input:focus-visible + .check__box { outline: 2px solid var(--red-bright); outline-offset: 2px; }
+.check input:checked + .check__box {
+  background: var(--red) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M5 10.5l3.2 3.2L15 7' fill='none' stroke='%23fff' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 100% no-repeat;
+  border-color: var(--red);
+}
+.check input:checked ~ .check__text { color: var(--text-faint); text-decoration: line-through; text-decoration-color: rgba(255, 64, 64, 0.6); }
+.qty { font-weight: 600; color: var(--amber); }
+.check input:checked ~ .check__text .qty { color: inherit; }
+
+/* Directions */
+.directions__hint {
+  margin: -0.75rem 0 0.5rem;
+  font-size: 0.875rem;
+  color: var(--text-faint);
+}
+
+.steps { margin: 0; padding: 0; list-style: none; }
+.step {
+  display: grid;
+  grid-template-columns: 2.75rem 1fr;
+  gap: 1rem;
+  padding: 1.25rem 0;
+  border-top: 1px solid var(--line);
+}
+.step__num {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  color: var(--red-bright);
+  background: transparent;
+  border: 1.5px solid var(--red-bright);
+  border-radius: 50%;
+  box-shadow: 0 0 12px var(--red-glow-soft), inset 0 0 8px var(--red-glow-inset);
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s, box-shadow 0.15s;
+}
+.step__num:hover { box-shadow: 0 0 18px var(--red-glow), inset 0 0 8px var(--red-glow-soft); }
+.step__body { cursor: pointer; padding-top: 0.45rem; }
+.step__title { font-size: 1.0625rem; font-weight: 600; }
+.step__text { margin-top: 0.35rem; }
+.step__text p + p { margin-top: 0.75rem; }
+.step__text strong { font-weight: 600; color: var(--amber); }
+/* A step with several separate actions is written as a bulleted list. */
+.step__text ul,
+.cook__text ul { margin: 0; padding-left: 1.25em; list-style: disc; }
+.step__text li + li { margin-top: 0.35rem; }
+.step__text li::marker,
+.cook__text li::marker { color: var(--red-bright); }
+.step__text p + ul,
+.step__text ul + p { margin-top: 0.75rem; }
+
+.step.is-done .step__num {
+  background: var(--red);
+  border-color: var(--red);
+  color: #fff;
+  box-shadow: none;
+}
+.step.is-done .step__body { opacity: 0.45; }
+
+.notes {
+  margin-top: 2rem;
+  padding: 1.25rem 1.5rem;
+  background: var(--red-wash);
+  border: 1px solid var(--red-line-faint);
+  border-left: 3px solid var(--red-bright);
+  border-radius: var(--radius-sm);
+}
+.notes__title {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--red-bright);
+}
+.notes ul { margin: 0.75rem 0 0; padding-left: 1.1rem; }
+.notes li { padding-left: 0.25rem; }
+.notes li + li { margin-top: 0.5rem; }
+.notes li::marker { color: var(--red-bright); }
+
+.source {
+  margin-top: 1.5rem;
+  font-size: 0.875rem;
+  color: var(--text-faint);
+}
+.source a { color: var(--text-muted); }
+
+/* Previous / next */
+.pager {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+  gap: 1rem;
+  margin-top: clamp(3rem, 8vw, 4.5rem);
+  padding-top: 2rem;
+  border-top: 1px solid var(--line);
+}
+.pager__link {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 1.125rem 1.25rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  text-decoration: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.pager__link:hover { border-color: var(--red-line-strong); box-shadow: 0 10px 32px var(--lift); }
+.pager__link--next { text-align: right; }
+.pager__title { font-family: var(--font-display); font-size: 1.125rem; }

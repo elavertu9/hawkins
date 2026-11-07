@@ -1,0 +1,78 @@
+/* ---------- Motion & print ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+  .card:hover,
+  .card:focus-within { transform: none; }
+  .upside-toast.is-shown { opacity: 1; transform: translate(-50%, 0); }
+}
+
+@media print {
+  :root { color-scheme: light; }
+  body { background: #fff; color: #000; font-size: 11pt; }
+  .site-header,
+  .site-footer,
+  .breadcrumb,
+  .recipe-hero__media,
+  .section-head__actions,
+  .directions__hint,
+  .cook,
+  .timers,
+  .card__plan,
+  .recipe-hero__actions,
+  .plan-page .page-head__lede,
+  .plan-page .directions__hint,
+  .plan-shared,
+  .plan-add,
+  .plan-summary,
+  .plan-faves,
+  .plan-recipes__done,
+  .plan-extra,
+  .classified__bar,
+  .pantry-summary__review,
+  .shopping__action,
+  .pantry,
+  .plan-item__cook,
+  .stepper button,
+  .plan-item__remove,
+  .plan-toast,
+  .pager { display: none !important; }
+  .recipe-hero__title,
+  .page-title { color: #000; text-shadow: none; }
+  .recipe-hero__summary,
+  .stat dt,
+  .source { color: #333; }
+  .stat,
+  .panel,
+  .notes { background: none; border-color: #ccc; }
+  .stat--total dd,
+  .tag,
+  .qty,
+  .step__text strong,
+  .eyebrow,
+  .ingredients__group,
+  .notes__title { color: #000; }
+  .recipe-body { grid-template-columns: 1fr; }
+  .upside-down body { flex-direction: column; }
+  .upside-down body > * { transform: none; filter: none; }
+  .upside-down body::after,
+  .upside-toast { display: none; }
+  .ingredients { position: static; max-height: none; overflow: visible; }
+  .plan-layout { grid-template-columns: 1fr; gap: 1rem; }
+  .plan-recipes { position: static; }
+  .stepper { border: 0; }
+  .stepper__value { color: #000; }
+  .plan-item__title { color: #000; }
+  .shopping__aisles { display: block; columns: 2; column-gap: 2rem; }
+  .aisle { break-inside: avoid; }
+  .shopping__from { color: #555; }
+  .step { break-inside: avoid; border-color: #ddd; }
+  .step__num { color: #000; border-color: #000; box-shadow: none; }
+  .step.is-done .step__body { opacity: 1; }
+  .check__box { border-color: #000; }
+  .check input:checked ~ .check__text { color: #000; text-decoration: none; }
+}
