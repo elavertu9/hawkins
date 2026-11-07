@@ -1235,6 +1235,13 @@ a.tag:hover { border-color: var(--amber); }
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.4), 0 20px 60px var(--photo-glow);
 }
 .recipe-hero__media img { width: 100%; height: 100%; object-fit: cover; }
+/* Phones and tablets (below the two-column hero): a recipe with no photo yet
+   shows a short strip of the placeholder, just MISSING and its line, so the
+   ingredients aren't pushed down a screen. Cards keep the full 3:2 frame. */
+@media (max-width: 55.99rem) {
+  .recipe-hero__media:not(.is-photo) { aspect-ratio: 4 / 1; }
+  .recipe-hero__media:not(.is-photo) img { object-position: 50% 48%; }
+}
 
 /* Real photos get a light grade so they sit in the dark theme: a touch darker
    and warmer, with a soft vignette that pulls bright edges (white plates,
