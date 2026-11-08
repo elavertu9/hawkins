@@ -51,6 +51,11 @@
 <script src="{{ '/assets/js/recipes.js' | relative_url }}?v={{ site.time | date: '%s' }}" defer data-turbo-track="reload"></script>
 <script src="{{ '/assets/js/st-day.js' | relative_url }}?v={{ site.time | date: '%s' }}" defer data-turbo-track="reload"></script>
 
+{%- comment %} Visit counts (Umami). Production only, so running the site locally doesn't count. Turbo's page swaps are picked up through the History API. {% endcomment %}
+{%- if jekyll.environment == "production" and site.umami_website_id %}
+<script defer src="https://cloud.umami.is/script.js" data-website-id="{{ site.umami_website_id }}" data-domains="{{ site.url | remove: 'https://' }}"></script>
+{%- endif %}
+
 <link rel="icon" href="{{ '/favicon.svg' | relative_url }}" type="image/svg+xml">
 {%- comment %} Add to Home Screen on iPhone: the favicon's neon H, square (iOS rounds the corners), named Hawkins rather than the page's title. {% endcomment %}
 <link rel="apple-touch-icon" href="{{ '/apple-touch-icon.png' | relative_url }}">

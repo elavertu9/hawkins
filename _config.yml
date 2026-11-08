@@ -46,3 +46,6 @@ exclude:
   - scripts
   - tests
   - IDEAS.md
+
+# Umami Cloud analytics (cloud.umami.is). Only loaded on the published site.
+umami_website_id: 04575544-3685-43f3-a693-c5cc6bb04155
