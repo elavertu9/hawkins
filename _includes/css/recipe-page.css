@@ -32,6 +32,15 @@
   font-size: 1.125rem;
   color: var(--text-muted);
 }
+/* "Cook it: Stovetop | Slow cooker", only on recipes with more than one method. */
+.methods {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 1.25rem 0 0;
+}
+.methods__label { font-weight: 600; color: var(--text-muted); margin-right: 0.25rem; }
 .recipe-hero__media {
   margin: 0;
   aspect-ratio: var(--media-ratio);

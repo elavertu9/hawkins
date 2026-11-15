@@ -88,6 +88,29 @@ easy to keep your place in cook mode. A bold time becomes a timer button in cook
 mode. A range (`**15–20 minutes**`) rings at 15, with a +5 min button to run it on
 to 20.
 
+**Methods (optional).** A recipe you can cook more than one way (stovetop or slow
+cooker) can use `methods:` in place of `steps:`. The ingredients are shared; each
+method has its own steps and, if they differ, its own `time` (any of `prep`, `cook`,
+`additional`). The first method is the default, and the page shows a "Cook it" switch
+that remembers the last choice in the browser. `?method=slow-cooker` in a link picks one.
+Cook mode, timers, and progress follow the chosen method. Switching starts the steps
+fresh.
+
+```yaml
+methods:
+  - id: stovetop              # used in ?method= and the saved choice
+    name: Stovetop            # the switch's label
+    steps:
+      - title: Simmer
+        text: Cook for **30 minutes**.
+  - id: slow-cooker
+    name: Slow cooker
+    time: { prep: 10, cook: 240 }   # optional; the rest comes from the recipe's time
+    steps:
+      - title: Cook
+        text: Cook on **low** for **4–6 hours**.
+```
+
 **Shopping names (optional).** The meal plan works out what to buy from each
 ingredient's text ("garlic, minced" becomes "garlic"). When it gets one wrong,
 add `shop:` with the name to buy, or a list for a line with several things

@@ -2,9 +2,9 @@
 title: Hearty Six-Can Chili
 summary: >-
   Ground beef, two kinds of beans, and tomatoes, mostly straight from the
-  pantry. One pot and about 50 minutes.
+  pantry. About 50 minutes on the stove, or let the slow cooker do it.
 category: Dinner
-tags: [Make Ahead]
+tags: [Make Ahead, Slow Cooker]
 added: 2026-10-24
 # image: /assets/images/recipes/hearty-six-can-chili.jpg
 # image_alt: Bowl of beef and bean chili
@@ -36,26 +36,54 @@ ingredients:
       - qty: "1 teaspoon"
         item: chili powder
 
-steps:
-  - title: Brown the beef and onion
-    text: >-
-      In a 6-quart Dutch oven over **medium heat**, cook the beef and onion for
-      **8–10 minutes**, breaking the meat into crumbles, until no pink remains.
-      Drain off any fat.
-  - title: Open the cans
-    text: >-
-      While the beef cooks, open all the cans. Drain the black beans in a
-      colander and rinse them.
-  - title: Combine
-    text: >-
-      Add the chili beans, tomatoes, black beans, mushroom soup, and chili powder
-      to the pot and stir. Bring to a boil.
-  - title: Simmer
-    text: >-
-      Turn the heat to **low**, cover, and simmer for **30 minutes**, stirring
-      now and then.
+methods:
+  - id: stovetop
+    name: Stovetop
+    steps:
+      - title: Brown the beef and onion
+        text: >-
+          In a 6-quart Dutch oven over **medium heat**, cook the beef and onion for
+          **8–10 minutes**, breaking the meat into crumbles, until no pink remains.
+          Drain off any fat.
+      - title: Open the cans
+        text: >-
+          While the beef cooks, open all the cans. Drain the black beans in a
+          colander and rinse them.
+      - title: Combine
+        text: >-
+          Add the chili beans, tomatoes, black beans, mushroom soup, and chili powder
+          to the pot and stir. Bring to a boil.
+      - title: Simmer
+        text: >-
+          Turn the heat to **low**, cover, and simmer for **30 minutes**, stirring
+          now and then.
+
+  - id: slow-cooker
+    name: Slow cooker
+    time:
+      prep: 10
+      cook: 240
+    steps:
+      - title: Brown the beef and onion
+        text: >-
+          In a large skillet over **medium heat**, cook the beef and onion for
+          **8–10 minutes**, breaking the meat into crumbles, until no pink
+          remains. Drain off any fat.
+      - title: Open the cans
+        text: >-
+          While the beef cooks, open all the cans. Drain the black beans in a
+          colander and rinse them.
+      - title: Fill the slow cooker
+        text: >-
+          Put the beef and onion in the slow cooker. Add the chili beans,
+          tomatoes, black beans, mushroom soup, and chili powder, and stir.
+      - title: Cook
+        text: |-
+          - Cover and cook on **low** for **4–6 hours**.
+          - Or cook on **high** for **2–3 hours**.
+          - Stir before serving.
 
 notes:
-  - The source doesn't list prep or cook times. These are estimated from the steps.
+  - The source doesn't list prep or cook times. These are estimated from the steps; the slow cooker cook time is the shorter low setting.
   - Good with shredded cheese, sour cream, green onions, or cornbread.
 ---

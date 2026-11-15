@@ -33,7 +33,7 @@ const problems = await ev(`(async () => {
     if (!page.querySelector(".recipe-hero .eyebrow")?.textContent.trim()) say("no category");
 
     const ingredients = page.querySelectorAll(".ingredients .checklist input").length;
-    const steps = page.querySelectorAll(".step").length;
+    const steps = page.querySelectorAll(".steps:not([hidden]) .step").length;
     if (!ingredients) say("no ingredients");
     if (!steps) say("no steps");
     page.querySelectorAll(".check__text").forEach((el) => { if (!el.textContent.trim()) say("blank ingredient"); });

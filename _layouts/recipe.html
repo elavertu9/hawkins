@@ -36,15 +36,34 @@ layout: default
         <h1 class="recipe-hero__title">{{ page.title }}</h1>
         <p class="recipe-hero__summary">{{ page.summary }}</p>
 
+        {%- comment %}
+          A recipe with `methods:` (stovetop, slow cooker...) gets a switch. Each method has its
+          own steps and, optionally, its own times; the ingredients are shared. recipe.js shows
+          the chosen method's steps and remembers the choice.
+        {% endcomment %}
+        {%- if page.methods.size > 1 %}
+        <div class="methods" data-methods role="group" aria-label="How to cook it" hidden>
+          <span class="methods__label">Cook it</span>
+          {%- for meth in page.methods %}
+          {%- assign m_prep = t.prep %}{% if meth.time.prep %}{% assign m_prep = meth.time.prep %}{% endif %}
+          {%- assign m_cook = t.cook %}{% if meth.time.cook %}{% assign m_cook = meth.time.cook %}{% endif %}
+          {%- assign m_extra = t.additional %}{% if meth.time.additional %}{% assign m_extra = meth.time.additional %}{% endif %}
+          {%- assign m_total = m_prep | plus: m_cook | plus: m_extra %}
+          <button class="chip" type="button" data-method="{{ meth.id }}" aria-pressed="{% if forloop.first %}true{% else %}false{% endif %}"
+                  data-time-prep="{% include duration.html minutes=m_prep %}" data-time-cook="{% include duration.html minutes=m_cook %}" data-time-total="{% include duration.html minutes=m_total %}">{{ meth.name }}</button>
+          {%- endfor %}
+        </div>
+        {%- endif %}
+
         <dl class="stats">
-          <div class="stat"><dt>Prep</dt><dd>{% include duration.html minutes=t.prep %}</dd></div>
+          <div class="stat"><dt>Prep</dt><dd data-stat="prep">{% include duration.html minutes=t.prep %}</dd></div>
           {%- if t.cook > 0 %}
-          <div class="stat"><dt>Cook</dt><dd>{% include duration.html minutes=t.cook %}</dd></div>
+          <div class="stat"><dt>Cook</dt><dd data-stat="cook">{% include duration.html minutes=t.cook %}</dd></div>
           {%- endif %}
           {%- if t.additional %}
           <div class="stat"><dt>Rest</dt><dd>{% include duration.html minutes=t.additional %}</dd></div>
           {%- endif %}
-          <div class="stat stat--total"><dt>Total</dt><dd>{% include duration.html minutes=total %}</dd></div>
+          <div class="stat stat--total"><dt>Total</dt><dd data-stat="total">{% include duration.html minutes=total %}</dd></div>
           <div class="stat"><dt>Serves</dt><dd data-serves-stat>{{ page.servings }}</dd></div>
           {%- if page.calories %}
           {%- if page.calories_estimated %}
@@ -112,22 +131,17 @@ layout: default
       <section class="directions" aria-labelledby="directions-title">
         <div class="section-head">
           <h2 id="directions-title">Directions</h2>
-          <span class="section-head__count">{{ page.steps.size }} steps</span>
+          <span class="section-head__count" data-steps-count>{% if page.methods %}{{ page.methods[0].steps.size }}{% else %}{{ page.steps.size }}{% endif %} steps</span>
         </div>
         <p class="directions__hint">Tap a step to mark it done. The screen stays on while you cook.</p>
 
-        <ol class="steps">
-          {%- for step in page.steps %}
-          <li class="step" id="step-{{ forloop.index }}">
-            <button class="step__num" type="button" aria-pressed="false"
-                    aria-label="Step {{ forloop.index }}: mark done">{{ forloop.index }}</button>
-            <div class="step__body">
-              {%- if step.title %}<h3 class="step__title">{{ step.title }}</h3>{% endif %}
-              <div class="step__text">{{ step.text | markdownify }}</div>
-            </div>
-          </li>
-          {%- endfor %}
-        </ol>
+        {%- if page.methods %}
+        {%- for m in page.methods %}
+        {% include steps-list.html steps=m.steps method=m.id first=forloop.first %}
+        {%- endfor %}
+        {%- else %}
+        {% include steps-list.html steps=page.steps %}
+        {%- endif %}
 
         {%- if page.notes or page.calories_estimated %}
         <aside class="notes" aria-labelledby="notes-title">
@@ -307,7 +321,8 @@ layout: default
     {%- endfor %}
   ],
   "recipeInstructions": [
-    {%- for step in page.steps %}
+    {%- assign ld_steps = page.steps %}{% if page.methods %}{% assign ld_steps = page.methods[0].steps %}{% endif %}
+    {%- for step in ld_steps %}
     {
       "@type": "HowToStep",
       "name": {{ step.title | jsonify }},

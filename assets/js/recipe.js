@@ -1,5 +1,5 @@
-// Recipe page helpers: check off ingredients and steps, change the servings,
-// favorite the recipe, and keep the screen awake while you cook. Cook mode is
+// Recipe page helpers: pick how to cook it, check off ingredients and steps,
+// change the servings, favorite the recipe, and keep the screen awake while you cook. Cook mode is
 // in cook.js, which builds on what this file shares as window.HawkinsRecipe.
 // Progress is saved per recipe in this browser and forgotten after 12 hours,
 // so a half-finished session from last week doesn't greet you next time.
@@ -45,9 +45,48 @@
     document.dispatchEvent(new Event("hawkins:progress"));
   };
 
+  // Methods: a recipe with several ways to cook it (stovetop, slow cooker) ships
+  // one list of steps per method. Show the chosen one, from ?method=, else what
+  // this browser last picked, else the first. Switching swaps in the other list
+  // by reloading, so everything below (and cook mode) only ever sees one list.
+  const lists = [...recipe.querySelectorAll(".steps[data-method]")];
+  const METHOD_KEY = `hawkins:method:${recipe.dataset.recipeId}`;
+  const methodBar = recipe.querySelector("[data-methods]");
+  if (lists.length > 1 && methodBar) {
+    const known = (id) => lists.some((l) => l.dataset.method === id);
+    const asked = new URLSearchParams(location.search).get("method");
+    const saved = page.store.getText(METHOD_KEY);
+    const method = known(asked) ? asked : known(saved) ? saved : lists[0].dataset.method;
+    lists.forEach((l) => { l.hidden = l.dataset.method !== method; });
+    const options = [...methodBar.querySelectorAll("[data-method]")];
+    options.forEach((o) => o.setAttribute("aria-pressed", String(o.dataset.method === method)));
+    // Times can differ by method.
+    const chosen = options.find((o) => o.dataset.method === method);
+    ["prep", "cook", "total"].forEach((name) => {
+      const stat = recipe.querySelector(`[data-stat="${name}"]`);
+      const time = chosen.getAttribute(`data-time-${name}`);
+      if (stat && time) stat.textContent = time;
+    });
+    const count = recipe.querySelector("[data-steps-count]");
+    if (count) count.textContent = `${recipe.querySelectorAll(".steps:not([hidden]) .step").length} steps`;
+    methodBar.addEventListener("click", (event) => {
+      const option = event.target.closest("[data-method]");
+      if (!option || option.dataset.method === method) return;
+      page.store.setText(METHOD_KEY, option.dataset.method);
+      // The steps are different ones, so progress through the old list doesn't carry over.
+      state.steps = [];
+      save();
+      const url = new URL(location.href);
+      url.searchParams.delete("method");
+      history.replaceState(history.state, "", url);
+      location.reload();
+    });
+    methodBar.hidden = false;
+  }
+
   const boxes = [...recipe.querySelectorAll(".ingredients .checklist input[type=checkbox]")];
   const mirrors = [...recipe.querySelectorAll("[data-mirror]")];
-  const steps = [...recipe.querySelectorAll(".step")];
+  const steps = [...recipe.querySelectorAll(".steps:not([hidden]) .step")];
   const resetButton = recipe.querySelector("[data-reset]");
 
   // Ingredients. Cook mode has its own copy of the list; the two stay in sync.

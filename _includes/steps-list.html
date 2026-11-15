@@ -1,0 +1,20 @@
+{%- comment -%}
+  One list of steps. A recipe with a single way to cook it has one of these; one with
+  several `methods:` has one per method, and recipe.js shows the chosen one.
+  Params: steps, and for a recipe with methods, method (its id) and first (true for the first).
+  Only the first method keeps plain `step-1` ids, so links like #step-2 keep working.
+{%- endcomment -%}
+{%- assign id_prefix = "step-" -%}
+{%- if include.method and include.first != true %}{% assign id_prefix = "step-" | append: include.method | append: "-" %}{% endif -%}
+<ol class="steps"{% if include.method %} data-method="{{ include.method }}"{% endif %}{% if include.method and include.first != true %} hidden{% endif %}>
+  {%- for step in include.steps %}
+  <li class="step" id="{{ id_prefix }}{{ forloop.index }}">
+    <button class="step__num" type="button" aria-pressed="false"
+            aria-label="Step {{ forloop.index }}: mark done">{{ forloop.index }}</button>
+    <div class="step__body">
+      {%- if step.title %}<h3 class="step__title">{{ step.title }}</h3>{% endif %}
+      <div class="step__text">{{ step.text | markdownify }}</div>
+    </div>
+  </li>
+  {%- endfor %}
+</ol>

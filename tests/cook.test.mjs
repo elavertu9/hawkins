@@ -290,7 +290,7 @@ for (const slug of [...new Set(slugs)]) {
   await go(slug);
   if (await q("!!document.querySelector('[data-classified]')")) continue;
   const r = await q(`(() => { const d = document.querySelector('.cook'); document.querySelector('[data-cook]').click();
-    const out = []; const n = document.querySelectorAll('.step').length;
+    const out = []; const n = document.querySelectorAll('.steps:not([hidden]) .step').length;
     for (let i = 0; i < n; i++) {
       const bold = [...document.querySelectorAll('#step-' + (i+1) + ' .step__text strong')].filter(s => /(sec|min|hour|hr)/i.test(s.textContent) && !/°/.test(s.textContent)).length;
       const btn = d.querySelectorAll('.timer-start').length; out.push([bold, btn]);
