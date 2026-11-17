@@ -16,7 +16,7 @@ servings: 4
 calories: 600
 calories_estimated: true
 calories_note: Prep and cook times, servings, and calories (about 600 per serving) are estimates.
-yield: 8 tacos
+yield: 6 tacos
 source:
   name: Instagram
   author: homeandkind
@@ -34,13 +34,13 @@ ingredients:
         item: pickle juice
   - group: Tacos
     items:
-      - qty: "8"
+      - qty: "6"
         item: mini flour tortillas
       - qty: "1 lb"
         item: ground turkey
       - qty: ""
         item: salt and pepper
-      - qty: "8 slices"
+      - qty: "6 slices"
         item: sharp cheddar cheese
   - group: Toppings
     items:
@@ -48,15 +48,13 @@ ingredients:
         item: shredded lettuce
       - qty: ""
         item: diced pickles
-      - qty: ""
-        item: special sauce
 
 steps:
   - title: Make the sauce
     text: Whisk the mayonnaise, ketchup, mustard, and pickle juice in a small bowl.
   - title: Press the turkey
     text: >-
-      Divide the turkey evenly between the **8** tortillas and spread it thin
+      Divide the turkey evenly between the **6** tortillas and spread it thin
       across each one. Season with salt and pepper.
   - title: Sear
     text: >-
@@ -71,6 +69,7 @@ steps:
     text: Add lettuce, diced pickles, and a drizzle of special sauce.
 
 notes:
-  - Cook in batches if your skillet can't fit all 8 at once.
+  - Cook in batches if your skillet can't fit all 6 at once.
+  - Double the sauce if you want extra on your tacos or some for dipping fries.
   - The source uses dill pickle mustard. Regular mustard with a splash of pickle juice works the same.
 ---
