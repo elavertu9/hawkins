@@ -7,8 +7,8 @@ summary: >-
 category: Dinner
 tags: [Low Calorie]
 added: 2026-11-06
-# image: /assets/images/recipes/chicken-enchiladas.jpg
-# image_alt: Baked chicken enchilada with melted cheddar in a white baking dish
+image: /assets/images/recipes/chicken-enchiladas.jpg
+image_alt: Two enchiladas in a glass baking dish, covered in red sauce and melted cheese
 time:
   prep: 10
   cook: 30

@@ -7,8 +7,8 @@ summary: >-
 category: Dinner
 tags: [Quick]
 added: 2026-11-15
-# image: /assets/images/recipes/big-mac-tacos.jpg
-# image_alt: Griddled turkey tacos with melted cheddar, lettuce, and pickles
+image: /assets/images/recipes/big-mac-tacos.jpg
+image_alt: Three crispy tacos on a black plate, topped with shredded lettuce, special sauce, and pickle chunks
 time:
   prep: 10
   cook: 10
