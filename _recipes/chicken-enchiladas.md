@@ -65,7 +65,7 @@ steps:
       - Bake **20 minutes**, until the cheese is melted.
 
 notes:
-  - It's easiest to make 2 or 3 at once. Multiply everything and bake them side by side in one dish.
+  - Making 3, like the photo? Triple everything and bake them side by side in one dish.
   - No chicken? Use tofu, fish, or beans. For dairy-free, use a dairy-free cheese.
   - "Calories by ingredient: tortilla 110, enchilada sauce 24, chicken 190, onion 28, grape tomatoes 16, and cheddar 152."
 ---
