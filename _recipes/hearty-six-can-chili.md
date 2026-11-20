@@ -6,8 +6,8 @@ summary: >-
 category: Dinner
 tags: [Make Ahead, Slow Cooker]
 added: 2026-10-24
-# image: /assets/images/recipes/hearty-six-can-chili.jpg
-# image_alt: Bowl of beef and bean chili
+image: /assets/images/recipes/hearty-six-can-chili.jpg
+image_alt: Bowl of beef and bean chili
 time:
   prep: 10
   cook: 40
